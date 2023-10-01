@@ -1,8 +1,8 @@
 # Build Google Vacation Rentals Calculator
 
 ### Read ARI XML messages into sqlite database
-- [ ] Read Rates from XML file
-- [ ] Load Rates into database
+- [X] Read Rates from XML file
+- [X] Load Rates into database
 - [ ] Read Rate Modifications from XML file
 - [ ] Load Rate Modifications into database
 - [ ] Read Taxes and Fees from XML file
