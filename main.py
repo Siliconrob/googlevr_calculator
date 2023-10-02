@@ -8,8 +8,10 @@ from data_messages.OTA_HotelRateAmountNotifRQ import OTAHotelRateAmountNotifRQ
 from data_messages.RateModifications import RateModifications
 from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 
+
 def get_dsn(db_name: str) -> str:
     return f'sqlite+sqlite3://{db_name}'
+
 
 def read_folder(target_folder: str, db_name: str) -> dict:
     files = [current_file for current_file in os.listdir(target_folder) if

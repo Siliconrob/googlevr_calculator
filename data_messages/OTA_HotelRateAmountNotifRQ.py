@@ -1,10 +1,10 @@
 import decimal
 from dataclasses import dataclass, field
 from datetime import datetime
-import pendulum
 from decimal import Decimal
+import pendulum
 from glom import glom
-from pydapper import connect, connect_async
+from pydapper import connect
 
 
 @dataclass
@@ -54,7 +54,9 @@ def read_rates(file_input: dict) -> list[OTAHotelRateAmountNotifRQ]:
         status_application_control = glom(rate_amount_message, 'StatusApplicationControl', default=None)
         if base_by_amount is None or status_application_control is None:
             continue
-        start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(status_application_control["@End"])
-        new_rate = OTAHotelRateAmountNotifRQ(external_id, start, end, Decimal(base_by_amount["@AmountBeforeTax"]), int(base_by_amount["@NumberOfGuests"]))
+        start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(
+            status_application_control["@End"])
+        new_rate = OTAHotelRateAmountNotifRQ(external_id, start, end, Decimal(base_by_amount["@AmountBeforeTax"]),
+                                             int(base_by_amount["@NumberOfGuests"]))
         rates.append(new_rate)
     return rates

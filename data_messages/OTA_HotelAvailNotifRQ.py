@@ -1,10 +1,8 @@
 import datetime
 from dataclasses import dataclass
-
 import pendulum
 from glom import glom
 from pydapper import connect
-from data_messages.LengthOfStay import TimeLengthOfStay
 
 
 @dataclass
@@ -53,8 +51,10 @@ def read_availability(file_input: dict) -> list[OTAHotelAvailNotifRQ]:
         if status_application_control is None:
             continue
         lengths_of_stay = glom(avail_status_message, 'LengthsOfStay.LengthOfStay', default=None)
-        min_time_stay = glom(lengths_of_stay, lambda z: [i for i in z if i["@MinMaxMessageType"] == 'SetMinLOS'], default=[])
-        max_time_stay = glom(lengths_of_stay, lambda z: [i for i in z if i["@MinMaxMessageType"] == 'SetMaxLOS'], default=[])
+        min_time_stay = glom(lengths_of_stay, lambda z: [i for i in z if i["@MinMaxMessageType"] == 'SetMinLOS'],
+                             default=[])
+        max_time_stay = glom(lengths_of_stay, lambda z: [i for i in z if i["@MinMaxMessageType"] == 'SetMaxLOS'],
+                             default=[])
         min_time = min_time_stay.pop() if len(min_time_stay) > 0 else None
         max_time = max_time_stay.pop() if len(max_time_stay) > 0 else None
 
@@ -63,7 +63,7 @@ def read_availability(file_input: dict) -> list[OTAHotelAvailNotifRQ]:
 
         restriction = glom(avail_status_message, 'RestrictionStatus', default=None)
         status = True if restriction["@Status"] == 'Open' else False
-        start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(status_application_control["@End"])
+        start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(
+            status_application_control["@End"])
         availabilities.append(OTAHotelAvailNotifRQ(external_id, start, end, parsed_min_time, parsed_max_time, status))
     return availabilities
-
