@@ -25,24 +25,14 @@ def read_folder(target_folder: str, db_name: str) -> dict:
             # record_counts["rates"] = data_messages.OTA_HotelRateAmountNotifRQ.insert_records(formatted_data, dsn)
             # record_counts["ratemodifications"] = data_messages.RateModifications.insert_records(formatted_data, dsn)
             # record_counts["ratemodifications"] = data_messages.OTA_HotelAvailNotifRQ.insert_records(formatted_data, dsn)
-            # record_counts["taxesandfees"] = data_messages.TaxesAndFees.insert_records(formatted_data, dsn)
-            record_counts["promotions"] = data_messages.Promotions.insert_records(formatted_data, dsn)
+            record_counts["taxesandfees"] = data_messages.TaxesAndFees.insert_records(formatted_data, dsn)
+            #record_counts["promotions"] = data_messages.Promotions.insert_records(formatted_data, dsn)
             # record_counts["extraguestcharges"] = data_messages.ExtraGuestCharges.insert_records(formatted_data, dsn)
         except UnicodeDecodeError:
             print(f'Unable to read {file} as text')
         except ExpatError:
             print(f'Unable to parse {file} into XML')
     return record_counts
-
-
-# Press the green button in the gutter to run the script.
-# def create_db(db_name: str) -> str:
-#     return db_name
-#
-#     with sqlite3.connect(db_name) as conn:
-#         conn.execute(
-#             f"create table if not exists {OTAHotelRateAmountNotifRQ.__name__} (internalId INT, externalId varchar(20), start TEXT, end TEXT, baseAmount DECIMAL(18,6), guestCount int)")
-#     return db_name
 
 
 # async def main():
