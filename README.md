@@ -10,7 +10,7 @@
 - [ ] Read Taxes and Fees from XML file
 - [ ] Load Taxes and Fees into database
 - [X] Read Promotions from XML file
-- [X] Load Promoation into database
+- [X] Load Promotions into database
 
 ### Command line options to calculate rates
 - [ ] Add command line parser
