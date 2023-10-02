@@ -9,8 +9,8 @@
 - [X] Load Availability into database
 - [ ] Read Taxes and Fees from XML file
 - [ ] Load Taxes and Fees into database
-- [ ] Read Promotions from XML file
-- [ ] Load Promoation into database
+- [X] Read Promotions from XML file
+- [X] Load Promoation into database
 
 ### Command line options to calculate rates
 - [ ] Add command line parser
