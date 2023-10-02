@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from glom import glom
 from pydapper import connect
-
 from data_messages import DateRange, LengthOfStay
 
 
