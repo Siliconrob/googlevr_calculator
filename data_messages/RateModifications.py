@@ -99,7 +99,6 @@ def read_rate_modifications(file_input: dict) -> RateModifications:
     checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
     checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
     stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
-    new_modifier = RateModifications(external_id, booking_dates, checkin_dates, checkout_dates,
-                                     Decimal(multiplier["@multiplier"]), stay_requires)
+    new_modifier = RateModifications(external_id, booking_dates, checkin_dates, checkout_dates, Decimal(multiplier["@multiplier"]), stay_requires)
 
     return new_modifier
