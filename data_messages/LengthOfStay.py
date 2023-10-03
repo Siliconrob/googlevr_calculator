@@ -13,6 +13,8 @@ class TimeLengthOfStay:
 
 
 def parse_range(input: dict) -> MinMaxLengthOfStay:
+    if input is None:
+        return None
     parsed = MinMaxLengthOfStay(None, None)
     start = input.get("@min", None)
     if start is not None:
