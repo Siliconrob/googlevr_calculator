@@ -24,12 +24,12 @@ def read_folder(target_folder: str, db_name: str) -> dict:
     for file in files:
         try:
             current_file = Path(os.path.join(target_folder, file))
-            info = FileInfo(file, os.path.getsize(current_file), os.path.getctime(current_file))
+            # info = FileInfo(file, os.path.getsize(current_file), os.path.getctime(current_file))
             formatted_data = xmltodict.parse(current_file.read_text())
             # record_counts["rates"] = data_messages.OTA_HotelRateAmountNotifRQ.insert_records(formatted_data, dsn)
             # record_counts["ratemodifications"] = data_messages.RateModifications.insert_records(formatted_data, dsn)
             # record_counts["ratemodifications"] = data_messages.OTA_HotelAvailNotifRQ.insert_records(formatted_data, dsn)
-            record_counts["taxesandfees"] = data_messages.TaxesAndFees.insert_records(formatted_data, info, dsn)
+            record_counts["taxesandfees"] = data_messages.TaxesAndFees.insert_records(formatted_data, file, dsn)
             #record_counts["promotions"] = data_messages.Promotions.insert_records(formatted_data, dsn)
             # record_counts["extraguestcharges"] = data_messages.ExtraGuestCharges.insert_records(formatted_data, dsn)
         except UnicodeDecodeError:
