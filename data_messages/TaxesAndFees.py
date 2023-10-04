@@ -41,6 +41,7 @@ def load_taxes_fees(taxes_and_fees: dict, file_name: str, file_info: FileInfo.Fi
     new_id = FileInfo.load_file(file_name, db_name)
     taxes_inserted = insert_tax_fee_records(db_name, taxes, 'Tax', new_id)
     fees_inserted = insert_tax_fee_records(db_name, fees, 'Fee', new_id)
+    file_info.records = len(taxes) + len(fees)
     FileInfo.update_file(file_info, db_name)
 
 
