@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from glom import glom
 from pydapper import connect
-from data_messages import DateRange, LengthOfStay, FileInfo
+from data_messages import DateRange, LengthOfStay, FileInfo, LastId
 
 
 @dataclass
@@ -76,8 +76,8 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     "amount": None if record.amount is None else float(record.amount),
                     "parentId": file_id
                 })
-            last_id = commands.query_single(f"select seq from sqlite_sequence WHERE name = ?table_name?",
-                                            param={"table_name": table_prefix})
+            new_id = commands.query_single(f"select seq from sqlite_sequence WHERE name = ?table_name?",
+                                            param={"table_name": table_prefix}, model=LastId.LastId)
 
             if len(record.bookingDates) > 0:
                 rowcounts['bookingDates'] = commands.execute(
@@ -86,7 +86,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": last_id['seq'],
+                        "parentId": new_id.seq,
                     } for dateRange in record.bookingDates]),
             if len(record.checkinDates) > 0:
                 rowcounts['checkinDates'] = commands.execute(
@@ -95,7 +95,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": last_id['seq'],
+                        "parentId": new_id.seq,
                     } for dateRange in record.checkinDates]),
             if len(record.checkoutDates) > 0:
                 rowcounts['checkoutDates'] = commands.execute(
@@ -104,7 +104,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": last_id['seq'],
+                        "parentId": new_id.seq,
                     } for dateRange in record.checkoutDates]),
             if record.lengthOfStay is not None:
                 rowcounts['lengthOfStay'] = commands.execute(
@@ -113,7 +113,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                         "externalId": record.externalId,
                         "min": None if record.lengthOfStay.min is None else record.lengthOfStay.min,
                         "max": None if record.lengthOfStay.max is None else record.lengthOfStay.max,
-                        "parentId": last_id['seq']
+                        "parentId": new_id.seq
                     }),
     return rowcounts
 
