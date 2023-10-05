@@ -1,4 +1,3 @@
-import datetime
 import decimal
 from dataclasses import dataclass
 from decimal import Decimal
@@ -48,25 +47,69 @@ def load_taxes_fees(taxes_and_fees: dict, file_name: str, file_info: FileInfo.Fi
 def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: str, file_id: int):
     rowcounts = {}
     with connect(db_name) as commands:
-        commands.execute(
-            f"create table if not exists {table_prefix} (id INTEGER PRIMARY KEY AUTOINCREMENT, externalId varchar(20), calcType varchar(30), basis varchar(30), period varchar(30), currency varchar(5), amount DECIMAL(18,6), parentId int, FOREIGN KEY (parentId) REFERENCES FileInfo(id) ON UPDATE CASCADE ON DELETE CASCADE)")
-        commands.execute(f"delete from {table_prefix} where parentId != ?fileId?", param={"fileId": file_id})
-        commands.execute(
-            f"create table if not exists {table_prefix}_BookingDates (externalId varchar(20), start TEXT, end TEXT, parentId int, FOREIGN KEY (parentId) REFERENCES {table_prefix}(id) ON UPDATE CASCADE ON DELETE CASCADE, PRIMARY KEY(externalId, start, end, parentId))")
+        commands.execute(f"""
+            create table if not exists {table_prefix} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            externalId varchar(20),
+            calcType varchar(30),
+            basis varchar(30),
+            period varchar(30),
+            currency varchar(5),
+            amount DECIMAL(18,6),
+            fileId int,
+            FOREIGN KEY (fileId) REFERENCES FileInfo(id) ON DELETE CASCADE)
+            """)
+        commands.execute(f"""
+            delete from {table_prefix}
+            where fileId != ?fileId?
+            """,
+            param={"fileId": file_id})
+        commands.execute(f"""
+            create table if not exists {table_prefix}_BookingDates
+            (externalId varchar(20),
+            start TEXT,
+            end TEXT,
+            fileId int,
+            FOREIGN KEY (fileId) REFERENCES FileInfo(id) ON DELETE CASCADE, 
+            PRIMARY KEY(externalId, start, end, fileId))
+            """)
         commands.execute(f"delete from {table_prefix}_BookingDates")
-        commands.execute(
-            f"create table if not exists {table_prefix}_CheckinDates (externalId varchar(20), start TEXT, end TEXT, parentId int, FOREIGN KEY (parentId) REFERENCES {table_prefix}(id) ON UPDATE CASCADE ON DELETE CASCADE, PRIMARY KEY(externalId, start, end, parentId))")
+        commands.execute(f"""
+            create table if not exists {table_prefix}_CheckinDates
+            (externalId varchar(20),
+            start TEXT,
+            end TEXT,
+            fileId int,
+            FOREIGN KEY (fileId) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            PRIMARY KEY(externalId, start, end, fileId))
+            """)
         commands.execute(f"delete from {table_prefix}_CheckinDates")
-        commands.execute(
-            f"create table if not exists {table_prefix}_CheckoutDates (externalId varchar(20), start TEXT, end TEXT, parentId int, FOREIGN KEY (parentId) REFERENCES {table_prefix}(id) ON UPDATE CASCADE ON DELETE CASCADE, PRIMARY KEY(externalId, start, end, parentId))")
+        commands.execute(f"""
+            create table if not exists {table_prefix}_CheckoutDates
+            (externalId varchar(20),
+            start TEXT,
+            end TEXT,
+            fileId int,
+            FOREIGN KEY (fileId) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            PRIMARY KEY(externalId, start, end, fileId))
+            """)
         commands.execute(f"delete from {table_prefix}_CheckoutDates")
-        commands.execute(
-            f"create table if not exists {table_prefix}_LengthOfStay (externalId varchar(20), min int, max int, parentId int, FOREIGN KEY (parentId) REFERENCES {table_prefix}(id) ON UPDATE CASCADE ON DELETE CASCADE, PRIMARY KEY(externalId, parentId))")
+        commands.execute(f"""
+            create table if not exists {table_prefix}_LengthOfStay
+            (externalId varchar(20),
+            min int,
+            max int,
+            fileId int,
+            FOREIGN KEY (fileId) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            PRIMARY KEY(externalId, fileId))
+            """)
         commands.execute(f"delete from {table_prefix}_LengthOfStay")
 
         for record in records:
-            rowcounts[table_prefix] = commands.execute(
-                f"INSERT INTO {table_prefix} (externalId, calcType, basis, period, currency, amount, parentId) values (?externalId?, ?calcType?, ?basis?, ?period?, ?currency?, ?amount?, ?parentId?)",
+            rowcounts[table_prefix] = commands.execute(f"""
+                INSERT INTO {table_prefix} (externalId, calcType, basis, period, currency, amount, fileId)
+                values (?externalId?, ?calcType?, ?basis?, ?period?, ?currency?, ?amount?, ?fileId?)
+                """,
                 param={
                     "externalId": record.externalId,
                     "calcType": record.type,
@@ -74,46 +117,60 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     "period": record.period,
                     "currency": record.currency,
                     "amount": None if record.amount is None else float(record.amount),
-                    "parentId": file_id
+                    "fileId": file_id
                 })
-            new_id = commands.query_single(f"select seq from sqlite_sequence WHERE name = ?table_name?",
-                                            param={"table_name": table_prefix}, model=LastId.LastId)
 
             if len(record.bookingDates) > 0:
                 rowcounts['bookingDates'] = commands.execute(
-                    f"INSERT INTO {table_prefix}_BookingDates (externalId, start, end, parentId) values (?externalId?, ?start?, ?end?, ?parentId?) ON CONFLICT (externalId, start, end, parentId) DO NOTHING",
+                    f"""
+                        INSERT INTO {table_prefix}_BookingDates (externalId, start, end, fileId)
+                        values (?externalId?, ?start?, ?end?, ?fileId?)
+                        ON CONFLICT (externalId, start, end, fileId) DO NOTHING
+                        """,
                     param=[{
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": new_id.seq,
+                        "fileId": file_id,
                     } for dateRange in record.bookingDates]),
             if len(record.checkinDates) > 0:
                 rowcounts['checkinDates'] = commands.execute(
-                    f"INSERT INTO {table_prefix}_CheckinDates (externalId, start, end, parentId) values (?externalId?, ?start?, ?end?, ?parentId?) ON CONFLICT (externalId, start, end, parentId) DO NOTHING",
+                    f"""
+                        INSERT INTO {table_prefix}_CheckinDates (externalId, start, end, fileId)
+                        values (?externalId?, ?start?, ?end?, ?fileId?)
+                        ON CONFLICT (externalId, start, end, fileId) DO NOTHING
+                        """,
                     param=[{
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": new_id.seq,
+                        "fileId": file_id,
                     } for dateRange in record.checkinDates]),
             if len(record.checkoutDates) > 0:
                 rowcounts['checkoutDates'] = commands.execute(
-                    f"INSERT INTO {table_prefix}_CheckoutDates (externalId, start, end, parentId) values (?externalId?, ?start?, ?end?, ?parentId?) ON CONFLICT (externalId, start, end, parentId) DO NOTHING",
+                    f"""
+                        INSERT INTO {table_prefix}_CheckoutDates (externalId, start, end, fileId)
+                        values (?externalId?, ?start?, ?end?, ?fileId?)
+                        ON CONFLICT (externalId, start, end, fileId) DO NOTHING
+                        """,
                     param=[{
                         "externalId": record.externalId,
                         "start": None if dateRange.start is None else dateRange.start.isoformat(),
                         "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                        "parentId": new_id.seq,
+                        "fileId": file_id,
                     } for dateRange in record.checkoutDates]),
             if record.lengthOfStay is not None:
                 rowcounts['lengthOfStay'] = commands.execute(
-                    f"INSERT INTO {table_prefix}_LengthOfStay (externalId, min, max, parentId) values (?externalId?, ?min?, ?max?, ?parentId?) ON CONFLICT (externalId, parentId) DO NOTHING",
+                    f"""
+                        INSERT INTO {table_prefix}_LengthOfStay (externalId, min, max, fileId)
+                        values (?externalId?, ?min?, ?max?, ?fileId?)
+                        ON CONFLICT (externalId, fileId) DO NOTHING
+                        """,
                     param={
                         "externalId": record.externalId,
                         "min": None if record.lengthOfStay.min is None else record.lengthOfStay.min,
                         "max": None if record.lengthOfStay.max is None else record.lengthOfStay.max,
-                        "parentId": new_id.seq
+                        "fileId": file_id
                     }),
     return rowcounts
 
