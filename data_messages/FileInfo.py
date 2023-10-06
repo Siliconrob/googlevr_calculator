@@ -57,7 +57,7 @@ def update_file(info: FileInfo, db_name: str):
                  "timestamp": None if info.timestamp is None else info.timestamp.isoformat(),
                  "records": info.records
              })
-        return commands.query_first_default("""
+        return commands.query_first_or_default("""
             SELECT *
             FROM FileInfo
             WHERE file_name = ?file_name?

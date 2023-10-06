@@ -36,7 +36,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 multiplier DECIMAL(18,6),
                 file_id int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                
-                PRIMARY KEY(external_id, multiplier)
+                PRIMARY KEY(external_id, file_id, multiplier)
             )""")
         commands.execute(f"""
             delete from RateModifications
@@ -129,7 +129,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                     "start": date_range.start.isoformat(),
                     "end": date_range.end.isoformat()
                 } for date_range in rate_modifier.booking_dates]),
-        if len(rate_modifier.checkinDates) > 0:
+        if len(rate_modifier.checkin_dates) > 0:
             rowcounts['checkinDates'] = commands.execute(f"""
                 INSERT INTO RateModifications_CheckinDates
                 (
@@ -153,7 +153,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                     "start": dateRange.start.isoformat(),
                     "end": dateRange.end.isoformat()
                 } for dateRange in rate_modifier.checkin_dates]),
-        if len(rate_modifier.checkoutDates) > 0:
+        if len(rate_modifier.checkout_dates) > 0:
             rowcounts['checkoutDates'] = commands.execute(f"""
                 INSERT INTO RateModifications_CheckoutDates
                 (
@@ -176,7 +176,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                     "start": dateRange.start.isoformat(),
                     "end": dateRange.end.isoformat()
                 } for dateRange in rate_modifier.checkout_dates]),
-        if rate_modifier.lengthOfStay is not None:
+        if rate_modifier.length_of_stay is not None:
             rowcounts['lengthOfStay'] = commands.execute(f"""
                 INSERT INTO RateModifications_LengthOfStay
                 (

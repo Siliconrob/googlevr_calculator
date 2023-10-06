@@ -2,8 +2,7 @@ import decimal
 from dataclasses import dataclass
 from glom import glom
 from pydapper import connect
-from data_messages import DateRange, LengthOfStay, DataHandlers
-from data_messages.FileInfo import FileInfo
+from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
 
 
 @dataclass
@@ -21,12 +20,12 @@ class Promotion:
     stacking: str
 
 
-def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo:
+def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     promotions, file_info = read_promotions(file_args)
     return load_promotions(promotions, file_info, file_args.dsn)
 
 
-def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: str) -> FileInfo:
+def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, db_name: str) -> FileInfo.FileInfo:
     if len(promotions) == 0:
         return [], None
 
@@ -41,8 +40,9 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
             fixed_amount_per_night DECIMAL(18,6),
             fixed_price DECIMAL(18,6),
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),              
-            PRIMARY KEY(external_id, promotion_id, file_id))""")
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,              
+            PRIMARY KEY(external_id, promotion_id, file_id))
+            """)
         commands.execute(f"""
             delete from Promotion
             where file_id != ?file_id?
@@ -55,7 +55,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
             PRIMARY KEY(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
@@ -65,7 +65,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
             PRIMARY KEY(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
@@ -75,7 +75,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
             PRIMARY KEY(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
@@ -85,7 +85,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
             min int,
             max int,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),             
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,             
             PRIMARY KEY(external_id, promotion_id, file_id))""")
 
         rowcount = {}
@@ -145,7 +145,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
                     ?start?,
                     ?end?
                 )
-                ON CONFLICT (external_id, promotion_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
                     param=[{
@@ -172,7 +172,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
                     ?start?,
                     ?end?
                 )
-                ON CONFLICT (external_id, promotion_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
                     param=[{
@@ -199,7 +199,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
                     ?start?,
                     ?end?
                     )
-                ON CONFLICT (external_id, promotion_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
                     param=[{
@@ -225,7 +225,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
                     ?file_id?,
                     ?min?,
                     ?max?
-                ) ON CONFLICT (external_id, promotion_id)
+                ) ON CONFLICT (external_id, promotion_id, file_id)
                 DO NOTHING
                 """,
                     param={
@@ -236,11 +236,11 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: s
                         "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
                     }),
 
-        file_info.records = len(promotions)
-        return FileInfo.update_file(file_info, db_name)
+    file_info.records = len(promotions)
+    return FileInfo.update_file(file_info, db_name)
 
 
-def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], FileInfo):
+def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], FileInfo.FileInfo):
     if (len(file_args.formatted_data.keys()) > 1
             or glom(file_args.formatted_data, 'Promotions', default=None) is None):
         return [], None

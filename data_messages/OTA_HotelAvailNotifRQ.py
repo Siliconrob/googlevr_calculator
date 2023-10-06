@@ -82,8 +82,8 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
                 "available": availability.available,
             } for availability in availabilities],
         )
-        file_info.records = len(availabilities)
-        return FileInfo.update_file(file_info, db_name)
+    file_info.records = len(availabilities)
+    return FileInfo.update_file(file_info, db_name)
 
 
 def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAvailNotifRQ], FileInfo.FileInfo):
