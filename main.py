@@ -43,11 +43,11 @@ def read_file_contents(input_file: str, input_folder: str) -> dict:
 
 def read_file_into_db(file_args: DataHandlers.DataFileArgs):
     record_counts = DataHandlers.RecordCounts()
-    record_counts.rates = data_messages.OTA_HotelRateAmountNotifRQ.insert_records(file_args)
-    record_counts.rate_modifications = data_messages.RateModifications.insert_records(file_args)
-    record_counts.hotel_availability = data_messages.OTA_HotelAvailNotifRQ.insert_records(file_args)
+    # record_counts.rates = data_messages.OTA_HotelRateAmountNotifRQ.insert_records(file_args)
+    # record_counts.rate_modifications = data_messages.RateModifications.insert_records(file_args)
+    # record_counts.hotel_availability = data_messages.OTA_HotelAvailNotifRQ.insert_records(file_args)
     record_counts.taxes_and_fees = data_messages.TaxesAndFees.insert_records(file_args)
-    record_counts.promotions = data_messages.Promotions.insert_records(file_args)
+    # record_counts.promotions = data_messages.Promotions.insert_records(file_args)
     # record_counts.extra_guest_charges = data_messages.ExtraGuestCharges.insert_records(file_args)
     return record_counts
 

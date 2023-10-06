@@ -4,6 +4,7 @@ from decimal import Decimal
 from glom import glom
 from pydapper import connect
 from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
+from data_messages.LastId import LastId
 
 
 @dataclass
@@ -69,40 +70,44 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE, 
-            PRIMARY KEY(external_id, start, end, file_id))
+            parent_id int,            
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,
+            PRIMARY KEY(external_id, start, end, file_id, parent_id))
             """)
-        commands.execute(f"delete from {table_prefix}_BookingDates")
         commands.execute(f"""
             create table if not exists {table_prefix}_CheckinDates
             (external_id varchar(20),
             start TEXT,
             end TEXT,
             file_id int,
+            parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
-            PRIMARY KEY(external_id, start, end, file_id))
+            FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,            
+            PRIMARY KEY(external_id, start, end, file_id, parent_id))
             """)
-        commands.execute(f"delete from {table_prefix}_CheckinDates")
         commands.execute(f"""
             create table if not exists {table_prefix}_CheckoutDates
             (external_id varchar(20),
             start TEXT,
             end TEXT,
             file_id int,
+            parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
-            PRIMARY KEY(external_id, start, end, file_id))
+            FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,             
+            PRIMARY KEY(external_id, start, end, file_id, parent_id))
             """)
-        commands.execute(f"delete from {table_prefix}_CheckoutDates")
         commands.execute(f"""
             create table if not exists {table_prefix}_LengthOfStay
             (external_id varchar(20),
             min int,
             max int,
             file_id int,
+            parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
-            PRIMARY KEY(external_id, file_id))
+            FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,              
+            PRIMARY KEY(external_id, file_id, parent_id))
             """)
-        commands.execute(f"delete from {table_prefix}_LengthOfStay")
 
         for record in records:
             rowcounts[table_prefix] = commands.execute(f"""
@@ -119,57 +124,68 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     "file_id": file_id
                 })
 
+            last_id = commands.query_first_or_default(f"""
+                select seq
+                from sqlite_sequence
+                WHERE name = ?table_name?
+                """,
+                param={"table_name": table_prefix}, model=LastId, default=LastId())
+
             if len(record.booking_dates) > 0:
                 rowcounts['bookingDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_BookingDates (external_id, start, end, file_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?)
-                        ON CONFLICT (external_id, start, end, file_id) DO NOTHING
+                        INSERT INTO {table_prefix}_BookingDates (external_id, start, end, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
                         "file_id": file_id,
+                        "parent_id": last_id.seq
                     } for date_range in record.booking_dates]),
             if len(record.checkin_dates) > 0:
                 rowcounts['checkinDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_CheckinDates (external_id, start, end, file_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?)
-                        ON CONFLICT (external_id, start, end, file_id) DO NOTHING
+                        INSERT INTO {table_prefix}_CheckinDates (external_id, start, end, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
                         "file_id": file_id,
+                        "parent_id": last_id.seq
                     } for date_range in record.checkin_dates]),
             if len(record.checkout_dates) > 0:
                 rowcounts['checkoutDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_CheckoutDates (external_id, start, end, file_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?)
-                        ON CONFLICT (external_id, start, end, file_id) DO NOTHING
+                        INSERT INTO {table_prefix}_CheckoutDates (external_id, start, end, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
                         "file_id": file_id,
+                        "parent_id": last_id.seq
                     } for date_range in record.checkout_dates]),
             if record.length_of_stay is not None:
                 rowcounts['lengthOfStay'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_LengthOfStay (external_id, min, max, file_id)
-                        values (?external_id?, ?min?, ?max?, ?file_id?)
-                        ON CONFLICT (external_id, file_id) DO NOTHING
+                        INSERT INTO {table_prefix}_LengthOfStay (external_id, min, max, file_id, parent_id)
+                        values (?external_id?, ?min?, ?max?, ?file_id?, ?parent_id?)
+                        ON CONFLICT (external_id, file_id, parent_id) DO NOTHING
                         """,
                     param={
                         "external_id": record.external_id,
                         "min": None if record.length_of_stay.min is None else record.length_of_stay.min,
                         "max": None if record.length_of_stay.max is None else record.length_of_stay.max,
-                        "file_id": file_id
+                        "file_id": file_id,
+                        "parent_id": last_id.seq
                     }),
     return rowcounts
 
