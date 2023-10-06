@@ -2,17 +2,18 @@ import decimal
 from dataclasses import dataclass
 from glom import glom
 from pydapper import connect
-from data_messages import DateRange, LengthOfStay
+from data_messages import DateRange, LengthOfStay, DataHandlers
+from data_messages.FileInfo import FileInfo
 
 
 @dataclass
 class Promotion:
-    externalId: str
+    external_id: str
     id: str
-    bookingDates: list[DateRange]
-    checkinDates: list[DateRange]
-    checkoutDates: list[DateRange]
-    lengthOfStay: LengthOfStay
+    booking_dates: list[DateRange]
+    checkin_dates: list[DateRange]
+    checkout_dates: list[DateRange]
+    length_of_stay: LengthOfStay
     percentage: decimal
     fixed_amount: decimal
     fixed_amount_per_night: decimal
@@ -20,92 +21,242 @@ class Promotion:
     stacking: str
 
 
-def insert_records(file_input: dict, db_name: str) -> int:
-    return load_promotions(read_promotions(file_input), db_name)
+def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo:
+    promotions, file_info = read_promotions(file_args)
+    return load_promotions(promotions, file_info, file_args.dsn)
 
 
-def load_promotions(promotions: list[Promotion], db_name: str) -> int:
+def load_promotions(promotions: list[Promotion], file_info: FileInfo, db_name: str) -> FileInfo:
     if len(promotions) == 0:
-        return
+        return [], None
 
+    new_id = FileInfo.load_file(file_info.file_name, db_name)
     with connect(db_name) as commands:
-        commands.execute(
-            f"create table if not exists Promotion_BookingDates (externalId varchar(20), promotionId varchar(100), start TEXT, end TEXT, PRIMARY KEY(externalId, promotionId, start, end))")
-        commands.execute(
-            f"create table if not exists Promotion_CheckinDates (externalId varchar(20), promotionId varchar(100), start TEXT, end TEXT, PRIMARY KEY(externalId, promotionId, start, end))")
-        commands.execute(
-            f"create table if not exists Promotion_CheckoutDates (externalId varchar(20), promotionId varchar(100), start TEXT, end TEXT, PRIMARY KEY(externalId, promotionId, start, end))")
-        commands.execute(
-            f"create table if not exists Promotion_LengthOfStay (externalId varchar(20), promotionId varchar(100), min int, max int, PRIMARY KEY(externalId, promotionId))")
-        commands.execute(
-            f"create table if not exists Promotion (externalId varchar(20), promotionId varchar(100), percentage DECIMAL(18,6), fixedAmount DECIMAL(18,6), fixedAmountPerNight DECIMAL(18,6), fixedPrice DECIMAL(18,6), PRIMARY KEY(externalId, promotionId))")
+        commands.execute(f"""
+            create table if not exists Promotion (
+            external_id varchar(20),
+            promotion_id varchar(100),
+            percentage DECIMAL(18,6),
+            fixed_amount DECIMAL(18,6),
+            fixed_amount_per_night DECIMAL(18,6),
+            fixed_price DECIMAL(18,6),
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),              
+            PRIMARY KEY(external_id, promotion_id, file_id))""")
+        commands.execute(f"""
+            delete from Promotion
+            where file_id != ?file_id?
+            """,
+            param={"file_id": new_id})
+        commands.execute(f"""
+            create table if not exists Promotion_BookingDates (
+            external_id varchar(20),
+            promotion_id varchar(100),
+            start TEXT,
+            end TEXT,
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            """)
+        commands.execute(f"""
+            create table if not exists Promotion_CheckinDates (
+            external_id varchar(20),
+            promotion_id varchar(100),
+            start TEXT,
+            end TEXT,
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            """)
+        commands.execute(f"""
+            create table if not exists Promotion_CheckoutDates (
+            external_id varchar(20),
+            promotion_id varchar(100),
+            start TEXT,
+            end TEXT,
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),            
+            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            """)
+        commands.execute(f"""
+            create table if not exists Promotion_LengthOfStay (
+            external_id varchar(20),
+            promotion_id varchar(100),
+            min int,
+            max int,
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),             
+            PRIMARY KEY(external_id, promotion_id, file_id))""")
 
-        rowcounts = {}
-
+        rowcount = {}
         for promotion in promotions:
-            if len(promotion.bookingDates) > 0:
-                rowcounts['bookingDates'] = commands.execute(
-                    f"INSERT INTO Promotion_BookingDates (externalId, promotionId, start, end) values (?externalId?, ?promotionId?, ?start?, ?end?) ON CONFLICT (externalId, promotionId, start, end) DO NOTHING",
+            rowcount['promotion'] = commands.execute(
+                f"""
+                INSERT INTO Promotion (
+                    external_id,
+                    promotion_id,
+                    file_id,
+                    percentage,
+                    fixed_amount,
+                    fixed_amount_per_night,
+                    fixed_price
+                )
+                values (
+                    ?external_id?,
+                    ?promotion_id?,
+                    ?file_id?,
+                    ?percentage?,
+                    ?fixed_amount?,
+                    ?fixed_amount_per_night?,
+                    ?fixed_price?
+                )
+                ON CONFLICT (external_id, promotion_id, file_id)
+                DO UPDATE
+                    SET percentage = ?percentage?,
+                    fixed_amount = ?fixed_amount?,
+                    fixed_amount_per_night = ?fixed_amount_per_night?,
+                    fixed_price = ?fixed_price?
+                    """,
+                param={
+                    "external_id": promotion.external_id,
+                    "promotion_id": promotion.id,
+                    "file_id": new_id,
+                    "percentage": None if promotion.percentage is None else float(promotion.percentage),
+                    "fixed_amount": None if promotion.fixed_amount is None else float(promotion.fixed_amount),
+                    "fixed_amount_per_night": None if promotion.fixed_amount_per_night is None else float(promotion.fixed_amount_per_night),
+                    "fixed_price": None if promotion.fixed_price is None else float(promotion.fixed_price),
+                })
+
+            if len(promotion.booking_dates) > 0:
+                rowcount['booking_dates'] = commands.execute(f"""
+                INSERT INTO Promotion_BookingDates
+                (
+                    external_id,
+                    promotion_id,
+                    file_id,
+                    start,
+                    end
+                )
+                values
+                (
+                    ?external_id?,
+                    ?promotion_id?,
+                    ?file_id?,
+                    ?start?,
+                    ?end?
+                )
+                ON CONFLICT (external_id, promotion_id, start, end)
+                DO NOTHING
+                """,
                     param=[{
-                        "externalId": promotion.externalId,
-                        "promotionId": promotion.id,
-                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                        "end": None if dateRange.end is None else dateRange.end.isoformat()
-                    } for dateRange in promotion.bookingDates]),
-            if len(promotion.checkinDates) > 0:
-                rowcounts['checkinDates'] = commands.execute(
-                    f"INSERT INTO Promotion_CheckinDates (externalId, promotionId, start, end) values (?externalId?, ?promotionId?, ?start?, ?end?) ON CONFLICT (externalId, promotionId, start, end) DO NOTHING",
+                        "external_id": promotion.external_id,
+                        "promotion_id": promotion.id,
+                        "file_id": new_id,
+                        "start": None if date_range.start is None else date_range.start.isoformat(),
+                        "end": None if date_range.end is None else date_range.end.isoformat()
+                    } for date_range in promotion.booking_dates]),
+            if len(promotion.checkin_dates) > 0:
+                rowcount['checkin_dates'] = commands.execute(f"""
+                INSERT INTO Promotion_CheckinDates
+                (
+                    external_id,
+                    promotion_id,
+                    file_id,
+                    start,
+                    end
+                )
+                values (
+                    ?external_id?,
+                    ?promotion_id?,
+                    ?file_id?,
+                    ?start?,
+                    ?end?
+                )
+                ON CONFLICT (external_id, promotion_id, start, end)
+                DO NOTHING
+                """,
                     param=[{
-                        "externalId": promotion.externalId,
-                        "promotionId": promotion.id,
-                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                        "end": None if dateRange.end is None else dateRange.end.isoformat()
-                    } for dateRange in promotion.checkinDates]),
-            if len(promotion.checkoutDates) > 0:
-                rowcounts['checkoutDates'] = commands.execute(
-                    f"INSERT INTO Promotion_CheckoutDates (externalId, promotionId, start, end) values (?externalId?, ?promotionId?, ?start?, ?end?) ON CONFLICT (externalId, promotionId, start, end) DO NOTHING",
+                        "external_id": promotion.external_id,
+                        "promotion_id": promotion.id,
+                        "file_id": new_id,
+                        "start": None if date_range.start is None else date_range.start.isoformat(),
+                        "end": None if date_range.end is None else date_range.end.isoformat()
+                    } for date_range in promotion.checkin_dates]),
+            if len(promotion.checkout_dates) > 0:
+                rowcount['checkout_dates'] = commands.execute(f"""
+                INSERT INTO Promotion_CheckoutDates
+                (
+                    external_id,
+                    promotion_id,
+                    file_id,
+                    start,
+                    end
+                )
+                values (
+                    ?external_id?,
+                    ?promotion_id?,
+                    ?file_id?,
+                    ?start?,
+                    ?end?
+                    )
+                ON CONFLICT (external_id, promotion_id, start, end)
+                DO NOTHING
+                """,
                     param=[{
-                        "externalId": promotion.externalId,
-                        "promotionId": promotion.id,
-                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                        "end": None if dateRange.end is None else dateRange.end.isoformat()
-                    } for dateRange in promotion.checkoutDates]),
-            if promotion.lengthOfStay is not None:
-                rowcounts['lengthOfStay'] = commands.execute(
-                    f"INSERT INTO Promotion_LengthOfStay (externalId, promotionId, min, max) values (?externalId?, ?promotionId?, ?min?, ?max?) ON CONFLICT (externalId, promotionId) DO NOTHING",
+                        "external_id": promotion.external_id,
+                        "promotion_id": promotion.id,
+                        "file_id": new_id,
+                        "start": None if date_range.start is None else date_range.start.isoformat(),
+                        "end": None if date_range.end is None else date_range.end.isoformat()
+                    } for date_range in promotion.checkout_dates]),
+            if promotion.length_of_stay is not None:
+                rowcount['length_of_stay'] = commands.execute(f"""
+                INSERT INTO Promotion_LengthOfStay
+                (
+                    external_id,
+                    promotion_id,
+                    file_id,
+                    min,
+                    max
+                )
+                values (
+                    ?external_id?,
+                    ?promotion_id?,
+                    ?file_id?,
+                    ?min?,
+                    ?max?
+                ) ON CONFLICT (external_id, promotion_id)
+                DO NOTHING
+                """,
                     param={
-                        "externalId": promotion.externalId,
-                        "promotionId": promotion.id,
-                        "min": None if promotion.lengthOfStay.min is None else promotion.lengthOfStay.min,
-                        "max": None if promotion.lengthOfStay.max is None else promotion.lengthOfStay.max
+                        "external_id": promotion.external_id,
+                        "promotion_id": promotion.id,
+                        "file_id": new_id,
+                        "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
+                        "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
                     }),
 
-            rowcounts['promotion'] = commands.execute(
-                f"INSERT INTO Promotion (externalId, promotionId, percentage, fixedAmount, fixedAmountPerNight, fixedPrice) values (?externalId?, ?promotionId?, ?percentage?, ?fixedAmount?, ?fixedAmountPerNight?, ?fixedPrice?) ON CONFLICT (externalId, promotionId)  DO UPDATE SET percentage = ?percentage?, fixedAmount = ?fixedAmount?, fixedAmountPerNight = ?fixedAmountPerNight?, fixedPrice = ?fixedPrice?",
-                param={
-                    "externalId": promotion.externalId,
-                    "promotionId": promotion.id,
-                    "percentage": None if promotion.percentage is None else float(promotion.percentage),
-                    "fixedAmount": None if promotion.fixed_amount is None else float(promotion.fixed_amount),
-                    "fixedAmountPerNight": None if promotion.fixed_amount_per_night is None else float(promotion.fixed_amount_per_night),
-                    "fixedPrice": None if promotion.fixed_price is None else float(promotion.fixed_price),
-                })
-        return rowcounts
+        file_info.records = len(promotions)
+        return FileInfo.update_file(file_info, db_name)
 
-def read_promotions(file_input: dict) -> list[Promotion]:
-    if len(file_input.keys()) > 1 or glom(file_input, 'Promotions', default=None) is None:
-        return []
 
-    external_id = glom(file_input, 'Promotions.HotelPromotions.@hotel_id')
+def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], FileInfo):
+    if (len(file_args.formatted_data.keys()) > 1
+            or glom(file_args.formatted_data, 'Promotions', default=None) is None):
+        return [], None
+
+    results = FileInfo.FileInfo(file_args.file_name)
+    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'Promotions.@timestamp'))
+    results.external_id = glom(file_args.formatted_data, 'Promotions.HotelPromotions.@hotel_id')
     promotions = []
-    for promotion in glom(file_input, '**.Promotion').pop():
+    for promotion in glom(file_args.formatted_data, '**.Promotion').pop():
         discount = glom(promotion, 'Discount', default=None)
         if discount is None:
             continue
         stacks = glom(promotion, 'Stacking')
         stacking_type = stacks.get("@type") if stacks is not None else None
 
-        promotions.append(Promotion(external_id,
+        promotions.append(Promotion(results.external_id,
                                     promotion.get("@id"),
                                     DateRange.parse_ranges(glom(promotion, 'BookingDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckinDates.DateRange', default=[])),
@@ -116,4 +267,4 @@ def read_promotions(file_input: dict) -> list[Promotion]:
                                     discount.get("@fixed_amount_per_night"),
                                     discount.get("@fixed_price"),
                                     stacking_type))
-    return promotions
+    return promotions, results

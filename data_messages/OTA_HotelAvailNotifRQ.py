@@ -3,50 +3,99 @@ from dataclasses import dataclass
 import pendulum
 from glom import glom
 from pydapper import connect
+from data_messages import FileInfo, DataHandlers
 
 
 @dataclass
 class OTAHotelAvailNotifRQ:
-    externalId: str
+    external_id: str
     start: datetime.date
     end: datetime.date
-    minLengthOfStay: int
-    maxLengthOfStay: int
+    min_length_of_stay: int
+    max_length_of_stay: int
     available: bool
 
 
-def insert_records(file_input: dict, db_name: str) -> int:
-    return load_availability(read_availability(file_input), db_name)
+def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    availabilities, file_info = read_availability(file_args)
+    return load_availability(availabilities, file_info, file_args.dsn)
 
 
-def load_availability(availabilities: list[OTAHotelAvailNotifRQ], db_name: str) -> int:
+def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
+                      file_info: FileInfo.FileInfo,
+                      db_name: str) -> FileInfo.FileInfo:
     if len(availabilities) == 0:
-        return
+        return None
 
+    new_id = FileInfo.load_file(file_info.file_name, db_name)
     with connect(db_name) as commands:
-        commands.execute(
-            f"create table if not exists OTAHotelAvailNotifRQ (externalId varchar(20), start TEXT, end TEXT, minLengthOfStay int, maxLengthOfStay int, available bool, PRIMARY KEY(externalId, start, end))")
-        rowcount = commands.execute(
-            f"INSERT INTO OTAHotelAvailNotifRQ (externalId, start, end, minLengthOfStay, maxLengthOfStay, available) values (?externalId?, ?start?, ?end?, ?minLengthOfStay?, ?maxLengthOfStay?, ?available?) ON CONFLICT (externalId, start, end) DO UPDATE SET minLengthOfStay = ?minLengthOfStay?, maxLengthOfStay = ?maxLengthOfStay?, available = ?available?",
+        commands.execute(f"""
+        create table if not exists OTAHotelAvailNotifRQ (
+            external_id varchar(20),            
+            start TEXT,
+            end TEXT,
+            min_length_of_stay int,
+            max_length_of_stay int,
+            available bool,
+            file_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),
+            PRIMARY KEY(external_id, file_id, start, end))
+            """)
+        commands.execute(f"""
+            delete from OTAHotelAvailNotifRQ
+            where file_id != ?file_id?
+            """,
+            param={"file_id": new_id})
+        rowcount = commands.execute(f"""
+        INSERT INTO OTAHotelAvailNotifRQ
+        (
+            external_id,
+            file_id,
+            start,
+            end,
+            min_length_of_stay,
+            max_length_of_stay,
+            available
+        )
+        values
+        (
+            ?external_id?,
+            ?file_id?,
+            ?start?,
+            ?end?,
+            ?min_length_of_stay?,
+            ?max_length_of_stay?,
+            ?available?
+        )
+        ON CONFLICT (external_id, file_id, start, end)
+        DO UPDATE SET min_length_of_stay = ?min_length_of_stay?,
+            max_length_of_stay = ?max_length_of_stay?,
+            available = ?available?
+            """,
             param=[{
-                "externalId": availability.externalId,
+                "external_id": availability.external_id,
+                "file_id": new_id,
                 "start": availability.start.isoformat(),
                 "end": availability.end.isoformat(),
-                "minLengthOfStay": availability.minLengthOfStay,
-                "maxLengthOfStay": availability.maxLengthOfStay,
+                "min_length_of_stay": availability.min_length_of_stay,
+                "max_length_of_stay": availability.max_length_of_stay,
                 "available": availability.available,
             } for availability in availabilities],
         )
-        return rowcount
+        file_info.records = len(availabilities)
+        return FileInfo.update_file(file_info, db_name)
 
 
-def read_availability(file_input: dict) -> list[OTAHotelAvailNotifRQ]:
-    if len(file_input.keys()) > 1 or glom(file_input, 'OTA_HotelAvailNotifRQ', default=None) is None:
-        return []
+def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAvailNotifRQ], FileInfo.FileInfo):
+    if (len(file_args.formatted_data.keys()) > 1
+            or glom(file_args.formatted_data, 'OTA_HotelAvailNotifRQ', default=None) is None):
+        return [], None
 
-    external_id = glom(file_input, 'OTA_HotelAvailNotifRQ.AvailStatusMessages.@HotelCode')
+    results = FileInfo.FileInfo(file_args.file_name)
+    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'OTA_HotelAvailNotifRQ.@TimeStamp'))
+    results.external_id = glom(file_args.formatted_data, 'OTA_HotelAvailNotifRQ.AvailStatusMessages.@HotelCode')
     availabilities = []
-    for avail_status_message in glom(file_input, '**.AvailStatusMessage').pop():
+    for avail_status_message in glom(file_args.formatted_data, '**.AvailStatusMessage').pop():
         status_application_control = glom(avail_status_message, 'StatusApplicationControl', default=None)
         if status_application_control is None:
             continue
@@ -63,7 +112,12 @@ def read_availability(file_input: dict) -> list[OTAHotelAvailNotifRQ]:
 
         restriction = glom(avail_status_message, 'RestrictionStatus', default=None)
         status = True if restriction["@Status"] == 'Open' else False
-        start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(
-            status_application_control["@End"])
-        availabilities.append(OTAHotelAvailNotifRQ(external_id, start, end, parsed_min_time, parsed_max_time, status))
-    return availabilities
+        start, end = (pendulum.parse(status_application_control["@Start"]),
+                      pendulum.parse(status_application_control["@End"]))
+        availabilities.append(OTAHotelAvailNotifRQ(results.external_id,
+                                                   start,
+                                                   end,
+                                                   parsed_min_time,
+                                                   parsed_max_time,
+                                                   status))
+    return availabilities, results
