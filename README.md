@@ -11,8 +11,11 @@
 - [X] Load Taxes and Fees into database
 - [X] Read Promotions from XML file
 - [X] Load Promotions into database
+- [ ] Read Extra Guests from XML file
+- [ ] Load Extra Guests into database
+
 
 ### Command line options to calculate rates
-- [ ] Add command line parser
 - [X] Parse and add files data into sqlite
+- [ ] Add command line parser
 - [ ] Compute a feed price for specified dates
