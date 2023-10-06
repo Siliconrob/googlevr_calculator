@@ -25,6 +25,9 @@ def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
 def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                file_info: FileInfo.FileInfo,
                db_name: str) -> FileInfo.FileInfo:
+    if len(rates) == 0:
+        return None
+
     new_id = FileInfo.load_file(file_info.file_name, db_name)
     with connect(db_name) as commands:
         commands.execute(f"""
@@ -36,8 +39,8 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 base_amount DECIMAL(18,6),
                 guest_count int,
                 file_id int,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),
-                PRIMARY KEY(internalId, start, end)
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
             delete from OTAHotelRateAmountNotifRQ
@@ -61,7 +64,7 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 ?start?,
                 ?end?,
                 ?base_amount?, 
-                guest_count?
+                ?guest_count?
             )
             ON CONFLICT (external_id, file_id, start, end)
             DO UPDATE SET base_amount = ?base_amount?,

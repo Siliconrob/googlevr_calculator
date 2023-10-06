@@ -38,7 +38,7 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             max_length_of_stay int,
             available bool,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             PRIMARY KEY(external_id, file_id, start, end))
             """)
         commands.execute(f"""

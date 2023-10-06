@@ -25,7 +25,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                             file_info: FileInfo.FileInfo,
                             db_name: str) -> FileInfo.FileInfo:
     if rate_modifier is None:
-        return None, None
+        return None
 
     new_id = FileInfo.load_file(file_info.file_name, db_name)
     with connect(db_name) as commands:
@@ -35,7 +35,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 external_id varchar(20),
                 multiplier DECIMAL(18,6),
                 file_id int,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),                
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                
                 PRIMARY KEY(external_id, multiplier)
             )""")
         commands.execute(f"""
@@ -50,7 +50,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 file_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
@@ -60,7 +60,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 file_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
@@ -70,7 +70,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 file_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
@@ -80,7 +80,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 file_id int,
                 min int,
                 max int,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE),                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, min, max)
             )""")
 

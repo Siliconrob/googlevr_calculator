@@ -2,8 +2,7 @@ import datetime
 from dataclasses import dataclass
 import pendulum
 from pydapper import connect
-
-from data_messages.LastId import LastId
+from data_messages.LastId import get_last_inserted_id
 
 
 @dataclass
@@ -38,13 +37,9 @@ def load_file(file_name: str, db_name: str) -> int:
             DO NOTHING
             """,
             param={"file_name": file_name})
-        last_id = commands.query_single(f"""
-            select seq
-            from sqlite_sequence
-            WHERE name = ?table_name?
-            """,
-            param={"table_name": "FileInfo"}, model=LastId)
-        return last_id.seq
+
+    new_id = get_last_inserted_id(db_name, "FileInfo")
+    return new_id
 
 
 def update_file(info: FileInfo, db_name: str):
@@ -62,10 +57,11 @@ def update_file(info: FileInfo, db_name: str):
                  "timestamp": None if info.timestamp is None else info.timestamp.isoformat(),
                  "records": info.records
              })
-        return commands.query_first("""
+        return commands.query_first_default("""
             SELECT *
             FROM FileInfo
             WHERE file_name = ?file_name?
             """,
             param={"file_name": info.file_name},
-            model=FileInfo)
+            model=FileInfo,
+            default=FileInfo())
