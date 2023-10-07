@@ -18,17 +18,17 @@ class RateModifications:
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     rate_modifier, file_info = read_rate_modifications(file_args)
-    return load_rate_modifications(rate_modifier, file_info, file_args.dsn)
+    return load_rate_modifications(rate_modifier, file_info, file_args)
 
 
 def load_rate_modifications(rate_modifier: RateModifications,
                             file_info: FileInfo.FileInfo,
-                            db_name: str) -> FileInfo.FileInfo:
+                            file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if rate_modifier is None:
         return None
 
-    new_id = FileInfo.load_file(file_info.file_name, db_name)
-    with connect(db_name) as commands:
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
             create table if not exists RateModifications
             (
@@ -199,7 +199,8 @@ def load_rate_modifications(rate_modifier: RateModifications,
                     "max": rate_modifier.length_of_stay.max
                 }),
     file_info.records = 1
-    return FileInfo.update_file(file_info, db_name)
+    file_info.xml_contents = file_args.file_contents
+    return FileInfo.update_file(file_info, file_args.dsn)
 
 
 def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (RateModifications, FileInfo):

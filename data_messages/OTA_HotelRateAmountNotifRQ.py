@@ -19,17 +19,18 @@ class OTAHotelRateAmountNotifRQ:
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     rates, file_info = read_rates(file_args)
-    return load_rates(rates, file_info, file_args.dsn)
+    return load_rates(rates, file_info, file_args)
 
 
 def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                file_info: FileInfo.FileInfo,
-               db_name: str) -> FileInfo.FileInfo:
+               file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if len(rates) == 0:
         return None
 
-    new_id = FileInfo.load_file(file_info.file_name, db_name)
-    with connect(db_name) as commands:
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    rowcount = {}
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
             create table if not exists OTAHotelRateAmountNotifRQ
             (
@@ -47,7 +48,7 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
             where file_id != ?file_id?
             """,
             param={"file_id": new_id})
-        rowcount = commands.execute(f"""
+        rowcount["rates"] = commands.execute(f"""
             INSERT INTO OTAHotelRateAmountNotifRQ
             (
                 external_id,
@@ -79,7 +80,9 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 "guest_count": rate.guest_count
             } for rate in rates],
         )
-        return rowcount
+    file_info.records = len(rates)
+    file_info.xml_contents = file_args.file_contents
+    return FileInfo.update_file(file_info, file_args.dsn)
 
 
 def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmountNotifRQ], FileInfo.FileInfo):
@@ -91,7 +94,10 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data,'OTA_HotelRateAmountNotifRQ.@TimeStamp'))
     results.external_id = glom(file_args.formatted_data, 'OTA_HotelRateAmountNotifRQ.RateAmountMessages.@HotelCode')
     rates = []
-    for rate_amount_message in glom(file_args.formatted_data, '**.RateAmountMessage').pop():
+    file_rates = glom(file_args.formatted_data, '**.RateAmountMessage')
+    if len(file_rates) == 0:
+        return [], None
+    for rate_amount_message in file_rates.pop():
         base_by_amount = glom(rate_amount_message, 'Rates.Rate.BaseByGuestAmts.BaseByGuestAmt', default=None)
         status_application_control = glom(rate_amount_message, 'StatusApplicationControl', default=None)
         if base_by_amount is None or status_application_control is None:

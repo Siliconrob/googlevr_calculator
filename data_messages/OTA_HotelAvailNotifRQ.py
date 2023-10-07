@@ -18,17 +18,17 @@ class OTAHotelAvailNotifRQ:
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     availabilities, file_info = read_availability(file_args)
-    return load_availability(availabilities, file_info, file_args.dsn)
+    return load_availability(availabilities, file_info, file_args)
 
 
 def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
                       file_info: FileInfo.FileInfo,
-                      db_name: str) -> FileInfo.FileInfo:
+                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if len(availabilities) == 0:
         return None
 
-    new_id = FileInfo.load_file(file_info.file_name, db_name)
-    with connect(db_name) as commands:
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
         create table if not exists OTAHotelAvailNotifRQ (
             external_id varchar(20),            
@@ -83,7 +83,8 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             } for availability in availabilities],
         )
     file_info.records = len(availabilities)
-    return FileInfo.update_file(file_info, db_name)
+    file_info.xml_contents = file_args.file_contents
+    return FileInfo.update_file(file_info, file_args.dsn)
 
 
 def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAvailNotifRQ], FileInfo.FileInfo):
@@ -95,7 +96,10 @@ def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAva
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'OTA_HotelAvailNotifRQ.@TimeStamp'))
     results.external_id = glom(file_args.formatted_data, 'OTA_HotelAvailNotifRQ.AvailStatusMessages.@HotelCode')
     availabilities = []
-    for avail_status_message in glom(file_args.formatted_data, '**.AvailStatusMessage').pop():
+    file_availabilities = glom(file_args.formatted_data, '**.AvailStatusMessage')
+    if len(file_availabilities) == 0:
+        return [], None
+    for avail_status_message in file_availabilities.pop():
         status_application_control = glom(avail_status_message, 'StatusApplicationControl', default=None)
         if status_application_control is None:
             continue

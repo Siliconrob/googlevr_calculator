@@ -22,15 +22,15 @@ class Promotion:
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     promotions, file_info = read_promotions(file_args)
-    return load_promotions(promotions, file_info, file_args.dsn)
+    return load_promotions(promotions, file_info, file_args)
 
 
-def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, db_name: str) -> FileInfo.FileInfo:
+def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if len(promotions) == 0:
-        return [], None
+        return None
 
-    new_id = FileInfo.load_file(file_info.file_name, db_name)
-    with connect(db_name) as commands:
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
             create table if not exists Promotion (
             external_id varchar(20),
@@ -237,7 +237,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, d
                     }),
 
     file_info.records = len(promotions)
-    return FileInfo.update_file(file_info, db_name)
+    file_info.xml_contents = file_args.file_contents
+    return FileInfo.update_file(file_info, file_args.dsn)
 
 
 def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], FileInfo.FileInfo):
@@ -249,7 +250,10 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'Promotions.@timestamp'))
     results.external_id = glom(file_args.formatted_data, 'Promotions.HotelPromotions.@hotel_id')
     promotions = []
-    for promotion in glom(file_args.formatted_data, '**.Promotion').pop():
+    file_promotions = glom(file_args.formatted_data, '**.Promotion')
+    if len(file_promotions) == 0:
+        return [], None
+    for promotion in file_promotions.pop():
         discount = glom(promotion, 'Discount', default=None)
         if discount is None:
             continue

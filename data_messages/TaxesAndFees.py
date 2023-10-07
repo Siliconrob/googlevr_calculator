@@ -19,15 +19,15 @@ class TaxOrFee:
     period: str
     currency: str
     amount: decimal
-    extractType: str
+    extract_type: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     taxes_and_fees, file_info = read_taxes_fees(file_args)
-    return load_taxes_fees(taxes_and_fees, file_info, file_args.dsn)
+    return load_taxes_fees(taxes_and_fees, file_info, file_args)
 
 
-def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo, db_name: str) -> FileInfo.FileInfo:
+def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if taxes_and_fees is None:
         return None
 
@@ -37,11 +37,11 @@ def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo, db_name:
     if len(taxes) == 0 and len(fees) == 0:
         return None
 
-    new_id = FileInfo.load_file(file_info.file_name, db_name)
-    taxes_inserted = insert_tax_fee_records(db_name, taxes, 'Tax', new_id)
-    fees_inserted = insert_tax_fee_records(db_name, fees, 'Fee', new_id)
-    file_info.records = len(taxes) + len(fees)
-    return FileInfo.update_file(file_info, db_name)
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    taxes_inserted = insert_tax_fee_records(file_args.dsn, taxes, 'Tax', new_id)
+    fees_inserted = insert_tax_fee_records(file_args.dsn, fees, 'Fee', new_id)
+    file_info.xml_contents = file_args.file_contents
+    return FileInfo.update_file(file_info, file_args.dsn)
 
 
 def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: str, file_id: int):
@@ -209,7 +209,11 @@ def read_taxes_fees(file_args: DataHandlers.DataFileArgs) -> (dict, FileInfo.Fil
 
 def read_tax_fee_data(external_id, file_input, spec, extract_type) -> list[TaxOrFee]:
     taxes_or_fees = []
-    for tax_or_fee in glom(file_input, spec).pop():
+
+    taxes_or_fees_promotions = glom(file_input, spec)
+    if len(taxes_or_fees_promotions) == 0:
+        return []
+    for tax_or_fee in taxes_or_fees_promotions.pop():
         extracted_amount = glom(tax_or_fee, 'Amount', default=None)
         taxes_or_fees.append(TaxOrFee(external_id,
                                       DateRange.parse_ranges(glom(tax_or_fee, 'BookingDates.DateRange', default=[])),

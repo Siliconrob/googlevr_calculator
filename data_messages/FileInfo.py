@@ -12,6 +12,7 @@ class FileInfo:
     timestamp: datetime.datetime = None
     records: int = 0
     id: int = 0
+    xml_contents: str = None
 
 
 def get_timestamp(input: str) -> datetime.datetime:
@@ -27,6 +28,7 @@ def load_file(file_name: str, db_name: str) -> int:
             external_id varchar(20),
             timestamp TEXT,
             records int,
+            xml_contents TEXT,
             PRIMARY KEY(id AUTOINCREMENT))
             """)
         commands.execute(f"delete from FileInfo where file_name = ?file_name?", param={"file_name": file_name})
@@ -36,7 +38,9 @@ def load_file(file_name: str, db_name: str) -> int:
             ON CONFLICT (file_name)
             DO NOTHING
             """,
-            param={"file_name": file_name})
+            param={
+                "file_name": file_name
+            })
 
     new_id = get_last_inserted_id(db_name, "FileInfo")
     return new_id
@@ -48,14 +52,16 @@ def update_file(info: FileInfo, db_name: str):
             update FileInfo
             set external_id = ?external_id?,
                 timestamp = ?timestamp?,
-                records = ?records?
+                records = ?records?,
+                xml_contents = ?xml_contents?
             WHERE file_name = ?file_name?
             """,
              param={
                  "file_name": info.file_name,
                  "external_id": info.external_id,
                  "timestamp": None if info.timestamp is None else info.timestamp.isoformat(),
-                 "records": info.records
+                 "records": info.records,
+                 "xml_contents": info.xml_contents
              })
         return commands.query_first_or_default("""
             SELECT *
