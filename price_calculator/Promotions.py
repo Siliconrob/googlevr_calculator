@@ -5,7 +5,7 @@ from pydapper import connect
 
 
 @dataclass
-class TaxOrFee:
+class Promotion:
     external_id: str
     calc_type: str
     period: str

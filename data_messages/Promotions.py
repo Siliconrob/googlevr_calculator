@@ -21,16 +21,13 @@ class Promotion:
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    create_tables(file_args.dsn)
     promotions, file_info = read_promotions(file_args)
     return load_promotions(promotions, file_info, file_args)
 
 
-def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
-    if len(promotions) == 0:
-        return None
-
-    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
-    with connect(file_args.dsn) as commands:
+def create_tables(dsn: str):
+    with connect(dsn) as commands:
         commands.execute(f"""
             create table if not exists Promotion (
             external_id varchar(20),
@@ -43,11 +40,6 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,              
             PRIMARY KEY(external_id, promotion_id, file_id))
             """)
-        commands.execute(f"""
-            delete from Promotion
-            where file_id != ?file_id?
-            """,
-            param={"file_id": new_id})
         commands.execute(f"""
             create table if not exists Promotion_BookingDates (
             external_id varchar(20),
@@ -88,7 +80,18 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,             
             PRIMARY KEY(external_id, promotion_id, file_id))""")
 
-        rowcount = {}
+
+def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    if len(promotions) == 0:
+        return None
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    rowcount = {}
+    with connect(file_args.dsn) as commands:
+        commands.execute(f"""
+            delete from Promotion
+            where file_id != ?file_id?
+            """,
+            param={"file_id": new_id})
         for promotion in promotions:
             rowcount['promotion'] = commands.execute(
                 f"""

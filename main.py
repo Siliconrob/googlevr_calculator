@@ -86,17 +86,19 @@ parser.add_argument("--input_path", action="store", default="c:/test/gvr_inputs"
 parser.add_argument("--save_db", action="store_true", default=True)
 parser.add_argument("--start", action="store", default="")
 parser.add_argument("--end", action="store", default="")
+parser.add_argument("--book_date", action="store", default="")
 parser.add_argument("--external_id", action="store", default="")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    db_name = "googlevr.db"
-    # results = load_db(args.input_path, db_name)
-
     start = args.start if len(args.start) > 0 else "2024-02-21"
     end = args.end if len(args.end) > 0 else "2024-03-01"
     external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
+    book_date = args.book_date if len(args.book_date) > 0 else "2023-10-06"
 
-    calculated_feed_price = compute_feed_price(external_id, start, end, get_dsn(db_name))
+    db_name = "googlevr.db"
+    # results = load_db(args.input_path, db_name)
+
+    calculated_feed_price = compute_feed_price(external_id, start, end, book_date, get_dsn(db_name))
     print(calculated_feed_price)
     # uvicorn.run(app, host="0.0.0.0", port=8900)

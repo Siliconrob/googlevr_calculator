@@ -17,18 +17,13 @@ class OTAHotelAvailNotifRQ:
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    create_tables(file_args.dsn)
     availabilities, file_info = read_availability(file_args)
     return load_availability(availabilities, file_info, file_args)
 
 
-def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
-                      file_info: FileInfo.FileInfo,
-                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
-    if len(availabilities) == 0:
-        return None
-
-    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
-    with connect(file_args.dsn) as commands:
+def create_tables(dsn: str):
+    with connect(dsn) as commands:
         commands.execute(f"""
         create table if not exists OTAHotelAvailNotifRQ (
             external_id varchar(20),            
@@ -41,6 +36,16 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             PRIMARY KEY(external_id, file_id, start, end))
             """)
+
+
+def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
+                      file_info: FileInfo.FileInfo,
+                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    if len(availabilities) == 0:
+        return None
+
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
             delete from OTAHotelAvailNotifRQ
             where file_id != ?file_id?

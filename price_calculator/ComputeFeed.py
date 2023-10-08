@@ -18,13 +18,14 @@ class ChargeDetails:
     number_children: int = 0
 
 
-def compute_feed_price(external_id, start: str, end: str, dsn: str) -> ChargeDetails:
-    start_date = pendulum.parse(start)
-    end_date = pendulum.parse(end)
+def compute_feed_price(external_id, start_date_text: str, end_date_text: str, book_date_text: str, dsn: str) -> ChargeDetails:
+    start_date = pendulum.parse(start_date_text)
+    end_date = pendulum.parse(end_date_text)
+    book_date = pendulum.parse(book_date_text)
     duration = pendulum.period(start_date, end_date)
     print(f'Nights: {duration.days}')
     rate_records = get_rates(external_id, start_date, end_date, dsn)
-    tax_records = get_taxes(external_id, start_date, end_date, duration.days, dsn)
-    fee_records = get_fees(external_id, start_date, end_date, duration.days, dsn)
+    tax_records = get_taxes(external_id, start_date, end_date, duration.days, book_date, dsn)
+    fee_records = get_fees(external_id, start_date, end_date, duration.days, book_date, dsn)
 
     return ChargeDetails(start_date, end_date)

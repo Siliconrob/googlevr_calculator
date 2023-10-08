@@ -23,6 +23,8 @@ class TaxOrFee:
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    create_tables("Tax", file_args.dsn)
+    create_tables("Fee", file_args.dsn)
     taxes_and_fees, file_info = read_taxes_fees(file_args)
     return load_taxes_fees(taxes_and_fees, file_info, file_args)
 
@@ -44,9 +46,8 @@ def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo, file_arg
     return FileInfo.update_file(file_info, file_args.dsn)
 
 
-def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: str, file_id: int):
-    rowcounts = {}
-    with connect(db_name) as commands:
+def create_tables(table_prefix: str, dsn: str):
+    with connect(dsn) as commands:
         commands.execute(f"""
             create table if not exists {table_prefix} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,11 +60,6 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE)
             """)
-        commands.execute(f"""
-            delete from {table_prefix}
-            where file_id != ?file_id?
-            """,
-            param={"file_id": file_id})
         commands.execute(f"""
             create table if not exists {table_prefix}_BookingDates
             (external_id varchar(20),
@@ -109,6 +105,15 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
             PRIMARY KEY(external_id, file_id, parent_id))
             """)
 
+
+def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: str, file_id: int):
+    rowcounts = {}
+    with connect(db_name) as commands:
+        commands.execute(f"""
+            delete from {table_prefix}
+            where file_id != ?file_id?
+            """,
+        param={"file_id": file_id})
         for record in records:
             rowcounts[table_prefix] = commands.execute(f"""
                 INSERT INTO {table_prefix} (external_id, calc_type, basis, period, currency, amount, file_id)

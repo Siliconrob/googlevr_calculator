@@ -19,19 +19,13 @@ class ExtraGuestCharges:
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    create_tables(file_args.dsn)
     extra_charges, file_info = read_extra_charges(file_args)
     return load_extra_charges(extra_charges, file_info, file_args)
 
 
-def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
-                      file_info: FileInfo.FileInfo,
-                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
-    if extra_guest_charges is None:
-        return None
-
-    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
-    rowcounts = {}
-    with connect(file_args.dsn) as commands:
+def create_tables(dsn: str):
+    with connect(dsn) as commands:
         commands.execute(f"""
         create table if not exists ExtraGuestCharges (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,11 +34,6 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE)
             """)
-        commands.execute(f"""
-            delete from ExtraGuestCharges
-            where file_id != ?file_id?
-            """,
-            param={"file_id": new_id})
         commands.execute(f"""
             create table if not exists ExtraGuestCharges_StayDates
             (
@@ -58,6 +47,22 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
                 FOREIGN KEY (parent_id) REFERENCES ExtraGuestCharges(id) ON DELETE CASCADE
             )
             """)
+
+
+def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
+                      file_info: FileInfo.FileInfo,
+                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    if extra_guest_charges is None:
+        return None
+
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    rowcounts = {}
+    with connect(file_args.dsn) as commands:
+        commands.execute(f"""
+            delete from ExtraGuestCharges
+            where file_id != ?file_id?
+            """,
+            param={"file_id": new_id})
         commands.execute(f"""
             delete from ExtraGuestCharges_StayDates
             where file_id != ?file_id?

@@ -18,19 +18,13 @@ class OTAHotelRateAmountNotifRQ:
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    create_tables(file_args.dsn)
     rates, file_info = read_rates(file_args)
     return load_rates(rates, file_info, file_args)
 
 
-def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
-               file_info: FileInfo.FileInfo,
-               file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
-    if len(rates) == 0:
-        return None
-
-    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
-    rowcount = {}
-    with connect(file_args.dsn) as commands:
+def create_tables(dsn: str):
+    with connect(dsn) as commands:
         commands.execute(f"""
             create table if not exists OTAHotelRateAmountNotifRQ
             (
@@ -43,6 +37,17 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
+
+
+def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
+               file_info: FileInfo.FileInfo,
+               file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+    if len(rates) == 0:
+        return None
+
+    new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
+    rowcount = {}
+    with connect(file_args.dsn) as commands:
         commands.execute(f"""
             delete from OTAHotelRateAmountNotifRQ
             where file_id != ?file_id?
