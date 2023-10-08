@@ -21,13 +21,16 @@
 ### Command line options to calculate rates
 - [X] Parse and add files data into sqlite
 - [X] Add command line parser
-- [ ] Compute a feed price for specified dates
+- [X] Compute a feed price for specified dates
   - [X] Get applicable rates from db
   - [X] Get applicable taxes from db
   - [X] Get applicable fees from db
-  - [ ] Get applicable promotions from db
-  - [ ] Get applicable extra charges from db
-  - [ ] Calculate base rate
-  - [ ] Apply fees
-  - [ ] Apply taxes
-  - [ ] Apply promotions
+  - [X] Get applicable promotions from db
+  - [X] Get applicable extra charges from db
+  - [X] Calculate base rate
+  - [X] Apply fees
+  - [X] Apply taxes
+  - [X] Apply promotions
+
+### Debugging to get matches
+- [ ] Example messages match to specific feed prices

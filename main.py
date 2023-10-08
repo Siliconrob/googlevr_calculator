@@ -100,5 +100,5 @@ if __name__ == "__main__":
     # results = load_db(args.input_path, db_name)
 
     calculated_feed_price = compute_feed_price(external_id, start, end, book_date, get_dsn(db_name))
-    print(calculated_feed_price)
+    # print(calculated_feed_price)
     # uvicorn.run(app, host="0.0.0.0", port=8900)
