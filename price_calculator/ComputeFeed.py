@@ -26,6 +26,14 @@ class ChargeDetails:
     number_children: int = 0
 
 
+@dataclass
+class FeedPrice:
+    rent: decimal
+    promotions: decimal
+    taxes_and_fees: decimal
+    details: ChargeDetails
+
+
 def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
     for current_day in pendulum.period(charges.start_date, charges.end_date.subtract(days=1)).range('days'):
@@ -99,4 +107,4 @@ def compute_feed_price(external_id, start_date_text: str, end_date_text: str, bo
     print(f'Taxes And Fees: {total_taxes_fees}')
     total = total_rent + total_taxes_fees
     print(f'Total: {total}')
-    return details
+    return FeedPrice(total_rent, total_promotions, total_taxes_fees, details)

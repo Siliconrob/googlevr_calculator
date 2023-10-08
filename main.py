@@ -1,4 +1,6 @@
 import asyncio
+
+import pendulum
 import uvicorn
 from fastapi import FastAPI
 from pathlib import Path
@@ -67,6 +69,8 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts["extra_guest_charges"] = data_messages.ExtraGuestCharges.insert_records(file_args)
     return record_counts
 
+DB_NAME = "googlevr.db"
+
 
 def load_db(xml_files_path: str, db_name: str) -> set:
     if xml_files_path is None:
@@ -74,12 +78,16 @@ def load_db(xml_files_path: str, db_name: str) -> set:
     return read_folder(xml_files_path, db_name)
 
 
-# app = FastAPI()
-#
-#
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
+app = FastAPI()
+
+
+@app.get("/feed_price")
+async def feed_price(external_id: str, start_date_text: str, end_date_text: str, book_date_text: str):
+    start_date = pendulum.parse(start_date_text)
+    end_date = pendulum.parse(end_date_text)
+    booked_date = pendulum.parse(book_date_text)
+    calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, get_dsn(DB_NAME))
+    return calculated_feed_price
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_path", action="store", default="c:/test/gvr_inputs")
@@ -88,6 +96,7 @@ parser.add_argument("--start", action="store", default="")
 parser.add_argument("--end", action="store", default="")
 parser.add_argument("--book_date", action="store", default="")
 parser.add_argument("--external_id", action="store", default="")
+parser.add_argument("--web_ui", action="store_true", default=False)
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -95,10 +104,9 @@ if __name__ == "__main__":
     end = args.end if len(args.end) > 0 else "2024-03-01"
     external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
     book_date = args.book_date if len(args.book_date) > 0 else "2023-10-06"
-
-    db_name = "googlevr.db"
     # results = load_db(args.input_path, db_name)
 
-    calculated_feed_price = compute_feed_price(external_id, start, end, book_date, get_dsn(db_name))
-    # print(calculated_feed_price)
-    # uvicorn.run(app, host="0.0.0.0", port=8900)
+    if args.web_ui:
+        uvicorn.run(app, host="0.0.0.0", port=8900)
+    else:
+        calculated_feed_price = compute_feed_price(external_id, start, end, book_date, get_dsn(DB_NAME))
