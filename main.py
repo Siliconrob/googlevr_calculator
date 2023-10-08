@@ -12,6 +12,9 @@ from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
 from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 from data_messages.ExtraGuestCharges import ExtraGuestCharges
+import argparse
+
+from price_calculator.ComputeFeed import compute_feed_price
 
 
 def get_dsn(db_name: str) -> str:
@@ -65,8 +68,10 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     return record_counts
 
 
-def load_db() -> set:
-    return read_folder('c:/test/gvr_inputs', 'googlevr.db')
+def load_db(xml_files_path: str, db_name: str) -> set:
+    if xml_files_path is None:
+        return None
+    return read_folder(xml_files_path, db_name)
 
 
 # app = FastAPI()
@@ -76,7 +81,22 @@ def load_db() -> set:
 # async def root():
 #     return {"message": "Hello World"}
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--input_path", action="store", default="c:/test/gvr_inputs")
+parser.add_argument("--save_db", action="store_true", default=True)
+parser.add_argument("--start", action="store", default="")
+parser.add_argument("--end", action="store", default="")
+parser.add_argument("--external_id", action="store", default="")
 
 if __name__ == "__main__":
-    print(load_db())
+    args = parser.parse_args()
+    db_name = "googlevr.db"
+    # results = load_db(args.input_path, db_name)
+
+    start = args.start if len(args.start) > 0 else "2024-02-21"
+    end = args.end if len(args.end) > 0 else "2024-03-01"
+    external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
+
+    calculated_feed_price = compute_feed_price(external_id, start, end, get_dsn(db_name))
+    print(calculated_feed_price)
     # uvicorn.run(app, host="0.0.0.0", port=8900)
