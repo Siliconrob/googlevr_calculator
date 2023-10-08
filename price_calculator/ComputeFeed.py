@@ -27,16 +27,14 @@ class ChargeDetails:
 
 
 def total_base_rent(charges: ChargeDetails) -> decimal:
-    total_base_rent = 0
-    current_day = charges.start_date
-
-
-
-
-    # for rent_rate in rent_records:
-
-
-    return total_base_rent
+    total = 0
+    for current_day in pendulum.period(charges.start_date, charges.end_date.subtract(days=1)).range('days'):
+        print(f'Date {current_day}')
+        for rent_record in charges.rent:
+            if current_day == pendulum.parse(rent_record.start):
+                total += rent_record.base_amount
+            continue
+    return total
 
 def compute_feed_price(external_id, start_date_text: str, end_date_text: str, book_date_text: str, dsn: str) -> ChargeDetails:
     start_date = pendulum.parse(start_date_text)
