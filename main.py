@@ -1,19 +1,20 @@
-import asyncio
+import argparse
+import os
+from pathlib import Path
+from pyexpat import ExpatError
+
 import pendulum
 import uvicorn
-from fastapi import FastAPI
-from pathlib import Path
 import xmltodict
-import os
-from pyexpat import ExpatError
+from fastapi import FastAPI
+
 import data_messages.OTA_HotelRateAmountNotifRQ
 from data_messages import DataHandlers
-from data_messages.TaxesAndFees import TaxOrFee
+from data_messages.ExtraGuestCharges import ExtraGuestCharges
+from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
-from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
-from data_messages.ExtraGuestCharges import ExtraGuestCharges
-import argparse
+from data_messages.TaxesAndFees import TaxOrFee
 from price_calculator.ComputeFeed import compute_feed_price
 
 

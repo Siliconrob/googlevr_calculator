@@ -1,7 +1,9 @@
 import datetime
 from dataclasses import dataclass
+
 import pendulum
 from pydapper import connect
+
 from data_messages.LastId import get_last_inserted_id
 
 

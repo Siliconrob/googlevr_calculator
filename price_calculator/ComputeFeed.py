@@ -2,7 +2,9 @@ import decimal
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
+
 import pendulum
+
 from price_calculator.ExtraGuestCharges import get_extra_guest_charges, ExtraGuestCharge
 from price_calculator.Promotions import get_promotions, Promotion
 from price_calculator.RateModifiers import get_rate_modifiers, RateModifier

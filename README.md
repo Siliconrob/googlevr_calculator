@@ -31,6 +31,10 @@
   - [X] Apply fees
   - [X] Apply taxes
   - [X] Apply promotions
+- [ ] FastAPI 
+  - [X] Setup routes and fixup parameters
+  - [ ] Connect to database
+  - [ ] Send proper response
 
 ### Debugging to get matches
 - [ ] Example messages match to specific feed prices

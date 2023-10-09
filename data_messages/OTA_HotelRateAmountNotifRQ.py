@@ -2,9 +2,11 @@ import decimal
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+
 import pendulum
 from glom import glom
 from pydapper import connect
+
 from data_messages import FileInfo, DataHandlers
 
 
