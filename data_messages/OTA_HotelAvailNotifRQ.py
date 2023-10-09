@@ -26,6 +26,7 @@ def create_tables(dsn: str):
     with connect(dsn) as commands:
         commands.execute(f"""
         create table if not exists OTAHotelAvailNotifRQ (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,        
             external_id varchar(20),            
             start TEXT,
             end TEXT,
@@ -34,7 +35,7 @@ def create_tables(dsn: str):
             available bool,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
-            PRIMARY KEY(external_id, file_id, start, end))
+            UNIQUE(external_id, file_id, start, end))
             """)
 
 

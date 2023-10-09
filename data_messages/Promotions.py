@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from glom import glom
 from pydapper import connect
 from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
+from data_messages.LastId import LastId
 
 
 @dataclass
@@ -30,6 +31,7 @@ def create_tables(dsn: str):
     with connect(dsn) as commands:
         commands.execute(f"""
             create table if not exists Promotion (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             external_id varchar(20),
             promotion_id varchar(100),
             percentage DECIMAL(18,6),
@@ -38,7 +40,7 @@ def create_tables(dsn: str):
             fixed_price DECIMAL(18,6),
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,              
-            PRIMARY KEY(external_id, promotion_id, file_id))
+            UNIQUE(external_id, promotion_id, file_id))
             """)
         commands.execute(f"""
             create table if not exists Promotion_BookingDates (
@@ -47,8 +49,10 @@ def create_tables(dsn: str):
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
-            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            parent_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
+            UNIQUE(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckinDates (
@@ -57,8 +61,10 @@ def create_tables(dsn: str):
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
-            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            parent_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
+            UNIQUE(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckoutDates (
@@ -67,8 +73,10 @@ def create_tables(dsn: str):
             start TEXT,
             end TEXT,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,            
-            PRIMARY KEY(external_id, promotion_id, file_id, start, end))
+            parent_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,
+            UNIQUE(external_id, promotion_id, file_id, start, end))
             """)
         commands.execute(f"""
             create table if not exists Promotion_LengthOfStay (
@@ -77,8 +85,11 @@ def create_tables(dsn: str):
             min int,
             max int,
             file_id int,
-            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,             
-            PRIMARY KEY(external_id, promotion_id, file_id))""")
+            parent_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,                                     
+            UNIQUE(external_id, promotion_id, file_id))
+            """)
 
 
 def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -129,6 +140,12 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     "fixed_amount_per_night": None if promotion.fixed_amount_per_night is None else float(promotion.fixed_amount_per_night),
                     "fixed_price": None if promotion.fixed_price is None else float(promotion.fixed_price),
                 })
+            last_id = commands.query_first_or_default(f"""
+                select seq
+                from sqlite_sequence
+                WHERE name = ?table_name?
+                """,
+                param={"table_name": "Promotion"}, model=LastId, default=LastId())
 
             if len(promotion.booking_dates) > 0:
                 rowcount['booking_dates'] = commands.execute(f"""
@@ -137,6 +154,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     external_id,
                     promotion_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -145,6 +163,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     ?external_id?,
                     ?promotion_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                 )
@@ -155,6 +174,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
+                        "parent_id": last_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.booking_dates]),
@@ -165,6 +185,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     external_id,
                     promotion_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -172,6 +193,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     ?external_id?,
                     ?promotion_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                 )
@@ -182,6 +204,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
+                        "parent_id": last_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.checkin_dates]),
@@ -192,6 +215,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     external_id,
                     promotion_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -199,6 +223,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     ?external_id?,
                     ?promotion_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                     )
@@ -209,6 +234,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
+                        "parent_id": last_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.checkout_dates]),
@@ -219,6 +245,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     external_id,
                     promotion_id,
                     file_id,
+                    parent_id,
                     min,
                     max
                 )
@@ -226,6 +253,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     ?external_id?,
                     ?promotion_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?min?,
                     ?max?
                 ) ON CONFLICT (external_id, promotion_id, file_id)
@@ -235,6 +263,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
+                        "parent_id": last_id,
                         "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
                         "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
                     }),

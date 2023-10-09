@@ -22,14 +22,15 @@ def get_timestamp(input: str) -> datetime.datetime:
 def load_file(file_name: str, db_name: str) -> int:
     with connect(db_name) as commands:
         commands.execute(f"""
-            create table if not exists FileInfo (
-            id INTEGER UNIQUE,
-            file_name varchar(200) UNIQUE, 
-            external_id varchar(20),
-            timestamp TEXT,
-            records int,
-            xml_contents TEXT,
-            PRIMARY KEY(id AUTOINCREMENT))
+            create table if not exists FileInfo
+            (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file_name varchar(200) UNIQUE, 
+                external_id varchar(20),
+                timestamp TEXT,
+                records int,
+                xml_contents TEXT
+            )
             """)
         commands.execute(f"delete from FileInfo where file_name = ?file_name?", param={"file_name": file_name})
         commands.execute(f"""

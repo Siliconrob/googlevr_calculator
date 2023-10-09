@@ -1,5 +1,4 @@
 import asyncio
-
 import pendulum
 import uvicorn
 from fastapi import FastAPI
@@ -15,7 +14,6 @@ from data_messages.RateModifications import RateModifications
 from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 from data_messages.ExtraGuestCharges import ExtraGuestCharges
 import argparse
-
 from price_calculator.ComputeFeed import compute_feed_price
 
 
@@ -23,14 +21,14 @@ def get_dsn(db_name: str) -> str:
     return f'sqlite+sqlite3://{db_name}'
 
 
-def read_folder(target_folder: str, db_name: str) -> set:
+def read_folder(target_folder: str, dsn: str) -> set:
     files = [current_file for current_file in os.listdir(target_folder) if
              os.path.isfile(os.path.join(target_folder, current_file))]
 
-    return read_files(db_name, files, target_folder)
+    return read_files(dsn, files, target_folder)
 
 
-def read_files(db_name, files, target_folder) -> set:
+def read_files(dsn: str, files: list[str], target_folder: str) -> set:
     results = {}
     for file in files:
         data, contents = read_file_contents(file, target_folder)
@@ -38,7 +36,7 @@ def read_files(db_name, files, target_folder) -> set:
             continue
         args = DataHandlers.DataFileArgs(data,
                                          file,
-                                         get_dsn(db_name),
+                                         dsn,
                                          contents)
         record_counts = read_file_into_db(args)
         results = set(results) & set(record_counts)
@@ -69,25 +67,15 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts["extra_guest_charges"] = data_messages.ExtraGuestCharges.insert_records(file_args)
     return record_counts
 
+
 DB_NAME = "googlevr.db"
 
 
-def load_db(xml_files_path: str, db_name: str) -> set:
+def load_db(xml_files_path: str, dsn: str) -> set:
     if xml_files_path is None:
         return None
-    return read_folder(xml_files_path, db_name)
+    return read_folder(xml_files_path, dsn)
 
-
-app = FastAPI()
-
-
-@app.get("/feed_price")
-async def feed_price(external_id: str, start_date_text: str, end_date_text: str, book_date_text: str):
-    start_date = pendulum.parse(start_date_text)
-    end_date = pendulum.parse(end_date_text)
-    booked_date = pendulum.parse(book_date_text)
-    calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, get_dsn(DB_NAME))
-    return calculated_feed_price
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_path", action="store", default="c:/test/gvr_inputs")
@@ -104,9 +92,22 @@ if __name__ == "__main__":
     end = args.end if len(args.end) > 0 else "2024-03-01"
     external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
     book_date = args.book_date if len(args.book_date) > 0 else "2023-10-06"
-    # results = load_db(args.input_path, db_name)
+    dsn = get_dsn(DB_NAME)
+    results = load_db(args.input_path, dsn)
 
-    if args.web_ui:
-        uvicorn.run(app, host="0.0.0.0", port=8900)
+    if args.web_ui is False:
+        calculated_feed_price = compute_feed_price(external_id, start, end, book_date, dsn)
     else:
-        calculated_feed_price = compute_feed_price(external_id, start, end, book_date, get_dsn(DB_NAME))
+        app = FastAPI()
+
+
+        @app.get("/feed_price")
+        async def feed_price(external_id: str, start_date_text: str, end_date_text: str, book_date_text: str):
+            start_date = pendulum.parse(start_date_text)
+            end_date = pendulum.parse(end_date_text)
+            booked_date = pendulum.parse(book_date_text)
+            calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, dsn)
+            return calculated_feed_price
+
+
+        uvicorn.run(app, host="0.0.0.0", port=8900)

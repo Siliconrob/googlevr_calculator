@@ -5,6 +5,8 @@ from glom import glom
 from pydapper import connect
 from data_messages import DateRange, LengthOfStay
 from data_messages import FileInfo, DataHandlers
+from data_messages.LastId import LastId
+
 
 @dataclass
 class RateModifications:
@@ -27,30 +29,35 @@ def create_tables(dsn: str):
         commands.execute(f"""
             create table if not exists RateModifications
             (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 external_id varchar(20),
                 multiplier DECIMAL(18,6),
                 file_id int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                
-                PRIMARY KEY(external_id, file_id, multiplier)
+                UNIQUE(external_id, file_id, multiplier)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_BookingDates
             (
                 external_id varchar(20),
                 file_id int,
+                parent_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, start, end)
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                                 
+                UNIQUE(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckinDates
             (
                 external_id varchar(20),
                 file_id int,
+                parent_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
@@ -58,9 +65,11 @@ def create_tables(dsn: str):
             (
                 external_id varchar(20),
                 file_id int,
+                parent_id int,
                 start TEXT,
                 end TEXT,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, start, end)
             )""")
         commands.execute(f"""
@@ -68,9 +77,11 @@ def create_tables(dsn: str):
             (
                 external_id varchar(20),
                 file_id int,
+                parent_id int,
                 min int,
                 max int,
-                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                 
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, min, max)
             )""")
 
@@ -108,6 +119,12 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 "file_id": new_id,
                 "multiplier": float(rate_modifier.price_adjustment)
             })
+        last_id = commands.query_first_or_default(f"""
+            select seq
+            from sqlite_sequence
+            WHERE name = ?table_name?
+            """,
+          param={"table_name": "RateModifications"}, model=LastId, default=LastId())
 
         if len(rate_modifier.booking_dates) > 0:
             rowcounts['bookingDates'] = commands.execute(f"""
@@ -115,6 +132,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     external_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -122,6 +140,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     ?external_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                 ) ON CONFLICT (external_id, file_id, start, end) DO NOTHING
@@ -129,6 +148,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 param=[{
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
+                    "parent_id": last_id,
                     "start": date_range.start.isoformat(),
                     "end": date_range.end.isoformat()
                 } for date_range in rate_modifier.booking_dates]),
@@ -138,6 +158,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     external_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -145,6 +166,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     ?external_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                 ) ON CONFLICT (external_id, file_id, start, end)
@@ -153,6 +175,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 param=[{
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
+                    "parent_id": last_id,
                     "start": dateRange.start.isoformat(),
                     "end": dateRange.end.isoformat()
                 } for dateRange in rate_modifier.checkin_dates]),
@@ -162,6 +185,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     external_id,
                     file_id,
+                    parent_id,
                     start,
                     end
                 )
@@ -169,6 +193,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     ?external_id?,
                     ?file_id?,
+                    ?parent_id?,
                     ?start?,
                     ?end?
                 ) ON CONFLICT (external_id, file_id, start, end)
@@ -176,6 +201,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 param=[{
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
+                    "parent_id": last_id,
                     "start": dateRange.start.isoformat(),
                     "end": dateRange.end.isoformat()
                 } for dateRange in rate_modifier.checkout_dates]),
@@ -185,6 +211,7 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     external_id,
                     file_id,
+                    parent_id,
                     min,
                     max
                 )
@@ -192,12 +219,14 @@ def load_rate_modifications(rate_modifier: RateModifications,
                 (
                     ?external_id?,
                     ?file_id?,
+                    ?parnet_id?,
                     ?min?,
                     ?max?
                 ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
                 param={
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
+                    "parent_id": last_id,
                     "min": rate_modifier.length_of_stay.min,
                     "max": rate_modifier.length_of_stay.max
                 }),
