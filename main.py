@@ -80,35 +80,29 @@ def load_db(xml_files_path: str, dsn: str) -> set:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_path", action="store", default="c:/test/gvr_inputs")
-parser.add_argument("--save_db", action="store_true", default=True)
+parser.add_argument("--load_db", action="store_true", default=False)
 parser.add_argument("--start", action="store", default="")
 parser.add_argument("--end", action="store", default="")
 parser.add_argument("--book_date", action="store", default="")
 parser.add_argument("--external_id", action="store", default="")
-parser.add_argument("--web_ui", action="store_true", default=False)
+parser.add_argument("--web_ui", action="store_true", default=True)
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    start = args.start if len(args.start) > 0 else "2024-02-21"
-    end = args.end if len(args.end) > 0 else "2024-03-01"
-    external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
-    book_date = args.book_date if len(args.book_date) > 0 else "2023-10-06"
     dsn = get_dsn(DB_NAME)
-    results = load_db(args.input_path, dsn)
+    if args.load_db:
+        db_load_results = load_db(args.input_path, dsn)
 
     if args.web_ui is False:
+        start = args.start if len(args.start) > 0 else "2024-02-21"
+        end = args.end if len(args.end) > 0 else "2024-03-01"
+        external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
+        book_date = args.book_date if len(args.book_date) > 0 else "2023-10-06"
         calculated_feed_price = compute_feed_price(external_id, start, end, book_date, dsn)
     else:
         app = FastAPI()
-
-
         @app.get("/feed_price")
-        async def feed_price(external_id: str, start_date_text: str, end_date_text: str, book_date_text: str):
-            start_date = pendulum.parse(start_date_text)
-            end_date = pendulum.parse(end_date_text)
-            booked_date = pendulum.parse(book_date_text)
+        async def feed_price(external_id: str, start_date: str, end_date: str, booked_date: str):
             calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, dsn)
             return calculated_feed_price
-
-
         uvicorn.run(app, host="0.0.0.0", port=8900)
