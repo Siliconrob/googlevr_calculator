@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Promotions partner="sample" id="ea245ff9-6a39-4e5d-a53f-8086acf2a447" timestamp="2023-10-06T12:45:14.7326448Z">
+  <HotelPromotions hotel_id="rental1" action="overlay" />
+</Promotions>
