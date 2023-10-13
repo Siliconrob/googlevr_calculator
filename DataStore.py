@@ -9,6 +9,7 @@ from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
 from data_messages.TaxesAndFees import TaxOrFee
+from data_messages.PropertyData import PropertyData
 
 
 def get_dsn(db_name: str) -> str:
@@ -59,6 +60,7 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts["taxes_and_fees"] = data_messages.TaxesAndFees.insert_records(file_args)
     record_counts["promotions"] = data_messages.Promotions.insert_records(file_args)
     record_counts["extra_guest_charges"] = data_messages.ExtraGuestCharges.insert_records(file_args)
+    record_counts["property_data"] = data_messages.PropertyData.insert_records(file_args)
     return record_counts
 
 
