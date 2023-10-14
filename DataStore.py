@@ -1,4 +1,5 @@
 import os
+import zipfile
 from pathlib import Path
 from pyexpat import ExpatError
 import xmltodict
@@ -16,11 +17,25 @@ def get_dsn(db_name: str) -> str:
     return f'sqlite+sqlite3://{db_name}'
 
 
-def read_folder(target_folder: str, dsn: str) -> set:
-    files = [current_file for current_file in os.listdir(target_folder) if
-             os.path.isfile(os.path.join(target_folder, current_file))]
-
-    return read_files(dsn, files, target_folder)
+def read_folder(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
+    results = {}
+    for input_file in xml_messages_zipfile.filelist:
+        try:
+            file_contents = xml_messages_zipfile.read(input_file).decode("UTF-8")
+            xml_message_data = xmltodict.parse(file_contents)
+            if xml_message_data is None:
+                continue
+            args = DataHandlers.DataFileArgs(xml_message_data,
+                                             input_file.filename,
+                                             dsn,
+                                             file_contents)
+            record_counts = read_file_into_db(args)
+            results = set(results) & set(record_counts)
+        except UnicodeDecodeError:
+            print(f'Unable to read {input_file} as text')
+        except ExpatError:
+            print(f'Unable to parse {input_file} into XML')
+    return results
 
 
 def read_files(dsn: str, files: list[str], target_folder: str) -> set:
@@ -35,7 +50,20 @@ def read_files(dsn: str, files: list[str], target_folder: str) -> set:
                                          contents)
         record_counts = read_file_into_db(args)
         results = set(results) & set(record_counts)
-    return record_counts
+    return results
+
+
+def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
+    try:
+        current_file = Path(os.path.join(input_folder, input_file))
+        file_contents = current_file.read_text()
+        return xmltodict.parse(file_contents), file_contents
+    except UnicodeDecodeError:
+        print(f'Unable to read {input_file} as text')
+    except ExpatError:
+        print(f'Unable to parse {input_file} into XML')
+    return None
+
 
 
 def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
@@ -64,10 +92,10 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     return record_counts
 
 
-def load_db(xml_files_path: str, dsn: str) -> set:
-    if xml_files_path is None:
+def load_db(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
+    if xml_messages_zipfile is None:
         return None
-    return read_folder(xml_files_path, dsn)
+    return read_folder(xml_messages_zipfile, dsn)
 
 
 DB_NAME = "googlevr.db"

@@ -1,3 +1,4 @@
+import dataclasses
 import decimal
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -30,10 +31,14 @@ class ChargeDetails:
 
 @dataclass
 class FeedPrice:
-    rent: decimal
-    promotions: decimal
-    taxes_and_fees: decimal
-    details: ChargeDetails
+    total: decimal = 0
+    rent: decimal = 0
+    promotions: decimal = 0
+    taxes_and_fees: decimal = 0
+    details: ChargeDetails = None
+
+    def to_dict(self):
+        return dataclasses.asdict(self)
 
 
 def total_base_rent(charges: ChargeDetails) -> decimal:
@@ -109,4 +114,4 @@ def compute_feed_price(external_id, start_date_text: str, end_date_text: str, bo
     print(f'Taxes And Fees: {total_taxes_fees}')
     total = total_rent + total_taxes_fees
     print(f'Total: {total}')
-    return FeedPrice(total_rent, total_promotions, total_taxes_fees, details)
+    return FeedPrice(total, total_rent, total_promotions, total_taxes_fees, details)
