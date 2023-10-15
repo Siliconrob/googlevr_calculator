@@ -1,4 +1,6 @@
 import argparse
+import os
+
 import uvicorn
 from DataStore import get_dsn, load_db, DB_NAME
 from app import app

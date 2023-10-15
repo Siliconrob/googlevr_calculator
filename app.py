@@ -1,9 +1,11 @@
 import io
 import os
 import zipfile
+from datetime import date
+from typing import Annotated
 
 import pendulum
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse
 from DataStore import load_db, get_dsn, DB_NAME
 from price_calculator.ComputeFeed import compute_feed_price
@@ -46,7 +48,14 @@ async def current_db():
 
 
 @app.post("/feed")
-async def feed_price(upload_file: UploadFile, external_id: str, start_date: str, end_date: str, booked_date: str):
+async def feed_price(upload_file: UploadFile = File(...),
+                     external_id: str = 'orp12345x',
+                     start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
+                     end_date: Annotated[date, "End"] = pendulum.now().add(months=1, weeks=1).to_date_string(),
+                     booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
+    if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
+        raise HTTPException(400, detail="File must be a zip file")
+
     with zipfile.ZipFile(io.BytesIO(upload_file.file.read()), "r") as messages_zip_file:
         dsn = get_dsn(DB_NAME)
         db_load_results = load_db(messages_zip_file, dsn)

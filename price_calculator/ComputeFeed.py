@@ -1,7 +1,7 @@
 import dataclasses
 import decimal
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 import pendulum
@@ -43,6 +43,7 @@ class FeedPrice:
 
 def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
+
     for current_day in pendulum.period(charges.start_date, charges.end_date.subtract(days=1)).range('days'):
         for rent_record in charges.rent:
             if current_day == pendulum.parse(rent_record.start):
@@ -87,12 +88,11 @@ def tax_or_fee_total(tax_or_fees: list[TaxOrFee], nights: int, rent_amount: deci
     return total
 
 
-def compute_feed_price(external_id, start_date_text: str, end_date_text: str, book_date_text: str, dsn: str) -> ChargeDetails:
-    start_date = pendulum.parse(start_date_text)
-    end_date = pendulum.parse(end_date_text)
-    book_date = pendulum.parse(book_date_text)
+def compute_feed_price(external_id, start_date: date, end_date: date, book_date: date, dsn: str) -> ChargeDetails:
+    start_date = pendulum.datetime(start_date.year, start_date.month, start_date.day)
+    end_date = pendulum.datetime(end_date.year, end_date.month, end_date.day)
+    book_date = pendulum.datetime(book_date.year, book_date.month, book_date.day)
     duration = pendulum.period(start_date, end_date)
-
     details = ChargeDetails(
         start_date,
         end_date,
