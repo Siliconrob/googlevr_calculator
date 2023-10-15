@@ -8,7 +8,18 @@ from starlette.responses import FileResponse, Response, StreamingResponse
 from DataStore import load_db, get_dsn, DB_NAME
 from price_calculator.ComputeFeed import compute_feed_price
 
-app = FastAPI()
+app = FastAPI(title="Google Vacation Rentals Calculator",
+              description="Calculates a rental price based on ARI XML messages",
+              version="0.0.1",
+              terms_of_service="Strength is irrelevant. Resistance is futile. We wish to improve ourselves. We will add your biological and technological distinctiveness to our own.",
+              contact={
+                  "url": "https://siliconheaven.info",
+                  "email": "siliconrob@siliconheaven.net",
+              },
+              license_info={
+                  "name": "MIT License",
+                  "url": "https://opensource.org/license/mit/",
+              })
 
 
 def iter_file():  #
