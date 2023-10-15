@@ -1,7 +1,14 @@
 # We are live now
-
 [Google Vacation Rentals Calculator Live App](https://google-vr-calculator-bojul.ondigitalocean.app/docs)
 
+![DigitalOcean](https://img.shields.io/badge/DigitalOcean-%230167ff.svg?style=for-the-badge&logo=digitalOcean&logoColor=white)
+
+## Walkthrough
+![google_vr](https://github.com/Siliconrob/googlevr_calculator/assets/412511/2b5741e2-626c-41bc-8a49-fe18f3d10b65)
+
+- Download applicable ARI XML message files
+- Zip them up
+- Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
 
 # Build Google Vacation Rentals Calculator
 
