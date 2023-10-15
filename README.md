@@ -1,3 +1,8 @@
+# We are live now
+
+[Google Vacation Rentals Calculator Live App](https://google-vr-calculator-bojul.ondigitalocean.app/docs)
+
+
 # Build Google Vacation Rentals Calculator
 
 ### Read ARI XML messages into sqlite database
