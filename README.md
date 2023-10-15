@@ -1,6 +1,7 @@
 # We are live now
-
 [Google Vacation Rentals Calculator Live App](https://google-vr-calculator-bojul.ondigitalocean.app/docs)
+
+![DigitalOcean](https://img.shields.io/badge/DigitalOcean-%230167ff.svg?style=for-the-badge&logo=digitalOcean&logoColor=white)
 
 
 # Build Google Vacation Rentals Calculator
