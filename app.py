@@ -10,6 +10,11 @@ from starlette.responses import FileResponse, Response, StreamingResponse
 from DataStore import load_db, get_dsn, DB_NAME
 from price_calculator.ComputeFeed import compute_feed_price
 
+tags_metadata = [
+    {"name": "Calculator", "description": "For performing calculation"},
+    {"name": "Test", "description": "Testing availability/active"},
+]
+
 app = FastAPI(title="Google Vacation Rentals Calculator",
               description="Calculates a rental price based on ARI XML messages",
               version="0.0.1",
@@ -18,6 +23,7 @@ app = FastAPI(title="Google Vacation Rentals Calculator",
                   "url": "https://siliconheaven.info",
                   "email": "siliconrob@siliconheaven.net",
               },
+              openapi_tags=tags_metadata,
               license_info={
                   "name": "MIT License",
                   "url": "https://opensource.org/license/mit/",
@@ -32,22 +38,7 @@ def iter_file():  #
             yield from db_file
 
 
-@app.get("/echo")
-async def echo(response: str):
-    return {"message": f'Sent {response}'}
-
-
-@app.get("/ping")
-async def ping():
-    return f'pong {pendulum.now().to_iso8601_string()}'
-
-
-@app.get("/datasource")
-async def current_db():
-    return StreamingResponse(content=iter_file(), media_type="application/octet")
-
-
-@app.post("/feed")
+@app.post("/feed", tags=["Calculator"])
 async def feed_price(upload_file: UploadFile = File(...),
                      external_id: str = 'orp12345x',
                      start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
@@ -61,3 +52,13 @@ async def feed_price(upload_file: UploadFile = File(...),
         db_load_results = load_db(messages_zip_file, dsn)
     calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, dsn)
     return calculated_feed_price
+
+
+@app.get("/ping", tags=["Test"])
+async def ping():
+    return f'pong {pendulum.now().to_iso8601_string()}'
+
+
+@app.get("/datasource", include_in_schema=False)
+async def current_db():
+    return StreamingResponse(content=iter_file(), media_type="application/octet")

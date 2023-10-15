@@ -38,46 +38,6 @@ def read_folder(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
     return results
 
 
-def read_files(dsn: str, files: list[str], target_folder: str) -> set:
-    results = {}
-    for file in files:
-        data, contents = read_file_contents(file, target_folder)
-        if data is None:
-            continue
-        args = DataHandlers.DataFileArgs(data,
-                                         file,
-                                         dsn,
-                                         contents)
-        record_counts = read_file_into_db(args)
-        results = set(results) & set(record_counts)
-    return results
-
-
-def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
-    try:
-        current_file = Path(os.path.join(input_folder, input_file))
-        file_contents = current_file.read_text()
-        return xmltodict.parse(file_contents), file_contents
-    except UnicodeDecodeError:
-        print(f'Unable to read {input_file} as text')
-    except ExpatError:
-        print(f'Unable to parse {input_file} into XML')
-    return None
-
-
-
-def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
-    try:
-        current_file = Path(os.path.join(input_folder, input_file))
-        file_contents = current_file.read_text()
-        return xmltodict.parse(file_contents), file_contents
-    except UnicodeDecodeError:
-        print(f'Unable to read {input_file} as text')
-    except ExpatError:
-        print(f'Unable to parse {input_file} into XML')
-    return None
-
-
 def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts = {}
     if file_args is None:
@@ -96,6 +56,35 @@ def load_db(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
     if xml_messages_zipfile is None:
         return None
     return read_folder(xml_messages_zipfile, dsn)
+
+
+# Unused
+def read_files(dsn: str, files: list[str], target_folder: str) -> set:
+    results = {}
+    for file in files:
+        data, contents = read_file_contents(file, target_folder)
+        if data is None:
+            continue
+        args = DataHandlers.DataFileArgs(data,
+                                         file,
+                                         dsn,
+                                         contents)
+        record_counts = read_file_into_db(args)
+        results = set(results) & set(record_counts)
+    return results
+
+
+# Unused
+def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
+    try:
+        current_file = Path(os.path.join(input_folder, input_file))
+        file_contents = current_file.read_text()
+        return xmltodict.parse(file_contents), file_contents
+    except UnicodeDecodeError:
+        print(f'Unable to read {input_file} as text')
+    except ExpatError:
+        print(f'Unable to parse {input_file} into XML')
+    return None
 
 
 DB_NAME = "googlevr.db"
