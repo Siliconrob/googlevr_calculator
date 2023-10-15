@@ -9,7 +9,7 @@
 
 
 - Download applicable ARI XML message files
-- Zip them up
+- Zip them up `zip {name of output zip file name} {ari files pattern}` example `zip output.zip *ari*`
 - Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
 
 # Build Google Vacation Rentals Calculator
