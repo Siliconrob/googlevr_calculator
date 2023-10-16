@@ -3,14 +3,14 @@ import decimal
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from decimal import Decimal
-
 import pendulum
-
 from price_calculator.ExtraGuestCharges import get_extra_guest_charges, ExtraGuestCharge
 from price_calculator.Promotions import get_promotions, Promotion
 from price_calculator.RateModifiers import get_rate_modifiers, RateModifier
 from price_calculator.Rates import get_rates, Rate
 from price_calculator.TaxesOrFees import get_taxes, get_fees, TaxOrFee
+from icecream import ic
+ic.configureOutput(prefix='|> ')
 
 
 @dataclass
@@ -107,11 +107,11 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
     )
 
     total_rent = total_base_rent(details)
-    print(f'Total Base Rent: {total_rent}')
+    ic(f'Total Base Rent: {total_rent}')
     total_promotions = promotions_adjustment(total_rent, details)
-    print(f'Promotions: {total_promotions}')
+    ic(f'Promotions: {total_promotions}')
     total_taxes_fees = taxes_and_fees(total_rent - total_promotions, details)
-    print(f'Taxes And Fees: {total_taxes_fees}')
+    ic(f'Taxes And Fees: {total_taxes_fees}')
     total = total_rent + total_taxes_fees
-    print(f'Total: {total}')
+    ic(f'Total: {total}')
     return FeedPrice(total, total_rent, total_promotions, total_taxes_fees, details)

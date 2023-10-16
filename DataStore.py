@@ -11,6 +11,8 @@ from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
 from data_messages.TaxesAndFees import TaxOrFee
 from data_messages.PropertyData import PropertyData
+from icecream import ic
+ic.configureOutput(prefix='|> ')
 
 
 def get_dsn(db_name: str) -> str:
@@ -32,9 +34,9 @@ def read_folder(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
             record_counts = read_file_into_db(args)
             results = set(results) & set(record_counts)
         except UnicodeDecodeError:
-            print(f'Unable to read {input_file} as text')
+            ic(f'Unable to read {input_file} as text')
         except ExpatError:
-            print(f'Unable to parse {input_file} into XML')
+            ic(f'Unable to parse {input_file} into XML')
     return results
 
 
@@ -81,9 +83,9 @@ def read_file_contents(input_file: str, input_folder: str) -> (dict, str):
         file_contents = current_file.read_text()
         return xmltodict.parse(file_contents), file_contents
     except UnicodeDecodeError:
-        print(f'Unable to read {input_file} as text')
+        ic(f'Unable to read {input_file} as text')
     except ExpatError:
-        print(f'Unable to parse {input_file} into XML')
+        ic(f'Unable to parse {input_file} into XML')
     return None
 
 

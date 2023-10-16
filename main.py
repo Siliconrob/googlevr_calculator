@@ -1,5 +1,7 @@
 import argparse
 import os
+from icecream import ic
+ic.configureOutput(prefix='|> ')
 
 import uvicorn
 from DataStore import get_dsn, load_db, DB_NAME
@@ -26,6 +28,6 @@ if __name__ == "__main__":
         external_id = args.external_id if len(args.external_id) > 0 else "orp5b45c10x"
         book_date = args.book_date if len(args.book_date) > 0 else "2023-10-12"
         calculated_feed_price = compute_feed_price(external_id, start, end, book_date, dsn)
-        print(calculated_feed_price)
+        ic(calculated_feed_price)
     else:
         uvicorn.run(app, host="0.0.0.0", port=8080)
