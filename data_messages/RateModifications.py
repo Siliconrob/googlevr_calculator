@@ -245,7 +245,11 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (RateModifi
     results = FileInfo.FileInfo(file_args.file_name)
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'RateModifications.@timestamp'))
     results.external_id = glom(file_args.formatted_data, 'RateModifications.HotelRateModifications.@hotel_id')
-    itinerary = glom(file_args.formatted_data, '**.ItineraryRateModification').pop()
+
+    itinerary = glom(file_args.formatted_data, '**.ItineraryRateModification')
+    if len(itinerary) == 0:
+        return None, None
+    itinerary = itinerary.pop()
     multiplier = glom(itinerary, 'ModificationActions.PriceAdjustment', default=None)
     if multiplier is None:
         return None, None

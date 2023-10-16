@@ -120,8 +120,10 @@ def read_extra_charges(file_args: DataHandlers.DataFileArgs) -> (ExtraGuestCharg
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'ExtraGuestCharges.@timestamp'))
     results.external_id = glom(file_args.formatted_data, 'ExtraGuestCharges.HotelExtraGuestCharges.@hotel_id')
 
-    extra_guest_charges = glom(file_args.formatted_data, '**.ExtraGuestCharge').pop()
-    # for current_extra_guest_charge in extra_guest_charges:
+    extra_guest_charges = glom(file_args.formatted_data, '**.ExtraGuestCharge')
+    if len(extra_guest_charges) == 0:
+        return None, None
+    extra_guest_charges = extra_guest_charges.pop()
     extra_adult_charge = glom(extra_guest_charges, 'AgeBrackets.AdultCharge', default=None)
     if extra_adult_charge is None:
         None, None

@@ -43,12 +43,8 @@ class FeedPrice:
 
 def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
-
-    for current_day in pendulum.period(charges.start_date, charges.end_date.subtract(days=1)).range('days'):
-        for rent_record in charges.rent:
-            if current_day == pendulum.parse(rent_record.start):
-                total += rent_record.base_amount
-            continue
+    for rent_record in charges.rent:
+        total += rent_record.base_amount * int(rent_record.day_multiplier)
     return total
 
 

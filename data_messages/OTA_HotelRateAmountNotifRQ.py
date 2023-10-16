@@ -116,6 +116,6 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
                                              start,
                                              end,
                                              Decimal(base_by_amount["@AmountBeforeTax"]),
-                                             int(base_by_amount["@NumberOfGuests"]))
+                                             int(base_by_amount.get("@NumberOfGuests", 2)))
         rates.append(new_rate)
     return rates, results
