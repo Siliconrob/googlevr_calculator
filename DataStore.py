@@ -12,7 +12,9 @@ from data_messages.RateModifications import RateModifications
 from data_messages.TaxesAndFees import TaxOrFee
 from data_messages.PropertyData import PropertyData
 from icecream import ic
+
 ic.configureOutput(prefix='|> ')
+import pydapper
 
 
 def get_dsn(db_name: str) -> str:
@@ -58,6 +60,16 @@ def load_db(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
     if xml_messages_zipfile is None:
         return None
     return read_folder(xml_messages_zipfile, dsn)
+
+
+def clear_db(dsn: str):
+    with pydapper.connect(dsn) as commands:
+        commands.execute(f"PRAGMA writable_schema = 1")
+        commands.execute(f"delete from sqlite_master where type in ('table', 'index', 'trigger')")
+        commands.execute(f"PRAGMA writable_schema = 0")
+        commands.execute(f"PRAGMA INTEGRITY_CHECK")
+    with pydapper.connect(dsn) as commands:
+        commands.execute(f"VACUUM")
 
 
 # Unused

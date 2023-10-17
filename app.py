@@ -7,11 +7,12 @@ from typing import Annotated
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse
-from DataStore import load_db, get_dsn, DB_NAME
+from DataStore import load_db, get_dsn, DB_NAME, clear_db
 from price_calculator.ComputeFeed import compute_feed_price
 
 tags_metadata = [
     {"name": "Calculator", "description": "For performing calculation"},
+    {"name": "Maintenance", "description": "For application maintenance"},
     {"name": "Test", "description": "Testing availability/active"},
 ]
 
@@ -54,11 +55,16 @@ async def feed_price(upload_file: UploadFile = File(...),
     return calculated_feed_price
 
 
-@app.get("/ping", tags=["Test"])
+@app.get("/ping", tags=["Test"], include_in_schema=False)
 async def ping():
     return f'pong {pendulum.now().to_iso8601_string()}'
 
 
-@app.get("/datasource", include_in_schema=False)
+@app.delete("/reset", tags=["Maintenance"], include_in_schema=False)
+async def reset():
+    clear_db(get_dsn(DB_NAME))
+
+
+@app.get("/datasource", tags=["Maintenance"], include_in_schema=False)
 async def current_db():
     return StreamingResponse(content=iter_file(), media_type="application/octet")
