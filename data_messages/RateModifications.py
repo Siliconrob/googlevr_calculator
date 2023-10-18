@@ -22,8 +22,8 @@ class RateModifications:
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     create_tables(file_args.dsn)
-    rate_modifier, file_info = read_rate_modifications(file_args)
-    return load_rate_modifications(rate_modifier, file_info, file_args)
+    rate_modifiers, file_info = read_rate_modifications(file_args)
+    return load_rate_modifications(rate_modifiers, file_info, file_args)
 
 
 def create_tables(dsn: str):
@@ -87,160 +87,161 @@ def create_tables(dsn: str):
                 PRIMARY KEY(external_id, file_id, min, max)
             )""")
 
-def load_rate_modifications(rate_modifier: RateModifications,
+def load_rate_modifications(rate_modifiers: list[RateModifications],
                             file_info: FileInfo.FileInfo,
                             file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
-    if rate_modifier is None:
+    if len(rate_modifiers) == 0:
         return None
 
     new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
-    rowcounts = {}
+    rowcount = {}
     with connect(file_args.dsn) as commands:
         commands.execute(f"""
             delete from RateModifications
             where file_id != ?file_id?
             """,
             param={"file_id": new_id})
-        rowcounts['ratemodifiers'] = commands.execute(f"""
-            INSERT INTO RateModifications
-            (
-                external_id,
-                file_id,
-                multiplier
-            )
-            values
-            (
-                ?external_id?,
-                ?file_id?,
-                ?multiplier?
-            ) ON CONFLICT (external_id, file_id, multiplier)
-            DO NOTHING
-            """,
-            param={
-                "external_id": rate_modifier.external_id,
-                "file_id": new_id,
-                "multiplier": float(rate_modifier.price_adjustment)
-            })
-        last_id = commands.query_first_or_default(f"""
-            select seq
-            from sqlite_sequence
-            WHERE name = ?table_name?
-            """,
-          param={"table_name": "RateModifications"}, model=LastId, default=LastId())
-
-        if len(rate_modifier.booking_dates) > 0:
-            rowcounts['bookingDates'] = commands.execute(f"""
-                INSERT INTO RateModifications_BookingDates
+        for rate_modifier in rate_modifiers:
+            rowcount['ratemodifiers'] = commands.execute(f"""
+                INSERT INTO RateModifications
                 (
                     external_id,
                     file_id,
-                    parent_id,
-                    start,
-                    end
+                    multiplier
                 )
                 values
                 (
                     ?external_id?,
                     ?file_id?,
-                    ?parent_id?,
-                    ?start?,
-                    ?end?
-                ) ON CONFLICT (external_id, file_id, start, end) DO NOTHING
-                """,
-                param=[{
-                    "external_id": rate_modifier.external_id,
-                    "file_id": new_id,
-                    "parent_id": last_id,
-                    "start": date_range.start.isoformat(),
-                    "end": date_range.end.isoformat()
-                } for date_range in rate_modifier.booking_dates]),
-        if len(rate_modifier.checkin_dates) > 0:
-            rowcounts['checkinDates'] = commands.execute(f"""
-                INSERT INTO RateModifications_CheckinDates
-                (
-                    external_id,
-                    file_id,
-                    parent_id,
-                    start,
-                    end
-                )
-                values
-                (
-                    ?external_id?,
-                    ?file_id?,
-                    ?parent_id?,
-                    ?start?,
-                    ?end?
-                ) ON CONFLICT (external_id, file_id, start, end)
+                    ?multiplier?
+                ) ON CONFLICT (external_id, file_id, multiplier)
                 DO NOTHING
                 """,
-                param=[{
-                    "external_id": rate_modifier.external_id,
-                    "file_id": new_id,
-                    "parent_id": last_id,
-                    "start": dateRange.start.isoformat(),
-                    "end": dateRange.end.isoformat()
-                } for dateRange in rate_modifier.checkin_dates]),
-        if len(rate_modifier.checkout_dates) > 0:
-            rowcounts['checkoutDates'] = commands.execute(f"""
-                INSERT INTO RateModifications_CheckoutDates
-                (
-                    external_id,
-                    file_id,
-                    parent_id,
-                    start,
-                    end
-                )
-                values
-                (
-                    ?external_id?,
-                    ?file_id?,
-                    ?parent_id?,
-                    ?start?,
-                    ?end?
-                ) ON CONFLICT (external_id, file_id, start, end)
-                DO NOTHING""",
-                param=[{
-                    "external_id": rate_modifier.external_id,
-                    "file_id": new_id,
-                    "parent_id": last_id,
-                    "start": dateRange.start.isoformat(),
-                    "end": dateRange.end.isoformat()
-                } for dateRange in rate_modifier.checkout_dates]),
-        if rate_modifier.length_of_stay is not None:
-            rowcounts['lengthOfStay'] = commands.execute(f"""
-                INSERT INTO RateModifications_LengthOfStay
-                (
-                    external_id,
-                    file_id,
-                    parent_id,
-                    min,
-                    max
-                )
-                values
-                (
-                    ?external_id?,
-                    ?file_id?,
-                    ?parnet_id?,
-                    ?min?,
-                    ?max?
-                ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
                 param={
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
-                    "parent_id": last_id,
-                    "min": rate_modifier.length_of_stay.min,
-                    "max": rate_modifier.length_of_stay.max
-                }),
-    file_info.records = 1
+                    "multiplier": float(rate_modifier.price_adjustment)
+                })
+            last_id = commands.query_first_or_default(f"""
+                select seq
+                from sqlite_sequence
+                WHERE name = ?table_name?
+                """,
+              param={"table_name": "RateModifications"}, model=LastId, default=LastId())
+
+            if len(rate_modifier.booking_dates) > 0:
+                rowcount['bookingDates'] = commands.execute(f"""
+                    INSERT INTO RateModifications_BookingDates
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        start,
+                        end
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?start?,
+                        ?end?
+                    ) ON CONFLICT (external_id, file_id, start, end) DO NOTHING
+                    """,
+                    param=[{
+                        "external_id": rate_modifier.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "start": date_range.start.isoformat(),
+                        "end": date_range.end.isoformat()
+                    } for date_range in rate_modifier.booking_dates]),
+            if len(rate_modifier.checkin_dates) > 0:
+                rowcount['checkinDates'] = commands.execute(f"""
+                    INSERT INTO RateModifications_CheckinDates
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        start,
+                        end
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?start?,
+                        ?end?
+                    ) ON CONFLICT (external_id, file_id, start, end)
+                    DO NOTHING
+                    """,
+                    param=[{
+                        "external_id": rate_modifier.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "start": dateRange.start.isoformat(),
+                        "end": dateRange.end.isoformat()
+                    } for dateRange in rate_modifier.checkin_dates]),
+            if len(rate_modifier.checkout_dates) > 0:
+                rowcount['checkoutDates'] = commands.execute(f"""
+                    INSERT INTO RateModifications_CheckoutDates
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        start,
+                        end
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?start?,
+                        ?end?
+                    ) ON CONFLICT (external_id, file_id, start, end)
+                    DO NOTHING""",
+                    param=[{
+                        "external_id": rate_modifier.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "start": dateRange.start.isoformat(),
+                        "end": dateRange.end.isoformat()
+                    } for dateRange in rate_modifier.checkout_dates]),
+            if rate_modifier.length_of_stay is not None:
+                rowcount['lengthOfStay'] = commands.execute(f"""
+                    INSERT INTO RateModifications_LengthOfStay
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        min,
+                        max
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?min?,
+                        ?max?
+                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    param={
+                        "external_id": rate_modifier.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "min": rate_modifier.length_of_stay.min,
+                        "max": rate_modifier.length_of_stay.max
+                    })
+    file_info.records = len(rate_modifiers)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
 
 
-def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (RateModifications, FileInfo):
+def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateModifications], FileInfo):
     if (len(file_args.formatted_data.keys()) > 1
             or glom(file_args.formatted_data, 'RateModifications', default=None) is None):
-        return None, None
+        return [], None
 
     results = FileInfo.FileInfo(file_args.file_name)
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'RateModifications.@timestamp'))
@@ -248,19 +249,21 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (RateModifi
 
     itinerary = glom(file_args.formatted_data, '**.ItineraryRateModification')
     if len(itinerary) == 0:
-        return None, None
-    itinerary = itinerary.pop()
-    multiplier = glom(itinerary, 'ModificationActions.PriceAdjustment', default=None)
-    if multiplier is None:
-        return None, None
-    booking_dates = DateRange.parse_ranges(glom(itinerary, 'BookingDates.DateRange', default=[]))
-    checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
-    checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
-    stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
-    new_modifier = RateModifications(results.external_id,
-                                     booking_dates,
-                                     checkin_dates,
-                                     checkout_dates,
-                                     Decimal(multiplier["@multiplier"]),
-                                     stay_requires)
-    return new_modifier, results
+        return [], None
+
+    new_modifiers = []
+    for itinerary in itinerary.pop():
+        multiplier = glom(itinerary, 'ModificationActions.PriceAdjustment', default=None)
+        if multiplier is None:
+            continue
+        booking_dates = DateRange.parse_ranges(glom(itinerary, 'BookingDates.DateRange', default=[]))
+        checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
+        checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
+        stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
+        new_modifiers.append(RateModifications(results.external_id,
+                                         booking_dates,
+                                         checkin_dates,
+                                         checkout_dates,
+                                         Decimal(multiplier["@multiplier"]),
+                                         stay_requires))
+    return new_modifiers, results

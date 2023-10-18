@@ -34,6 +34,7 @@ class FeedPrice:
     total: decimal = 0
     rent: decimal = 0
     promotions: decimal = 0
+    rate_modifiers: decimal = 0
     taxes_and_fees: decimal = 0
     details: ChargeDetails = None
 
@@ -58,6 +59,16 @@ def promotions_adjustment(rent_total: decimal, charges: ChargeDetails) -> decima
         fixed_amount = None if promotion.fixed_amount is None else Decimal(promotion.fixed_amount)
         if fixed_amount is not None:
             total += fixed_amount
+            continue
+    return total
+
+
+def rate_modifiers_adjustment(rent_total: decimal, charges: ChargeDetails) -> decimal:
+    total = 0
+    for rate_modifier in charges.rate_modifiers:
+        percent = None if rate_modifier.multiplier is None else Decimal(rate_modifier.multiplier)
+        if percent is not None:
+            total += rent_total * (1 - percent)
             continue
     return total
 
@@ -106,8 +117,10 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
     ic(f'Total Base Rent: {total_rent}')
     total_promotions = promotions_adjustment(total_rent, details)
     ic(f'Promotions: {total_promotions}')
-    total_taxes_fees = taxes_and_fees(total_rent - total_promotions, details)
+    total_rate_modifiers = rate_modifiers_adjustment(total_rent, details)
+    ic(f'Promotions: {total_rate_modifiers}')
+    total_taxes_fees = taxes_and_fees(total_rent - total_promotions - total_rate_modifiers, details)
     ic(f'Taxes And Fees: {total_taxes_fees}')
     total = total_rent + total_taxes_fees
     ic(f'Total: {total}')
-    return FeedPrice(total, total_rent, total_promotions, total_taxes_fees, details)
+    return FeedPrice(total, total_rent, total_promotions, total_rate_modifiers, total_taxes_fees, details)

@@ -176,7 +176,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
-                        "parent_id": last_id,
+                        "parent_id": last_id.seq,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.booking_dates]),
@@ -206,7 +206,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
-                        "parent_id": last_id,
+                        "parent_id": last_id.seq,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.checkin_dates]),
@@ -236,7 +236,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
-                        "parent_id": last_id,
+                        "parent_id": last_id.seq,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in promotion.checkout_dates]),
@@ -265,7 +265,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "external_id": promotion.external_id,
                         "promotion_id": promotion.id,
                         "file_id": new_id,
-                        "parent_id": last_id,
+                        "parent_id": last_id.seq,
                         "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
                         "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
                     }),
