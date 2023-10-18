@@ -1,7 +1,6 @@
 import decimal
 from dataclasses import dataclass
 from datetime import datetime
-
 from pydapper import connect
 
 
@@ -12,31 +11,37 @@ class Rate:
     end: datetime.date
     base_amount: decimal
     guest_count: int
-    day_multiplier: int
 
 
 def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> list[Rate]:
     with connect(dsn) as commands:
         return commands.query(f"""
-                select external_id,
-                    start,
-                    end,
-                    base_amount,
-                    guest_count,
+                select o.external_id,
+                       o.start,
+                       o.end,
+                       o.base_amount,
+                       o.guest_count
+                from OTAHotelRateAmountNotifRQ o
+                inner join
+                (
+                    WITH RECURSIVE cnt(x) AS
                     (
-                        CAST(JULIANDAY(end) - JULIANDAY(start) as int) -
-                        CASE WHEN end > ?end_date? THEN CAST(JULIANDAY(end) - JULIANDAY(?end_date?) as int) ELSE 0 END -
-                        CASE WHEN start < ?start_date? THEN CAST(JULIANDAY(start) - JULIANDAY(?start_date?) as int) ELSE 0 END
-                    ) as day_multiplier
-                from OTAHotelRateAmountNotifRQ
-                where external_id = ?external_id? and start between ?start_date? and ?end_date?
+                        SELECT 0
+                        UNION ALL
+                        SELECT x + 1
+                        FROM cnt
+                        LIMIT (SELECT (JULIANDAY(?end_date?) - JULIANDAY(?start_date?)))
+                    )
+                    SELECT date(JULIANDAY(?start_date?), '+' || x || ' days') as td
+                    FROM cnt
+                ) aa
+                on aa.td between o.start and o.end
                 """,
                               param={
                                   "external_id": external_id,
                                   "start_date": start.isoformat(),
                                   "end_date": end.isoformat(),
                               }, model=Rate)
-
 
 # Recursive date range in sqlite stash for need
 # WITH date_range(myDate, level) as

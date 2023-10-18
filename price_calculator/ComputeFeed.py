@@ -45,7 +45,7 @@ class FeedPrice:
 def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
     for rent_record in charges.rent:
-        total += rent_record.base_amount * int(rent_record.day_multiplier)
+        total += rent_record.base_amount
     return total
 
 
