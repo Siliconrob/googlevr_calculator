@@ -7,6 +7,7 @@ from pydapper import connect
 
 from data_messages import DateRange, LengthOfStay
 from data_messages import FileInfo, DataHandlers
+from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
 
@@ -252,7 +253,8 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
         return [], None
 
     new_modifiers = []
-    for itinerary in itinerary.pop():
+
+    for itinerary in get_safe_list(itinerary):
         multiplier = glom(itinerary, 'ModificationActions.PriceAdjustment', default=None)
         if multiplier is None:
             continue

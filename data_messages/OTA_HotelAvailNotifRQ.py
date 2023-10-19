@@ -6,6 +6,7 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import FileInfo, DataHandlers
+from data_messages.DataHandlers import get_safe_list
 
 
 @dataclass
@@ -107,7 +108,8 @@ def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAva
     file_availabilities = glom(file_args.formatted_data, '**.AvailStatusMessage')
     if len(file_availabilities) == 0:
         return [], None
-    for avail_status_message in file_availabilities.pop():
+
+    for avail_status_message in get_safe_list(file_availabilities):
         status_application_control = glom(avail_status_message, 'StatusApplicationControl', default=None)
         if status_application_control is None:
             continue

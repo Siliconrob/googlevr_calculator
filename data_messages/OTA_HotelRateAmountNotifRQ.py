@@ -8,6 +8,7 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import FileInfo, DataHandlers
+from data_messages.DataHandlers import get_safe_list
 
 
 @dataclass
@@ -105,7 +106,8 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
     file_rates = glom(file_args.formatted_data, '**.RateAmountMessage')
     if len(file_rates) == 0:
         return [], None
-    for rate_amount_message in file_rates.pop():
+
+    for rate_amount_message in get_safe_list(file_rates):
         base_by_amount = glom(rate_amount_message, 'Rates.Rate.BaseByGuestAmts.BaseByGuestAmt', default=None)
         status_application_control = glom(rate_amount_message, 'StatusApplicationControl', default=None)
         if base_by_amount is None or status_application_control is None:

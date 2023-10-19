@@ -5,6 +5,7 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
+from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
 
@@ -287,7 +288,8 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
     file_promotions = glom(file_args.formatted_data, '**.Promotion')
     if len(file_promotions) == 0:
         return [], None
-    for promotion in file_promotions.pop():
+
+    for promotion in get_safe_list(file_promotions):
         discount = glom(promotion, 'Discount', default=None)
         if discount is None:
             continue

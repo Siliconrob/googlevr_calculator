@@ -6,6 +6,7 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
+from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
 
@@ -220,7 +221,8 @@ def read_tax_fee_data(external_id, file_input, spec, extract_type) -> list[TaxOr
     taxes_or_fees_promotions = glom(file_input, spec)
     if len(taxes_or_fees_promotions) == 0:
         return []
-    for tax_or_fee in taxes_or_fees_promotions.pop():
+
+    for tax_or_fee in get_safe_list(taxes_or_fees_promotions):
         extracted_amount = glom(tax_or_fee, 'Amount', default=None)
         taxes_or_fees.append(TaxOrFee(external_id,
                                       DateRange.parse_ranges(glom(tax_or_fee, 'BookingDates.DateRange', default=[])),
@@ -234,3 +236,5 @@ def read_tax_fee_data(external_id, file_input, spec, extract_type) -> list[TaxOr
                                       None if extracted_amount is None else Decimal(extracted_amount),
                                       extract_type))
     return taxes_or_fees
+
+
