@@ -115,12 +115,18 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
 
     total_rent = total_base_rent(details)
     ic(f'Total Base Rent: {total_rent}')
+
+    total_rate_modifiers = rate_modifiers_adjustment(total_rent, details)
+    ic(f'Rate Modifiers: {total_rate_modifiers}')
+    current_amount = total_rent - total_rate_modifiers
+
     total_promotions = promotions_adjustment(total_rent, details)
     ic(f'Promotions: {total_promotions}')
-    total_rate_modifiers = rate_modifiers_adjustment(total_rent, details)
-    ic(f'Promotions: {total_rate_modifiers}')
-    total_taxes_fees = taxes_and_fees(total_rent - total_promotions - total_rate_modifiers, details)
+    current_amount = current_amount - total_promotions
+
+    total_taxes_fees = taxes_and_fees(current_amount, details)
     ic(f'Taxes And Fees: {total_taxes_fees}')
-    total = total_rent + total_taxes_fees
+
+    total = current_amount + total_taxes_fees
     ic(f'Total: {total}')
     return FeedPrice(total, total_rent, total_promotions, total_rate_modifiers, total_taxes_fees, details)

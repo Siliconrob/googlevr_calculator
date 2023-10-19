@@ -32,8 +32,8 @@ def get_rate_modifiers(external_id: str,
             and ?end_date? between COALESCE(rcod.start, DATE(?end_date?, '-1 day')) and COALESCE(rcod.end, DATE(?end_date?, '+1 day'))
             left join RateModifications_LengthOfStay rlos
             on r.id = rlos.parent_id
-            and COALESCE(rlos.min, ?nights?) <= ?nights? and COALESCE(rlos.max, ?nights?) >= ?nights?
             WHERE r.external_id = ?external_id?
+            and (?nights? between COALESCE(rlos.min, ?nights?) and COALESCE(rlos.max, ?nights?))            
             """,
                               param={
                                   "external_id": external_id,
