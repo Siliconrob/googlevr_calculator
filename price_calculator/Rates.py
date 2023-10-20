@@ -26,7 +26,7 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
                 (
                     WITH RECURSIVE cnt(x) AS
                     (
-                        SELECT 0
+                        SELECT 1
                         UNION ALL
                         SELECT x + 1
                         FROM cnt
