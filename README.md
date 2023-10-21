@@ -13,6 +13,18 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
 - Send the input data files with parameters to compute a feed price `curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"'`
 - Display the JSON response in a nice human readable format `jq .`
 
+**Sample output**
+```
+{
+  "total": 2605.09,
+  "rent": 1867,
+  "promotions": 0,
+  "rate_modifiers": 0,
+  "taxes_and_fees": 738.09,
+  "details": {
+    ...
+```
+
 
 ## Walkthrough
 
