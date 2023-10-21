@@ -7,6 +7,7 @@ from pydapper import connect
 @dataclass
 class Rate:
     external_id: str
+    current_day: datetime.date
     start: datetime.date
     end: datetime.date
     base_amount: decimal
@@ -17,6 +18,7 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
     with connect(dsn) as commands:
         return commands.query(f"""
                 select o.external_id,
+                       date(aa.td, '-1 day') current_day,
                        o.start,
                        o.end,
                        o.base_amount,
