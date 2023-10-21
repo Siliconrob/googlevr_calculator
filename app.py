@@ -3,7 +3,7 @@ import os
 import zipfile
 from datetime import date
 from typing import Annotated
-
+from fastapi.middleware.cors import CORSMiddleware
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse
@@ -29,6 +29,16 @@ app = FastAPI(title="Google Vacation Rentals Calculator",
                   "name": "MIT License",
                   "url": "https://opensource.org/license/mit/",
               })
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def iter_file():  #
