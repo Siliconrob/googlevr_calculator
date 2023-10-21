@@ -26,7 +26,7 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
 ```
 
 
-## Walkthrough
+## Interactive OpenAPI walkthrough
 
 ![google_vr](https://github.com/Siliconrob/googlevr_calculator/assets/412511/563253cf-b073-415d-9e46-af4480f6522a)
 
