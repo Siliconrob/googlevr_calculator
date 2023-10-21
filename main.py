@@ -1,12 +1,12 @@
 import argparse
 import os
 from icecream import ic
-ic.configureOutput(prefix='|> ')
-
 import uvicorn
 from DataStore import get_dsn, load_db, DB_NAME
 from app import app
 from price_calculator.ComputeFeed import compute_feed_price
+
+ic.configureOutput(prefix='|> ')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_path", action="store", default="C:/test/gvr_inputs")

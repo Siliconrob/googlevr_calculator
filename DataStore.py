@@ -1,4 +1,5 @@
 import os
+import pydapper
 import zipfile
 from pathlib import Path
 from pyexpat import ExpatError
@@ -14,7 +15,6 @@ from data_messages.PropertyData import PropertyData
 from icecream import ic
 
 ic.configureOutput(prefix='|> ')
-import pydapper
 
 
 def get_dsn(db_name: str) -> str:

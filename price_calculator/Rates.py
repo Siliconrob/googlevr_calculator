@@ -46,13 +46,14 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
                               }, model=Rate)
 
 # Recursive date range in sqlite stash for need
-# WITH date_range(myDate, level) as
+# alternate approach
+# WITH date_range(myDate, nights) as
 # (
-# 	SELECT '2023-10-01' as myDate, 0 as nights
-#    UNION ALL
-#    SELECT DATE(myDate, '+1 day'), nights + 1
-#    FROM date_range
-#    WHERE nights < 8
+# 	SELECT DATE(?start_date?, '+1 day') as myDate, 1 as nights
+# 	UNION ALL
+# 	SELECT DATE(myDate, '+1 day'), nights + 1 as nights
+# 	FROM date_range
+# 	WHERE nights < (SELECT CAST(JULIANDAY(?end_date?) - JULIANDAY(?start_date?) as INTEGER))
 # )
 # SELECT *
-# FROM date_range
+# FROM date_range;
