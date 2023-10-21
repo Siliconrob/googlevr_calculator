@@ -38,6 +38,7 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
                     FROM cnt
                 ) aa
                 on aa.td between o.start and o.end
+                where o.external_id = ?external_id?
                 """,
                               param={
                                   "external_id": external_id,
