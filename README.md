@@ -5,13 +5,14 @@
 
 ## Run sample inputs as command line script commands
 ```
-zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"' | jq .
+zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"' | jq . > feed_results_$(date +%Y%m%d%H%M%S).json
 ```
 
 **Individual commands with explanation**
 - Build the zip file input `zip -jr - sample_files > sample_input.zip` This wipes current `sample_input.zip` file each time to avoid zip files building junk inside
 - Send the input data files with parameters to compute a feed price `curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"'`
 - Display the JSON response in a nice human readable format `jq .`
+- Send the JSON response data into a `feed_results` JSON file with timestamp uniqueness `feed_results_$(date +%Y%m%d%H%M%S).json`
 
 **Sample output**
 ```
