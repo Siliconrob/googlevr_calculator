@@ -95,7 +95,7 @@ def tax_or_fee_total(tax_or_fees: list[TaxOrFee], nights: int, rent_amount: deci
     return total
 
 
-def compute_feed_price(external_id, start_date: date, end_date: date, book_date: date, dsn: str) -> ChargeDetails:
+def compute_feed_price(external_id, start_date: date, end_date: date, book_date: date, dsn: str) -> FeedPrice:
     start_date = pendulum.datetime(start_date.year, start_date.month, start_date.day)
     end_date = pendulum.datetime(end_date.year, end_date.month, end_date.day)
     book_date = pendulum.datetime(book_date.year, book_date.month, book_date.day)
