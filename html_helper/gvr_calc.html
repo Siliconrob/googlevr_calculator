@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Vacation Rental Calculator</title>
+    <style>
+      .example-results {
+        border: 2px solid #0a64b8;
+        color: black;
+        display: flex;
+        font-family: sans-serif;
+        font-weight: bold;
+		display: flex;
+		flex-direction: column;
+      }
+
+      .example-parent {
+        border: 2px solid #DFA612;
+        color: black;
+        display: flex;
+        font-family: sans-serif;
+        font-weight: bold;
+      }
+
+      .example-origin {
+        flex-basis: 50%;
+        flex-grow: 1;
+        padding: 10px;
+		display: flex;
+		flex-flow: column;		
+      }
+
+      .example-draggable {
+        background-color: #4AAE9B;
+        font-weight: normal;
+        margin-bottom: 10px;
+        margin-top: 10px;
+        padding: 10px;
+      }
+
+      .example-dropzone {
+		display: flex;
+		justify-content: center;
+		flex-flow: column;
+        background-color: hsl(138, 100%, 50%);
+        flex-basis: 100%;
+        flex-grow: 1;
+        padding: 10px;
+      }
+	  
+	  .example-dropzone:hover {
+		font-weight: bold;
+		color: yellow;
+		background-color: hsl(240, 100%, 50%);
+	  }      	  
+	  
+    </style>
+  </head>
+  <body>
+    <script>
+      function onDragStart(event) {
+        event.dataTransfer.setData('text/plain', event.target.id);
+        event.currentTarget.style.backgroundColor = 'yellow';          
+      }
+      function onDragOver(event) {
+        event.preventDefault();
+      }            
+      function onDrop(event) {
+        const id = event.dataTransfer.getData('text');
+        const draggableElement = document.getElementById(id);
+        const dropzone = event.target;
+        dropzone.appendChild(draggableElement);
+        event.dataTransfer.clearData();                
+      }
+
+      function setDates(){
+        const now = new Date();
+        const checkinDate = document.getElementById('checkinDate');
+        checkinDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate()}`;
+        const checkoutDate = document.getElementById('checkoutDate');
+        checkoutDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate() + 7}`;
+        const bookingDate = document.getElementById('bookingDate');
+        bookingDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate()}`;
+      }
+
+      function dragOverHandler(ev) {
+        console.log("File(s) in drop zone");
+        // Prevent default behavior (Prevent file from being opened)		
+        ev.preventDefault();		
+      }
+
+      let currentFiles = [];
+
+      function dropHandler(ev) {
+        console.log("File(s) dropped");
+
+        // Prevent default behavior (Prevent file from being opened)
+        ev.preventDefault();
+		currentFiles.splice(0, currentFiles.length)
+		document.getElementById("drop_zone").innerHTML = "";
+
+        if (ev.dataTransfer.items) {
+          // Use DataTransferItemList interface to access the file(s)
+          [...ev.dataTransfer.items].forEach((item, i) => {
+            // If dropped items aren't files, reject them
+            if (item.kind === "file") {			
+              currentFile = item.getAsFile();
+              console.log(`… currentFile[${i}].name = ${currentFile.name}`);			  
+			  currentFiles.push(currentFile);
+            }
+          });
+        } else {
+          // Use DataTransfer interface to access the file(s)
+          [...ev.dataTransfer.files].forEach((file, i) => {
+            console.log(`… file[${i}].name = ${file.name}`);
+			currentFiles.push(file);
+          });
+        }
+		
+		const uploadedFiles = document.createElement('ul');
+		currentFiles.map(z => {
+			const newFileDetail = document.createElement("li");
+			newFileDetail.innerHTML = `${z.name}`;
+			newFileDetail.setAttribute('style', 'display: block;'); 
+			uploadedFiles.appendChild(newFileDetail);
+		});
+		document.getElementById("drop_zone").appendChild(uploadedFiles);
+      }
+
+      async function getFeedPrice() {
+        try {
+
+          const paramsObj = {
+            external_id: document.getElementById("orpExternalId").value,
+            start_date: document.getElementById("checkinDate").value,
+            end_date: document.getElementById("checkoutDate").value,
+            booked_date: document.getElementById("bookingDate").value
+          };
+
+          const searchParams = new URLSearchParams(paramsObj).toString();
+          const requestUrl = `https://google-vr-calculator.district9.info/feed_from_xml?${searchParams}`;
+          const formData = new FormData();		  
+		  currentFiles.forEach(z => {
+			console.log(z.name);
+			formData.append("upload_files", z);
+		  });
+
+          const response = await fetch(requestUrl, {
+            method: "POST",
+            body: formData,
+          });
+
+        const result = await response.json();
+		  const theText = JSON.stringify(result, null, 2);		
+          console.log(theText);
+		  let content = document.createElement("PRE");
+		  content.innerHTML = theText;
+		  document.getElementById("resultsPane").innerHTML = "";
+          document.getElementById("resultsPane").appendChild(content);
+        } catch (error) {
+          console.error(error);
+		  let errorMessage = document.createElement("PRE");
+		  errorMessage.innerHTML = error;
+		  document.getElementById("resultsPane").innerHTML = "";		  
+		  document.getElementById("resultsPane").appendChild(errorMessage);
+        }
+      }
+
+      window.onload = (event) => {
+        setDates();
+      };
+
+    </script>
+
+    <div class="example-parent">
+      <div class="example-origin">
+        <div style="margin-top: 1rem;">
+          <span style="width: 10rem; display: block;">ORP External Id</span>
+          <input id="orpExternalId" type="text" placeholder="orp12345x"/>
+        </div>
+        <div style="margin-top: 1rem;">
+          <span style="width: 10rem; display: block;">Checkin Date</span>
+          <input id="checkinDate" type="date" />
+        </div>
+        <div style="margin-top: 1rem;">
+          <span style="width: 10rem; display: block;">Checkout Date</span>
+          <input id="checkoutDate" type="date" />
+        </div>
+        <div style="margin-top: 1rem;">
+          <span style="width: 10rem; display: block;">Booking Date</span>
+          <input id="bookingDate" type="date" />
+        </div>
+        <div style="margin-top: 1rem;">
+          <input id="getFeedPrice" type="button" value="Get Feed Price" onclick="getFeedPrice()" />
+        </div>
+      </div>
+      <div class="example-dropzone" id="drop_zone"
+        ondrop="dropHandler(event);"
+        ondragover="dragOverHandler(event);">
+        <p>Drag and drop the ARI XML files <i>here</i>.</p>
+      </div>          
+    </div>
+    <div class="example-results">
+      <div><h2>Results</h2></div>
+      <div id="resultsPane"></div>
+    </div>
+  </body>
+</html>
