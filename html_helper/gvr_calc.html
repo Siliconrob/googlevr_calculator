@@ -51,7 +51,20 @@
 		font-weight: bold;
 		color: yellow;
 		background-color: hsl(240, 100%, 50%);
-	  }      	  
+	  }
+	  
+	  .spacer {
+		height: 1rem;
+	  }
+	  
+	  .headerDetail {
+		background-color: hsl(80, 50%, 50%);
+	  }
+	  
+	  .bigHeaderDetail {
+		background-color: hsl(45, 50%, 50%);
+	  }
+	  
 	  
     </style>
   </head>
@@ -128,34 +141,34 @@
 
       async function getFeedPrice() {
         try {
+			const paramsObj = {
+			external_id: document.getElementById("orpExternalId").value,
+			start_date: document.getElementById("checkinDate").value,
+			end_date: document.getElementById("checkoutDate").value,
+			booked_date: document.getElementById("bookingDate").value
+			};
 
-          const paramsObj = {
-            external_id: document.getElementById("orpExternalId").value,
-            start_date: document.getElementById("checkinDate").value,
-            end_date: document.getElementById("checkoutDate").value,
-            booked_date: document.getElementById("bookingDate").value
-          };
-
-          const searchParams = new URLSearchParams(paramsObj).toString();
-          const requestUrl = `https://google-vr-calculator.district9.info/feed_from_xml?${searchParams}`;
-          const formData = new FormData();		  
-		  currentFiles.forEach(z => {
+			const searchParams = new URLSearchParams(paramsObj).toString();
+			const requestUrl = `https://google-vr-calculator.district9.info/feed_from_xml?${searchParams}`;
+			const formData = new FormData();		  
+			currentFiles.forEach(z => {
 			console.log(z.name);
 			formData.append("upload_files", z);
-		  });
+			});
 
-          const response = await fetch(requestUrl, {
-            method: "POST",
-            body: formData,
-          });
+			const response = await fetch(requestUrl, {
+			method: "POST",
+			body: formData,
+			});
 
-        const result = await response.json();
-		  const theText = JSON.stringify(result, null, 2);		
-          console.log(theText);
-		  let content = document.createElement("PRE");
-		  content.innerHTML = theText;
-		  document.getElementById("resultsPane").innerHTML = "";
-          document.getElementById("resultsPane").appendChild(content);
+			const result = await response.json();
+			const theText = JSON.stringify(result, null, 2);		
+			console.log(theText);
+			let content = document.createElement("PRE");
+			content.innerHTML = theText;
+			document.getElementById("resultsPane").innerHTML = "";
+			document.getElementById("resultsPane").appendChild(content);
+			formatResults(result);
         } catch (error) {
           console.error(error);
 		  let errorMessage = document.createElement("PRE");
@@ -164,9 +177,226 @@
 		  document.getElementById("resultsPane").appendChild(errorMessage);
         }
       }
+	  
+	  function createRateModificationDetails(rateModDetails) {
+		const rateModsDiv = document.getElementById("rateModDetails");
+		rateModsDiv.innerHTML = "";
+		
+		const headerTaxFeeRow = document.createElement("div");
+		headerTaxFeeRow.style.display = "flex";
+		headerTaxFeeRow.style.flexDirection = "row";
+		
+		const multiplierHeader = document.createElement("span");
+		multiplierHeader.innerHTML = "Multiplier";
+		multiplierHeader.style.width = "10%";
+		headerTaxFeeRow.appendChild(multiplierHeader);
+		
+		rateModsDiv.appendChild(headerTaxFeeRow);		
+		rateModDetails.forEach(z => {
+			const newRow = document.createElement("div");
+			newRow.style.display = "flex";
+			newRow.style.flex_direction = "row";
+
+			const multiplier = document.createElement("span");
+			multiplier.style.width = "10%";
+			multiplier.innerHTML = z.multiplier;
+			newRow.appendChild(multiplier);
+
+			rateModsDiv.appendChild(newRow);
+		});						
+	  }	  
+	  
+	  function createTaxFeeDetails(taxFeeDetails, divId) {
+		const taxFeeDiv = document.getElementById(divId);
+		taxFeeDiv.innerHTML = "";
+		
+		const headerTaxFeeRow = document.createElement("div");
+		headerTaxFeeRow.style.display = "flex";
+		headerTaxFeeRow.style.flexDirection = "row";
+		
+		const calcTypeHeader = document.createElement("span");
+		calcTypeHeader.innerHTML = "Calc Type";
+		calcTypeHeader.style.width = "10%";
+		headerTaxFeeRow.appendChild(calcTypeHeader);
+		const periodHeader = document.createElement("span");
+		periodHeader.innerHTML = "Period";
+		periodHeader.style.width = "20%";
+		headerTaxFeeRow.appendChild(periodHeader);
+		const amountHeader = document.createElement("span");
+		amountHeader.style.width = "20%";
+		amountHeader.innerHTML = "Amount";
+		headerTaxFeeRow.appendChild(amountHeader);		
+		
+		taxFeeDiv.appendChild(headerTaxFeeRow);		
+		taxFeeDetails.forEach(z => {
+			const newRow = document.createElement("div");
+			newRow.style.display = "flex";
+			newRow.style.flex_direction = "row";
+
+			const calcType = document.createElement("span");
+			calcType.style.width = "10%";
+			calcType.innerHTML = z.calc_type;
+			newRow.appendChild(calcType);
+
+			const period = document.createElement("span");
+			period.style.width = "20%";
+			period.innerHTML = z.period;
+			newRow.appendChild(period);
+
+			const amount = document.createElement("span");
+			amount.style.width = "20%";
+			amount.innerHTML = z.amount;
+			newRow.appendChild(amount);
+
+			taxFeeDiv.appendChild(newRow);
+		});						
+	  }
+
+	  function createPromotionDetails(promotionDetails) {
+		const promotionDiv = document.getElementById("promotionDetails");
+		promotionDiv.innerHTML = "";
+		
+		const headerPromotionRow = document.createElement("div");
+		headerPromotionRow.style.display = "flex";
+		headerPromotionRow.style.flexDirection = "row";
+		
+		const idHeader = document.createElement("span");
+		idHeader.innerHTML = "Id";
+		idHeader.style.width = "10%";
+		headerPromotionRow.appendChild(idHeader);
+		const percentageHeader = document.createElement("span");
+		percentageHeader.innerHTML = "Percentage";
+		percentageHeader.style.width = "20%";
+		headerPromotionRow.appendChild(percentageHeader);
+		const fixedAmountHeader = document.createElement("span");
+		fixedAmountHeader.style.width = "20%";
+		fixedAmountHeader.innerHTML = "Fixed Amount";
+		headerPromotionRow.appendChild(fixedAmountHeader);
+		const fixedAmountPerNightHeader = document.createElement("span");
+		fixedAmountPerNightHeader.style.width = "10%";
+		fixedAmountPerNightHeader.innerHTML = "Fixed Amount Per Night";
+		headerPromotionRow.appendChild(fixedAmountPerNightHeader);		
+		const fixedPriceHeader = document.createElement("span");
+		fixedPriceHeader.style.width = "10%";
+		fixedPriceHeader.innerHTML = "Fixed Price";
+		headerPromotionRow.appendChild(fixedPriceHeader);		
+
+		promotionDiv.appendChild(headerPromotionRow);
+		
+		promotionDetails.forEach(z => {
+			const newRow = document.createElement("div");
+			newRow.style.display = "flex";
+			newRow.style.flex_direction = "row";
+
+			const promotionId = document.createElement("span");
+			promotionId.style.width = "10%";
+			promotionId.innerHTML = z.promotion_id;
+			newRow.appendChild(promotionId);
+
+			const percentage = document.createElement("span");
+			percentage.style.width = "20%";
+			percentage.innerHTML = z.percentage;
+			newRow.appendChild(percentage);
+
+			const fixedAmount = document.createElement("span");
+			fixedAmount.style.width = "20%";
+			fixedAmount.innerHTML = z.fixed_amount;
+			newRow.appendChild(fixedAmount);
+
+			const fixedAmountPerNight = document.createElement("span");
+			fixedAmountPerNight.style.width = "10%";
+			fixedAmountPerNight.innerHTML = z.fixed_amount_per_night;
+			newRow.appendChild(fixedAmountPerNight);
+
+			const fixedPrice = document.createElement("span");
+			fixedPrice.style.width = "10%";
+			fixedPrice.innerHTML = z.fixed_price;
+			newRow.appendChild(fixedPrice);
+
+			promotionDiv.appendChild(newRow);
+		});	  
+	  }
+
+
+	  function createRentDetails(rentDetails) {
+		const rentDiv = document.getElementById("rentDetails");
+		rentDiv.innerHTML = "";
+		
+		const headerRentRow = document.createElement("div");
+		headerRentRow.style.display = "flex";
+		headerRentRow.style.flexDirection = "row";
+		
+		const currentDayHeader = document.createElement("span");
+		currentDayHeader.innerHTML = "Current Day";
+		currentDayHeader.style.width = "10%";
+		headerRentRow.appendChild(currentDayHeader);
+		const startDayHeader = document.createElement("span");
+		startDayHeader.innerHTML = "Start Day";
+		startDayHeader.style.width = "20%";
+		headerRentRow.appendChild(startDayHeader);
+		const endDayHeader = document.createElement("span");
+		endDayHeader.style.width = "20%";
+		endDayHeader.innerHTML = "End Day";
+		headerRentRow.appendChild(endDayHeader);
+		const baseAmountHeader = document.createElement("span");
+		baseAmountHeader.style.width = "10%";
+		baseAmountHeader.innerHTML = "Base Amount";
+		headerRentRow.appendChild(baseAmountHeader);		
+		rentDiv.appendChild(headerRentRow);
+		
+		rentDetails.forEach(z => {
+			const newRow = document.createElement("div");
+			newRow.style.display = "flex";
+			newRow.style.flex_direction = "row";
+
+			const currentDay = document.createElement("span");
+			currentDay.style.width = "10%";
+			currentDay.innerHTML = z.current_day;
+			newRow.appendChild(currentDay);
+
+			const startDay = document.createElement("span");
+			startDay.style.width = "20%";
+			startDay.innerHTML = z.start;
+			newRow.appendChild(startDay);
+
+			const endDay = document.createElement("span");
+			endDay.style.width = "20%";
+			endDay.innerHTML = z.end;
+			newRow.appendChild(endDay);
+
+			const baseAmount = document.createElement("span");
+			baseAmount.style.width = "10%";
+			baseAmount.innerHTML = z.base_amount;
+			newRow.appendChild(baseAmount);
+			rentDiv.appendChild(newRow);
+		});	  
+	  }
+	  
+
+	  function formatResults(responseJSON) {
+		if (!responseJSON.hasOwnProperty("details")) {
+			return;
+		}
+		
+		document.getElementById("startDate").innerHTML = responseJSON.details.start_date;
+		document.getElementById("endDate").innerHTML = responseJSON.details.end_date;
+		
+		document.getElementById("nights").innerHTML = responseJSON.details.nights;
+		document.getElementById("rentAmount").innerHTML = responseJSON.rent;
+		document.getElementById("promotionsAmount").innerHTML = responseJSON.promotions;
+		document.getElementById("rateModAmount").innerHTML = responseJSON.rate_modifiers;
+		document.getElementById("taxesAndFeesAmount").innerHTML = responseJSON.taxes_and_fees;
+		document.getElementById("totalAmount").innerHTML = responseJSON.total;
+		
+		createRentDetails(responseJSON.details.rent);
+		createTaxFeeDetails(responseJSON.details.taxes, "taxDetails");
+		createTaxFeeDetails(responseJSON.details.fees, "feeDetails");
+		createPromotionDetails(responseJSON.details.promotions);
+		createRateModificationDetails(responseJSON.details.rate_modifiers);		
+	  };
 
       window.onload = (event) => {
-        setDates();
+        setDates();		
       };
 
     </script>
@@ -200,7 +430,73 @@
       </div>          
     </div>
     <div class="example-results">
-      <div><h2>Results</h2></div>
+      <div class="bigHeaderDetail"><h2>Formatted Results</h2></div>
+	  <div id="tableHeaderRow">
+		<div id="resultsRange">
+			<div>
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Start Date</span>
+					<span id="startDate"></span>
+				</div>
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">End Date</span>
+					<span id="endDate"></span>
+				</div>
+			</div>
+			<div class="spacer"></div>
+			<div>
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Nights</span>
+					<span id="nights"></span>
+				</div>						
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Rent</span>
+					<span id="rentAmount"></span>
+				</div>
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Promotions</span>
+					<span id="promotionsAmount"></span>
+				</div>
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Rate Modifiers</span>
+					<span id="rateModAmount"></span>
+				</div>				
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Taxes and Fees</span>
+					<span id="taxesAndFeesAmount"></span>
+				</div>								
+				<div style="display: flex; flex-direction: row;">
+					<span style="width: 10%;">Total</span>
+					<span id="totalAmount"></span>
+				</div>				
+			</div>
+			<div class="spacer"></div>
+			<div class="headerDetail"><h3>Rent Details</h3></div>
+			<div id="rentDetails">
+			</div>
+			<div class="spacer"></div>
+			<div class="headerDetail"><h3>Promotion Details</h3></div>
+			<div id="promotionDetails">
+			</div>
+			<div class="spacer"></div>
+			<div class="headerDetail"><h3>Rate Modification Details</h3></div>
+			<div id="rateModDetails">
+			</div>			
+			<div class="spacer"></div>
+			<div class="headerDetail"><h3>Tax Details</h3></div>
+			<div id="taxDetails">
+			</div>
+			<div class="spacer"></div>
+			<div class="headerDetail"><h3>Fee Details</h3></div>			
+			<div id="feeDetails">
+			</div>			
+		</div>
+	  </div>
+      <div id="tablePane">
+	  </div>
+    </div>	
+    <div class="example-results">
+      <div class="bigHeaderDetail"><h2>Raw Results</h2></div>
       <div id="resultsPane"></div>
     </div>
   </body>
