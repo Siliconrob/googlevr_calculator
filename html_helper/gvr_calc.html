@@ -65,7 +65,46 @@
 		background-color: hsl(45, 50%, 50%);
 	  }
 	  
-	  
+        .container {
+            border: 1px solid grey;
+            margin: 1rem;
+        }
+ 
+        [data-tab-info] {
+            display: none;
+        }
+ 
+        .active[data-tab-info] {
+            display: block;
+        }
+ 
+        .tab-content {
+            font-size: 20px;
+            font-family: sans-serif;
+            font-weight: bold;
+            color: rgb(0, 0, 0);
+        }
+ 
+        .tabs {
+            border-bottom: 1px solid grey;
+            font-size: 25px;
+            color: rgb(0, 0, 0);
+            display: flex;
+            margin: 0;
+        }
+ 
+        .tabs span {
+            background: hsl(300, 50%, 75%);
+            padding: 10px;
+            border: 1px solid rgb(255, 255, 255);
+        }
+ 
+        .tabs span:hover {
+            background: hsl(300, 80%, 50%);
+            cursor: pointer;
+            color: black;
+        }	  
+
     </style>
   </head>
   <body>
@@ -395,8 +434,25 @@
 		createRateModificationDetails(responseJSON.details.rate_modifiers);		
 	  };
 
+	  function setupTabs() {
+		// function to get each tab details
+		const tabs = document.querySelectorAll('[data-tab-value]')
+		const tabInfos = document.querySelectorAll('[data-tab-info]')
+
+		tabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const target = document.querySelector(tab.dataset.tabValue);
+				tabInfos.forEach(tabInfo => {
+					tabInfo.classList.remove('active')
+				})
+				target.classList.add('active');
+			})
+		});	  
+	  }
+
       window.onload = (event) => {
         setDates();		
+		setupTabs();
       };
 
     </script>
@@ -429,75 +485,87 @@
         <p>Drag and drop the ARI XML files <i>here</i>.</p>
       </div>          
     </div>
-    <div class="example-results">
-      <div class="bigHeaderDetail"><h2>Formatted Results</h2></div>
-	  <div id="tableHeaderRow">
-		<div id="resultsRange">
-			<div>
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Start Date</span>
-					<span id="startDate"></span>
-				</div>
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">End Date</span>
-					<span id="endDate"></span>
-				</div>
+	<div class="container">	
+		<div class="tabs">
+            <span data-tab-value="#tab_1">Formatted Results</span>
+            <span data-tab-value="#tab_2">Raw Results</span>
+        </div>
+		<div class="tab-content">
+			<div class="tabs__tab active" id="tab_1" data-tab-info>
+				<div class="example-results">
+				  <div class="bigHeaderDetail"><h2>Details</h2></div>
+				  <div id="tableHeaderRow">
+					<div id="resultsRange">
+						<div>
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Start Date</span>
+								<span id="startDate"></span>
+							</div>
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">End Date</span>
+								<span id="endDate"></span>
+							</div>
+						</div>
+						<div class="spacer"></div>
+						<div>
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Nights</span>
+								<span id="nights"></span>
+							</div>						
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Rent</span>
+								<span id="rentAmount"></span>
+							</div>
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Promotions</span>
+								<span id="promotionsAmount"></span>
+							</div>
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Rate Modifiers</span>
+								<span id="rateModAmount"></span>
+							</div>				
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Taxes and Fees</span>
+								<span id="taxesAndFeesAmount"></span>
+							</div>								
+							<div style="display: flex; flex-direction: row;">
+								<span style="width: 10%;">Total</span>
+								<span id="totalAmount"></span>
+							</div>				
+						</div>
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Rent Details</h3></div>
+						<div id="rentDetails">
+						</div>
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Promotion Details</h3></div>
+						<div id="promotionDetails">
+						</div>
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Rate Modification Details</h3></div>
+						<div id="rateModDetails">
+						</div>			
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Tax Details</h3></div>
+						<div id="taxDetails">
+						</div>
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Fee Details</h3></div>			
+						<div id="feeDetails">
+						</div>			
+					</div>
+				  </div>
+				  <div id="tablePane">
+				  </div>
+				</div>			
 			</div>
-			<div class="spacer"></div>
-			<div>
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Nights</span>
-					<span id="nights"></span>
-				</div>						
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Rent</span>
-					<span id="rentAmount"></span>
-				</div>
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Promotions</span>
-					<span id="promotionsAmount"></span>
-				</div>
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Rate Modifiers</span>
-					<span id="rateModAmount"></span>
-				</div>				
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Taxes and Fees</span>
-					<span id="taxesAndFeesAmount"></span>
-				</div>								
-				<div style="display: flex; flex-direction: row;">
-					<span style="width: 10%;">Total</span>
-					<span id="totalAmount"></span>
-				</div>				
+			<div class="tabs__tab" id="tab_2" data-tab-info>
+				<div class="example-results">
+				  <div class="bigHeaderDetail"><h2>Response Data</h2></div>
+				  <div id="resultsPane"></div>
+				</div>		
 			</div>
-			<div class="spacer"></div>
-			<div class="headerDetail"><h3>Rent Details</h3></div>
-			<div id="rentDetails">
-			</div>
-			<div class="spacer"></div>
-			<div class="headerDetail"><h3>Promotion Details</h3></div>
-			<div id="promotionDetails">
-			</div>
-			<div class="spacer"></div>
-			<div class="headerDetail"><h3>Rate Modification Details</h3></div>
-			<div id="rateModDetails">
-			</div>			
-			<div class="spacer"></div>
-			<div class="headerDetail"><h3>Tax Details</h3></div>
-			<div id="taxDetails">
-			</div>
-			<div class="spacer"></div>
-			<div class="headerDetail"><h3>Fee Details</h3></div>			
-			<div id="feeDetails">
-			</div>			
 		</div>
-	  </div>
-      <div id="tablePane">
-	  </div>
-    </div>	
-    <div class="example-results">
-      <div class="bigHeaderDetail"><h2>Raw Results</h2></div>
-      <div id="resultsPane"></div>
-    </div>
+	</div>
   </body>
 </html>
