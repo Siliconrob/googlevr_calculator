@@ -49,7 +49,7 @@ def total_base_rent(charges: ChargeDetails) -> decimal:
     return total
 
 
-def promotions_adjustment(rent_total: decimal, charges: ChargeDetails) -> decimal:
+def promotions_adjustment(rent_total: decimal, nights: int, charges: ChargeDetails) -> decimal:
     total = 0
     for promotion in charges.promotions:
         percent = None if promotion.percentage is None else Decimal(promotion.percentage)
@@ -59,6 +59,10 @@ def promotions_adjustment(rent_total: decimal, charges: ChargeDetails) -> decima
         fixed_amount = None if promotion.fixed_amount is None else Decimal(promotion.fixed_amount)
         if fixed_amount is not None:
             total += fixed_amount
+            continue
+        fixed_amount_per_night = None if promotion.fixed_amount_per_night is None else Decimal(promotion.fixed_amount_per_night)
+        if fixed_amount_per_night is not None:
+            total += fixed_amount_per_night * nights
             continue
     return total
 
@@ -120,7 +124,7 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
     ic(f'Rate Modifiers: {total_rate_modifiers}')
     current_amount = total_rent - total_rate_modifiers
 
-    total_promotions = promotions_adjustment(total_rent, details)
+    total_promotions = promotions_adjustment(current_amount, duration.days, details)
     ic(f'Promotions: {total_promotions}')
     current_amount = current_amount - total_promotions
 
