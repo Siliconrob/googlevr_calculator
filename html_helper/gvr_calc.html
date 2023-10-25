@@ -127,12 +127,15 @@
 
       function setDates(){
         const now = new Date();
-        const checkinDate = document.getElementById('checkinDate');
-        checkinDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate()}`;
+        const checkinDate = document.getElementById('checkinDate');		
+		now.setMonth(now.getMonth() + 1);		
+        checkinDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
         const checkoutDate = document.getElementById('checkoutDate');
-        checkoutDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate() + 7}`;
+		now.setDate(now.getDate() + 7);
+        checkoutDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
         const bookingDate = document.getElementById('bookingDate');
-        bookingDate.value = `${now.getFullYear()}-${(now.getMonth()+1)}-${now.getDate()}`;
+		const bookDay = new Date();
+        bookingDate.value = `${bookDay.getFullYear()}-${(bookDay.getMonth()+1).toString().padStart(2,'0')}-${bookDay.getDate().toString().padStart(2,'0')}`;
       }
 
       function dragOverHandler(ev) {
