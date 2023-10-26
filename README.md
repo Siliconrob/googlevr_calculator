@@ -1,8 +1,8 @@
 # We are live now
 
 ## Web interface + API
-- <a href="https://zipzap.sfo2.digitaloceanspaces.com/gvr_calc.html" target="_blank" rel="noopener">Google Vacation Rentals Calculator Live App</a>
-- <a href="https://google-vr-calculator.district9.info/docs" target="_blank" rel="noopener">Google Vacation Rentals Calculator Live API</a>
+- <a target="_blank" rel="noopener" href="https://zipzap.sfo2.digitaloceanspaces.com/gvr_calc.html">Google Vacation Rentals Calculator Live App</a>
+- <a target="_blank" rel="noopener" href="https://google-vr-calculator.district9.info/docs">Google Vacation Rentals Calculator Live API</a>
 
 ![DigitalOcean](https://img.shields.io/badge/DigitalOcean-%230167ff.svg?style=for-the-badge&logo=digitalOcean&logoColor=white)
 
