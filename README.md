@@ -29,6 +29,15 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
     ...
 ```
 
+## Interactive Web walkthrough
+
+![unnamed](https://github.com/Siliconrob/googlevr_calculator/assets/412511/662c2410-f6d7-4787-b688-a8ea1ae8f66b)
+
+- Grab all the applicable ARI XML message files
+- Drag and drop them on the big green box labeled drop the ARI XML files here
+- Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
+- Click the `Get Feed Price` button
+- Flip between the `Formatted Results, Raw Results` tab panes
 
 ## Interactive OpenAPI walkthrough
 
