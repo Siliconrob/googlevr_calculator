@@ -1,5 +1,8 @@
 # We are live now
-[Google Vacation Rentals Calculator Live App](https://google-vr-calculator.district9.info/docs)
+
+## Web interface + API
+- [Google Vacation Rentals Calculator Live App](https://zipzap.sfo2.digitaloceanspaces.com/gvr_calc.html)
+- [Google Vacation Rentals Calculator Live API](https://google-vr-calculator.district9.info/docs)
 
 ![DigitalOcean](https://img.shields.io/badge/DigitalOcean-%230167ff.svg?style=for-the-badge&logo=digitalOcean&logoColor=white)
 
