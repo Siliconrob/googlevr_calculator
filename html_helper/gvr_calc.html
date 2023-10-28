@@ -110,131 +110,197 @@
   </head>
   <body>
     <script>
-      function onDragStart(event) {
-        event.dataTransfer.setData('text/plain', event.target.id);
-        event.currentTarget.style.backgroundColor = 'yellow';          
-      }
-      function onDragOver(event) {
-        event.preventDefault();
-      }            
-      function onDrop(event) {
-        const id = event.dataTransfer.getData('text');
-        const draggableElement = document.getElementById(id);
-        const dropzone = event.target;
-        dropzone.appendChild(draggableElement);
-        event.dataTransfer.clearData();                
-      }
+	function onDragStart(event) {
+		event.dataTransfer.setData('text/plain', event.target.id);
+		event.currentTarget.style.backgroundColor = 'yellow';
+	}
+	function onDragOver(event) {
+		event.preventDefault();
+	}
+	function onDrop(event) {
+		const id = event.dataTransfer.getData('text');
+		const draggableElement = document.getElementById(id);
+		const dropzone = event.target;
+		dropzone.appendChild(draggableElement);
+		event.dataTransfer.clearData();
+	}
 
-      function setDates(){
-        const now = new Date();
-        const checkinDate = document.getElementById('checkinDate');		
-		now.setMonth(now.getMonth() + 1);		
-        checkinDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
-        const checkoutDate = document.getElementById('checkoutDate');
+	function setDates() {
+		const now = new Date();
+		const checkinDate = document.getElementById('checkinDate');
+		now.setMonth(now.getMonth() + 1);
+		checkinDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+		const checkoutDate = document.getElementById('checkoutDate');
 		now.setDate(now.getDate() + 7);
-        checkoutDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
-        const bookingDate = document.getElementById('bookingDate');
+		checkoutDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+		const bookingDate = document.getElementById('bookingDate');
 		const bookDay = new Date();
-        bookingDate.value = `${bookDay.getFullYear()}-${(bookDay.getMonth()+1).toString().padStart(2,'0')}-${bookDay.getDate().toString().padStart(2,'0')}`;
-      }
+		bookingDate.value = `${bookDay.getFullYear()}-${(bookDay.getMonth() + 1).toString().padStart(2, '0')}-${bookDay.getDate().toString().padStart(2, '0')}`;
+	}
 
-      function dragOverHandler(ev) {
-        console.log("File(s) in drop zone");
-        // Prevent default behavior (Prevent file from being opened)		
-        ev.preventDefault();		
-      }
+	function dragOverHandler(ev) {
+		console.log("File(s) in drop zone");
+		// Prevent default behavior (Prevent file from being opened)		
+		ev.preventDefault();
+	}
 
-      let currentFiles = [];
+	let currentFiles = [];
 
-      function dropHandler(ev) {
-        console.log("File(s) dropped");
+	function xmlToJson(xmlDoc) {
+		// Create the return object
+		let parsedResult = {};
 
-        // Prevent default behavior (Prevent file from being opened)
-        ev.preventDefault();
+		if (xmlDoc.nodeType == 1) { // element
+			// do attributes
+			if (xmlDoc.attributes.length > 0) {
+				parsedResult["@attributes"] = {};
+				for (let j = 0; j < xmlDoc.attributes.length; j++) {
+					const attribute = xmlDoc.attributes.item(j);
+					parsedResult["@attributes"][attribute.nodeName] = attribute.nodeValue;
+				}
+			}
+		}
+		else if (xmlDoc.nodeType == 3) { // text
+			parsedResult = xmlDoc.nodeValue;
+		}
+
+		// do children
+		if (xmlDoc.hasChildNodes()) {
+			for (let i = 0; i < xmlDoc.childNodes.length; i++) {
+				const item = xmlDoc.childNodes.item(i);
+				const nodeName = item.nodeName;
+				if (typeof (parsedResult[nodeName]) == "undefined") {
+					parsedResult[nodeName] = xmlToJson(item);
+				}
+				else {
+					if (typeof (parsedResult[nodeName].push) == "undefined") {
+						const old = parsedResult[nodeName];
+						parsedResult[nodeName] = [];
+						parsedResult[nodeName].push(old);
+					}
+					parsedResult[nodeName].push(xmlToJson(item));
+				}
+			}
+		}
+		return parsedResult;
+	};
+	
+	function parseInventoryFile(fileText) {
+		if (fileText.length == 0) {
+			return;
+		}		
+		
+		const parser = new DOMParser();		
+		const xml = parser.parseFromString(fileText, "text/xml");		
+		const resultObject = xmlToJson(xml);
+		console.log(resultObject);	
+	}
+
+	function readInventoryFiles() {		
+		const inventoryFiles = currentFiles.filter(z => z.name.includes("ari_ota_hotel_inv_count_notif"));
+		if (inventoryFiles.length == 0) {
+			return;
+		}
+		
+		const inventoryFile = inventoryFiles.pop();
+		const reader = new FileReader();		
+		reader.readAsText(inventoryFile);
+		reader.onload = () => {
+			const result = reader.result;
+			parseInventoryFile(result);
+		};
+	}
+
+	function dropHandler(ev) {
+		console.log("File(s) dropped");
+
+		// Prevent default behavior (Prevent file from being opened)
+		ev.preventDefault();
 		currentFiles.splice(0, currentFiles.length)
 		document.getElementById("drop_zone").innerHTML = "";
 
-        if (ev.dataTransfer.items) {
-          // Use DataTransferItemList interface to access the file(s)
-          [...ev.dataTransfer.items].forEach((item, i) => {
-            // If dropped items aren't files, reject them
-            if (item.kind === "file") {			
-              currentFile = item.getAsFile();
-              console.log(`… currentFile[${i}].name = ${currentFile.name}`);			  
-			  currentFiles.push(currentFile);
-            }
-          });
-        } else {
-          // Use DataTransfer interface to access the file(s)
-          [...ev.dataTransfer.files].forEach((file, i) => {
-            console.log(`… file[${i}].name = ${file.name}`);
-			currentFiles.push(file);
-          });
-        }
-		
+		if (ev.dataTransfer.items) {
+			// Use DataTransferItemList interface to access the file(s)
+			[...ev.dataTransfer.items].forEach((item, i) => {
+				// If dropped items aren't files, reject them
+				if (item.kind === "file") {
+					currentFile = item.getAsFile();
+					console.log(`… currentFile[${i}].name = ${currentFile.name}`);
+					currentFiles.push(currentFile);
+				}
+			});
+		} else {
+			// Use DataTransfer interface to access the file(s)
+			[...ev.dataTransfer.files].forEach((file, i) => {
+				console.log(`… file[${i}].name = ${file.name}`);
+				currentFiles.push(file);
+			});
+		}
+
 		const uploadedFiles = document.createElement('ul');
 		currentFiles.map(z => {
 			const newFileDetail = document.createElement("li");
 			newFileDetail.innerHTML = `${z.name}`;
-			newFileDetail.setAttribute('style', 'display: block;'); 
+			newFileDetail.setAttribute('style', 'display: block;');
 			uploadedFiles.appendChild(newFileDetail);
 		});
 		document.getElementById("drop_zone").appendChild(uploadedFiles);
-      }
+		readInventoryFiles();
+	}
 
-      async function getFeedPrice() {
-        try {
+	async function getFeedPrice() {
+		try {
 			const paramsObj = {
-			external_id: document.getElementById("orpExternalId").value,
-			start_date: document.getElementById("checkinDate").value,
-			end_date: document.getElementById("checkoutDate").value,
-			booked_date: document.getElementById("bookingDate").value
+				external_id: document.getElementById("orpExternalId").value,
+				start_date: document.getElementById("checkinDate").value,
+				end_date: document.getElementById("checkoutDate").value,
+				booked_date: document.getElementById("bookingDate").value
 			};
 
 			const searchParams = new URLSearchParams(paramsObj).toString();
 			const requestUrl = `https://google-vr-calculator.district9.info/feed_from_xml?${searchParams}`;
-			const formData = new FormData();		  
+			const formData = new FormData();
 			currentFiles.forEach(z => {
-			console.log(z.name);
-			formData.append("upload_files", z);
+				console.log(z.name);
+				formData.append("upload_files", z);
 			});
 
 			const response = await fetch(requestUrl, {
-			method: "POST",
-			body: formData,
+				method: "POST",
+				body: formData,
 			});
 
 			const result = await response.json();
-			const theText = JSON.stringify(result, null, 2);		
+			const theText = JSON.stringify(result, null, 2);
 			console.log(theText);
 			let content = document.createElement("PRE");
 			content.innerHTML = theText;
 			document.getElementById("resultsPane").innerHTML = "";
 			document.getElementById("resultsPane").appendChild(content);
 			formatResults(result);
-        } catch (error) {
-          console.error(error);
-		  let errorMessage = document.createElement("PRE");
-		  errorMessage.innerHTML = error;
-		  document.getElementById("resultsPane").innerHTML = "";		  
-		  document.getElementById("resultsPane").appendChild(errorMessage);
-        }
-      }
-	  
-	  function createRateModificationDetails(rateModDetails) {
+		} catch (error) {
+			console.error(error);
+			let errorMessage = document.createElement("PRE");
+			errorMessage.innerHTML = error;
+			document.getElementById("resultsPane").innerHTML = "";
+			document.getElementById("resultsPane").appendChild(errorMessage);
+		}
+	}
+
+	function createRateModificationDetails(rateModDetails) {
 		const rateModsDiv = document.getElementById("rateModDetails");
 		rateModsDiv.innerHTML = "";
-		
+
 		const headerTaxFeeRow = document.createElement("div");
 		headerTaxFeeRow.style.display = "flex";
 		headerTaxFeeRow.style.flexDirection = "row";
-		
+
 		const multiplierHeader = document.createElement("span");
 		multiplierHeader.innerHTML = "Multiplier";
 		multiplierHeader.style.width = "10%";
 		headerTaxFeeRow.appendChild(multiplierHeader);
-		
-		rateModsDiv.appendChild(headerTaxFeeRow);		
+
+		rateModsDiv.appendChild(headerTaxFeeRow);
 		rateModDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
@@ -246,17 +312,17 @@
 			newRow.appendChild(multiplier);
 
 			rateModsDiv.appendChild(newRow);
-		});						
-	  }	  
-	  
-	  function createTaxFeeDetails(taxFeeDetails, divId) {
+		});
+	}
+
+	function createTaxFeeDetails(taxFeeDetails, divId) {
 		const taxFeeDiv = document.getElementById(divId);
 		taxFeeDiv.innerHTML = "";
-		
+
 		const headerTaxFeeRow = document.createElement("div");
 		headerTaxFeeRow.style.display = "flex";
 		headerTaxFeeRow.style.flexDirection = "row";
-		
+
 		const calcTypeHeader = document.createElement("span");
 		calcTypeHeader.innerHTML = "Calc Type";
 		calcTypeHeader.style.width = "10%";
@@ -268,9 +334,9 @@
 		const amountHeader = document.createElement("span");
 		amountHeader.style.width = "20%";
 		amountHeader.innerHTML = "Amount";
-		headerTaxFeeRow.appendChild(amountHeader);		
-		
-		taxFeeDiv.appendChild(headerTaxFeeRow);		
+		headerTaxFeeRow.appendChild(amountHeader);
+
+		taxFeeDiv.appendChild(headerTaxFeeRow);
 		taxFeeDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
@@ -292,17 +358,17 @@
 			newRow.appendChild(amount);
 
 			taxFeeDiv.appendChild(newRow);
-		});						
-	  }
+		});
+	}
 
-	  function createPromotionDetails(promotionDetails) {
+	function createPromotionDetails(promotionDetails) {
 		const promotionDiv = document.getElementById("promotionDetails");
 		promotionDiv.innerHTML = "";
-		
+
 		const headerPromotionRow = document.createElement("div");
 		headerPromotionRow.style.display = "flex";
 		headerPromotionRow.style.flexDirection = "row";
-		
+
 		const idHeader = document.createElement("span");
 		idHeader.innerHTML = "Id";
 		idHeader.style.width = "10%";
@@ -318,14 +384,14 @@
 		const fixedAmountPerNightHeader = document.createElement("span");
 		fixedAmountPerNightHeader.style.width = "10%";
 		fixedAmountPerNightHeader.innerHTML = "Fixed Amount Per Night";
-		headerPromotionRow.appendChild(fixedAmountPerNightHeader);		
+		headerPromotionRow.appendChild(fixedAmountPerNightHeader);
 		const fixedPriceHeader = document.createElement("span");
 		fixedPriceHeader.style.width = "10%";
 		fixedPriceHeader.innerHTML = "Fixed Price";
-		headerPromotionRow.appendChild(fixedPriceHeader);		
+		headerPromotionRow.appendChild(fixedPriceHeader);
 
 		promotionDiv.appendChild(headerPromotionRow);
-		
+
 		promotionDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
@@ -357,18 +423,18 @@
 			newRow.appendChild(fixedPrice);
 
 			promotionDiv.appendChild(newRow);
-		});	  
-	  }
+		});
+	}
 
 
-	  function createRentDetails(rentDetails) {
+	function createRentDetails(rentDetails) {
 		const rentDiv = document.getElementById("rentDetails");
 		rentDiv.innerHTML = "";
-		
+
 		const headerRentRow = document.createElement("div");
 		headerRentRow.style.display = "flex";
 		headerRentRow.style.flexDirection = "row";
-		
+
 		const currentDayHeader = document.createElement("span");
 		currentDayHeader.innerHTML = "Current Day";
 		currentDayHeader.style.width = "10%";
@@ -384,9 +450,9 @@
 		const baseAmountHeader = document.createElement("span");
 		baseAmountHeader.style.width = "10%";
 		baseAmountHeader.innerHTML = "Base Amount";
-		headerRentRow.appendChild(baseAmountHeader);		
+		headerRentRow.appendChild(baseAmountHeader);
 		rentDiv.appendChild(headerRentRow);
-		
+
 		rentDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
@@ -412,33 +478,33 @@
 			baseAmount.innerHTML = z.base_amount;
 			newRow.appendChild(baseAmount);
 			rentDiv.appendChild(newRow);
-		});	  
-	  }
-	  
+		});
+	}
 
-	  function formatResults(responseJSON) {
+
+	function formatResults(responseJSON) {
 		if (!responseJSON.hasOwnProperty("details")) {
 			return;
 		}
-		
+
 		document.getElementById("startDate").innerHTML = responseJSON.details.start_date;
 		document.getElementById("endDate").innerHTML = responseJSON.details.end_date;
-		
+
 		document.getElementById("nights").innerHTML = responseJSON.details.nights;
 		document.getElementById("rentAmount").innerHTML = responseJSON.rent;
 		document.getElementById("promotionsAmount").innerHTML = responseJSON.promotions;
 		document.getElementById("rateModAmount").innerHTML = responseJSON.rate_modifiers;
 		document.getElementById("taxesAndFeesAmount").innerHTML = responseJSON.taxes_and_fees;
 		document.getElementById("totalAmount").innerHTML = responseJSON.total;
-		
+
 		createRentDetails(responseJSON.details.rent);
 		createTaxFeeDetails(responseJSON.details.taxes, "taxDetails");
 		createTaxFeeDetails(responseJSON.details.fees, "feeDetails");
 		createPromotionDetails(responseJSON.details.promotions);
-		createRateModificationDetails(responseJSON.details.rate_modifiers);		
-	  };
+		createRateModificationDetails(responseJSON.details.rate_modifiers);
+	};
 
-	  function setupTabs() {
+	function setupTabs() {
 		// function to get each tab details
 		const tabs = document.querySelectorAll('[data-tab-value]')
 		const tabInfos = document.querySelectorAll('[data-tab-info]')
@@ -451,14 +517,13 @@
 				})
 				target.classList.add('active');
 			})
-		});	  
-	  }
+		});
+	}
 
-      window.onload = (event) => {
-        setDates();		
+	window.onload = (event) => {
+		setDates();
 		setupTabs();
-      };
-
+	};	
     </script>
 
     <div class="example-parent">
