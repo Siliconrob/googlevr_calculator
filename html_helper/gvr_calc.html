@@ -185,15 +185,24 @@
 		return parsedResult;
 	};
 	
-	function parseInventoryFile(fileText) {
+	function parseInventoryData(inventoryData) {
+		const propertyId = inventoryData.OTA_HotelInvCountNotifRQ.Inventories['@attributes'].HotelCode;
+		document.getElementById("orpExternalId").value = propertyId;
+	}
+	
+	function readInventoryFileContents(fileText) {
 		if (fileText.length == 0) {
 			return;
-		}		
-		
-		const parser = new DOMParser();		
-		const xml = parser.parseFromString(fileText, "text/xml");		
-		const resultObject = xmlToJson(xml);
-		console.log(resultObject);	
+		}				
+		try {
+			const parser = new DOMParser();		
+			const xml = parser.parseFromString(fileText, "text/xml");
+			const resultObject = xmlToJson(xml);
+			parseInventoryData(resultObject);
+		}
+		catch (err) {
+			console.log(err);
+		}
 	}
 
 	function readInventoryFiles() {		
@@ -207,7 +216,7 @@
 		reader.readAsText(inventoryFile);
 		reader.onload = () => {
 			const result = reader.result;
-			parseInventoryFile(result);
+			readInventoryFileContents(result);
 		};
 	}
 
