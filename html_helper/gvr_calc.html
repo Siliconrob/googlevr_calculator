@@ -587,6 +587,60 @@
 		});
 	}
 
+	function createInventoryDetails(inventoryDetails) {
+		const inventoryDiv = document.getElementById("inventoryDetails");
+		inventoryDiv.innerHTML = "";
+
+		const headerInventoryRow = document.createElement("div");
+		headerInventoryRow.style.display = "flex";
+		headerInventoryRow.style.flexDirection = "row";
+
+		const currentDayHeader = document.createElement("span");
+		currentDayHeader.innerHTML = "Current Day";
+		currentDayHeader.style.width = "10%";
+		headerInventoryRow.appendChild(currentDayHeader);
+		const startDayHeader = document.createElement("span");
+		startDayHeader.innerHTML = "Start Day";
+		startDayHeader.style.width = "20%";
+		headerInventoryRow.appendChild(startDayHeader);
+		const endDayHeader = document.createElement("span");
+		endDayHeader.style.width = "20%";
+		endDayHeader.innerHTML = "End Day";
+		headerInventoryRow.appendChild(endDayHeader);
+		const inventoryHeader = document.createElement("span");
+		inventoryHeader.style.width = "10%";
+		inventoryHeader.innerHTML = "Inventory";
+		headerInventoryRow.appendChild(inventoryHeader);
+		rentDiv.appendChild(headerInventoryRow);
+
+		inventoryDetails.forEach(z => {
+			const newRow = document.createElement("div");
+			newRow.style.display = "flex";
+			newRow.style.flex_direction = "row";
+
+			const currentDay = document.createElement("span");
+			currentDay.style.width = "10%";
+			currentDay.innerHTML = z.current_day;
+			newRow.appendChild(currentDay);
+
+			const startDay = document.createElement("span");
+			startDay.style.width = "20%";
+			startDay.innerHTML = z.start;
+			newRow.appendChild(startDay);
+
+			const endDay = document.createElement("span");
+			endDay.style.width = "20%";
+			endDay.innerHTML = z.end;
+			newRow.appendChild(endDay);
+
+			const inventory = document.createElement("span");
+			inventory.style.width = "10%";
+			inventory.innerHTML = z.inventory;
+			
+			newRow.appendChild(inventory);
+			inventoryDiv.appendChild(newRow);
+		});	
+	}
 
 	function createRentDetails(rentDetails) {
 		const rentDiv = document.getElementById("rentDetails");
@@ -637,6 +691,11 @@
 			const baseAmount = document.createElement("span");
 			baseAmount.style.width = "10%";
 			baseAmount.innerHTML = z.base_amount;
+			
+			if (z.inventory_count == 1) {
+				newRow.style.backgroundColor = "red";
+			}
+			
 			newRow.appendChild(baseAmount);
 			rentDiv.appendChild(newRow);
 		});
@@ -663,6 +722,7 @@
 		createTaxFeeDetails(responseJSON.details.fees, "feeDetails");
 		createPromotionDetails(responseJSON.details.promotions);
 		createRateModificationDetails(responseJSON.details.rate_modifiers);
+		createInventoryDetails(responseJSON.details.inventory);
 	};
 
 	function setupTabs() {
@@ -898,7 +958,11 @@
 						<div class="spacer"></div>
 						<div class="headerDetail"><h3>Fee Details</h3></div>			
 						<div id="feeDetails">
-						</div>			
+						</div>
+						<div class="spacer"></div>
+						<div class="headerDetail"><h3>Inventory Details</h3></div>			
+						<div id="inventoryDetails">
+						</div>															
 					</div>
 				  </div>
 				  <div id="tablePane">

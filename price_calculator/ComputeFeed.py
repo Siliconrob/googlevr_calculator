@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, date
 from decimal import Decimal
 import pendulum
+
+from price_calculator.Inventory import get_inventory, Inventory
 from price_calculator.ExtraGuestCharges import get_extra_guest_charges, ExtraGuestCharge
 from price_calculator.Promotions import get_promotions, Promotion
 from price_calculator.RateModifiers import get_rate_modifiers, RateModifier
@@ -25,6 +27,7 @@ class ChargeDetails:
     promotions: list[Promotion] = field(default_factory=list)
     extra_guest_charges: list[ExtraGuestCharge] = field(default_factory=list)
     rate_modifiers: list[RateModifier] = field(default_factory=list)
+    inventories: list[Inventory] = field(default_factory=list)
     number_adults: int = 2
     number_children: int = 0
 
@@ -104,6 +107,7 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
     end_date = pendulum.datetime(end_date.year, end_date.month, end_date.day)
     book_date = pendulum.datetime(book_date.year, book_date.month, book_date.day)
     duration = pendulum.period(start_date, end_date)
+
     details = ChargeDetails(
         start_date,
         end_date,
@@ -114,7 +118,8 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
         get_fees(external_id, start_date, end_date, duration.days, book_date, dsn),
         get_promotions(external_id, start_date, end_date, duration.days, book_date, dsn),
         get_extra_guest_charges(external_id, start_date, end_date, dsn),
-        get_rate_modifiers(external_id, start_date, end_date, duration.days, book_date, dsn)
+        get_rate_modifiers(external_id, start_date, end_date, duration.days, book_date, dsn),
+        get_inventory(external_id, start_date, end_date, dsn)
     )
 
     total_rent = total_base_rent(details)
