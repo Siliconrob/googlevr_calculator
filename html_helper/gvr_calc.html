@@ -106,6 +106,99 @@
             color: black;
         }	  
 
+		#calendar {
+			max-width: 600px;
+		}
+		
+		.empty {
+			display: none;
+		}		
+
+		.month {
+			padding-top: .5rem;
+			padding-bottom: .5rem;
+			width: 100%;
+			background: hsl(0, 0%, 0%);
+			text-align: center;
+		}
+		
+		.month summary {
+			list-style-type: none;
+		}
+
+		ul {
+			list-style-type: none;
+		}
+
+		.month ul {
+			margin: 0;
+			padding: 0;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr 1fr;
+			grid-template-rows: 1fr;
+		}
+
+		.month ul li {
+			color: white;
+			font-size: 20px;
+			text-transform: uppercase;
+			letter-spacing: 3px;
+		}
+
+		#days {
+			padding: 10px 0;
+			background: hsl(40, 10%, 94%);
+			margin: 0;
+		}
+
+		#days li {
+			list-style-type: none;
+			text-align: center;
+			font-size: 16px;
+			color: #777;
+			padding: 15px;
+			margin: 3px;
+			border: 1px solid #ccc;
+			cursor: pointer;
+		}
+
+		#days li.empty {
+			border: none;
+			cursor: default;
+		}
+
+		#days li.active {
+			background: hsl(261, 92%, 51%);
+			color: white !important;
+		}
+		
+		.unavailable {
+			background-color: red !important;
+			color: white !important;
+		}
+
+		#next,
+		#prev {
+			cursor: pointer;
+		}
+
+
+		#days,
+		#weekdays {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+			grid-template-rows: 1fr;
+		}
+
+		@media all and (-ms-high-contrast: none) {
+		#days {
+			display: -ms-grid;
+			-ms-grid-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+			-ms-grid-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+			}
+		}
+		
+
     </style>
   </head>
   <body>
@@ -145,7 +238,31 @@
 	}
 
 	let currentFiles = [];
+	
+	let today = new Date();
+	let dayInt = today.getDate();
+	let month = today.getMonth();
+	let year = today.getFullYear();
 
+	const months = [
+	  "January",
+	  "February",
+	  "March",
+	  "April",
+	  "May",
+	  "June",
+	  "July",
+	  "August",
+	  "September",
+	  "October",
+	  "November",
+	  "December"
+	];
+
+	let calendarDates = []
+	
+
+	// Modified from https://davidwalsh.name/convert-xml-json 
 	function xmlToJson(xmlDoc) {
 		// Create the return object
 		let parsedResult = {};
@@ -185,9 +302,44 @@
 		return parsedResult;
 	};
 	
+	function getCalendarDates(inventories) {
+		if (inventories.length == 0) {
+			return;
+		}
+	
+		const calendarDates = [];
+		const dayInSeconds = 86400000;		
+		inventories.forEach((z) => {			
+			let currentDay = z.Start;
+			while (currentDay < z.End) {
+				calendarDates.push({
+					Day: new Date(currentDay.getTime() + dayInSeconds), // Shift 1 day
+					Available: z.Available
+				});			
+				currentDay = new Date(currentDay.getTime() + dayInSeconds);
+			}
+		});
+		return calendarDates;
+	}
+	
 	function parseInventoryData(inventoryData) {
-		const propertyId = inventoryData.OTA_HotelInvCountNotifRQ.Inventories['@attributes'].HotelCode;
+		
+		const inventories = inventoryData.OTA_HotelInvCountNotifRQ.Inventories;	
+		const propertyId = inventories['@attributes'].HotelCode;
 		document.getElementById("orpExternalId").value = propertyId;
+		
+		const currentInventories = inventories.Inventory.map((z) => {
+			const theDates = z.StatusApplicationControl["@attributes"];
+			const counts = z.InvCounts.InvCount["@attributes"];			
+			return {
+				Start: new Date(Date.parse(theDates.Start)),
+				End: new Date(Date.parse(theDates.End)),
+				Available: parseInt(counts.Count) > 0 ? true : false
+			};			
+		});
+		
+		calendarDates = getCalendarDates(currentInventories);
+		showCalendar(month, year, calendarDates);
 	}
 	
 	function readInventoryFileContents(fileText) {
@@ -529,14 +681,96 @@
 		});
 	}
 
+	function daysInMonth(month, year) {
+		// day 0 here returns the last day of the PREVIOUS month
+		return new Date(year, month + 1, 0).getDate();
+	}
+
+	function blankDates(count) {
+		const calendarDays = document.getElementById("days");	
+		// looping to add the correct amount of blank days to the calendar
+		for (let x = 0; x < count; x++) {
+			let cell = document.createElement("li");
+			let cellText = document.createTextNode("");
+			cell.appendChild(cellText);
+			// add the empty class to remove the borders
+			cell.classList.add("empty");
+			calendarDays.appendChild(cell);
+		}
+	}
+
+	function showCalendar(month, year, parsedAvailabilities) {
+		// gets the day of the week for this date
+		let firstDay = new Date(year, month).getDay();		
+		// clearing all previous cells		
+		const calendarDays = document.getElementById("days");		
+		calendarDays.innerHTML = "";
+		// checking the mount of days in this month to control the loop
+		let totalDays = daysInMonth(month, year);
+
+		// adding the blank boxes so that date start on correct day of the week
+		// substracting 1 to set monday as the first weekday
+		// and testing for sunday because it became the 7th day
+		blankDates(firstDay === 0 ? 6 : firstDay - 1);
+		// adding the dates to the calendar
+		for (let day = 1; day <= totalDays; day++) {
+			// create li node with text content & apend to body
+			let cell = document.createElement("li");
+			let cellText = document.createTextNode(day);
+			// adding active class if day matches today
+			if (dayInt === day && month === today.getMonth() && year === today.getFullYear()) {
+				cell.classList.add("active");
+			}
+
+			// appending date attributes to single date li element
+			cell.setAttribute("data-day", day);
+			cell.setAttribute("data-month", month);
+			cell.setAttribute("data-year", year);
+
+			//appending li to body of calendar
+			cell.classList.add("singleDay");
+			cell.appendChild(cellText);
+			calendarDays.appendChild(cell);
+		}
+		// set month string value
+		document.getElementById("month").innerHTML = months[month];
+		// set year string value
+		document.getElementById("year").innerHTML = year;
+	}
+
+	function next() {
+		year = month === 11 ? year + 1 : year;
+		month = (month + 1) % 12;
+		showCalendar(month, year, calendarDates);
+	}
+
+	function previous() {
+		year = month === 0 ? year - 1 : year;
+		month = month === 0 ? 11 : month - 1;
+		showCalendar(month, year, calendarDates);
+	}
+
+	function setupCalendar() {
+		const nextbtn = document.getElementById("next");
+		nextbtn.onclick = function () {
+			next();
+		};
+		const prevBtn = document.getElementById("prev");
+		prevBtn.onclick = function () {
+		  previous();
+		};
+		showCalendar(month, year, calendarDates);
+	}
+
 	window.onload = (event) => {
 		setDates();
 		setupTabs();
+		setupCalendar();
 	};	
     </script>
 
     <div class="example-parent">
-      <div class="example-origin">
+      <div class="example-origin">	  
         <div style="margin-top: 1rem;">
           <span style="width: 10rem; display: block;">ORP External Id</span>
           <input id="orpExternalId" type="text" placeholder="orp12345x"/>
@@ -556,7 +790,20 @@
         <div style="margin-top: 1rem;">
           <input id="getFeedPrice" type="button" value="Get Feed Price" onclick="getFeedPrice()" />
         </div>
-      </div>
+      </div>	  
+	  <div class="example-origin">	 
+		<div id="calendar">
+		  <div class="month">
+			<ul>
+			  <li id="prev">&#10094;</li>
+			  <li id="month"></li>
+			  <li id="year"></li>
+			  <li id="next">&#10095;</li>
+			</ul>
+		  </div>
+		  <ul id="days"></ul>
+		</div>
+	  </div>
       <div class="example-dropzone" id="drop_zone"
         ondrop="dropHandler(event);"
         ondragover="dragOverHandler(event);">
