@@ -31,10 +31,14 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
 
 ## Interactive Web walkthrough
 
-![unnamed](https://github.com/Siliconrob/googlevr_calculator/assets/412511/662c2410-f6d7-4787-b688-a8ea1ae8f66b)
+![unnamed](https://github.com/Siliconrob/googlevr_calculator/assets/412511/e1987069-0db0-47b2-a48b-93ccc047383e)
 
 - Grab all the applicable ARI XML message files
 - Drag and drop them on the big green box labeled drop the ARI XML files here
+- If you include the Inventory File
+  - ORP number loads automatically
+  - Availability is parsed and loaded into the calendar
+  - Changing the check in date moves calendar
 - Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
 - Click the `Get Feed Price` button
 - Flip between the `Formatted Results, Raw Results` tab panes
@@ -43,48 +47,6 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
 
 ![google_vr](https://github.com/Siliconrob/googlevr_calculator/assets/412511/563253cf-b073-415d-9e46-af4480f6522a)
 
-
 - Download applicable ARI XML message files
 - Zip them up `zip {name of output zip file name} {ari files pattern}` example `zip output.zip *ari*`
 - Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
-
-# Build Google Vacation Rentals Calculator
-
-### Read ARI XML messages into sqlite database
-- [X] Read Rates from XML file
-- [X] Load Rates into database
-- [X] Read Rate Modifications from XML file
-- [X] Load Rate Modifications into database
-- [X] Read Availability from XML file
-- [X] Load Availability into database
-- [X] Read Taxes and Fees from XML file
-- [X] Load Taxes and Fees into database
-- [X] Read Promotions from XML file
-- [X] Load Promotions into database
-- [X] Read Extra Guests from XML file
-- [X] Load Extra Guests into database
-
-**Further work**
-- [ ] Read Hotel Inventory from XML file
-- [ ] Load Hotel Inventory into database
-
-### Command line options to calculate rates
-- [X] Parse and add files data into sqlite
-- [X] Add command line parser
-- [X] Compute a feed price for specified dates
-  - [X] Get applicable rates from db
-  - [X] Get applicable taxes from db
-  - [X] Get applicable fees from db
-  - [X] Get applicable promotions from db
-  - [X] Get applicable extra charges from db
-  - [X] Calculate base rate
-  - [X] Apply fees
-  - [X] Apply taxes
-  - [X] Apply promotions
-- [X] FastAPI 
-  - [X] Setup routes and fixup parameters
-  - [X] Connect to database
-  - [X] Send proper response
-
-### Debugging to get matches
-- [ ] Example messages match to specific feed prices
