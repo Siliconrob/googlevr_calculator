@@ -8,6 +8,7 @@ import data_messages.OTA_HotelRateAmountNotifRQ
 from data_messages import DataHandlers
 from data_messages.ExtraGuestCharges import ExtraGuestCharges
 from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
+from data_messages.OTA_HotelInvCountNotifRQ import OTAHotelInvCountNotifRQ
 from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
 from data_messages.TaxesAndFees import TaxOrFee
@@ -59,6 +60,7 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts["promotions"] = data_messages.Promotions.insert_records(file_args)
     record_counts["extra_guest_charges"] = data_messages.ExtraGuestCharges.insert_records(file_args)
     record_counts["property_data"] = data_messages.PropertyData.insert_records(file_args)
+    record_counts["hotel_inventory"] = data_messages.OTA_HotelInvCountNotifRQ.insert_records(file_args)
     return record_counts
 
 
