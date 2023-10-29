@@ -698,6 +698,23 @@
 			calendarDays.appendChild(cell);
 		}
 	}
+	
+	function isAvailable(currentDay, currentMonth, currentYear, parsedAvailabilities) {
+		let isAvailable = true;	
+		if (parsedAvailabilities.length == 0) {
+			return isAvailable;
+		}		
+		for (let i = 0; i < parsedAvailabilities.length; i++) {
+			const current = parsedAvailabilities[i];
+			if (current.Day.getDate() == currentDay &&
+				current.Day.getMonth() == currentMonth &&
+				current.Day.getFullYear() == currentYear) {
+				isAvailable = current.Available;
+				break;
+			}			
+		}
+		return isAvailable;
+	}
 
 	function showCalendar(month, year, parsedAvailabilities) {
 		// gets the day of the week for this date
@@ -726,9 +743,13 @@
 			cell.setAttribute("data-day", day);
 			cell.setAttribute("data-month", month);
 			cell.setAttribute("data-year", year);
-
 			//appending li to body of calendar
 			cell.classList.add("singleDay");
+			
+			if (isAvailable(day, month, year, parsedAvailabilities) == false) {
+				cell.classList.add("unavailable");
+			}
+			
 			cell.appendChild(cellText);
 			calendarDays.appendChild(cell);
 		}
