@@ -220,7 +220,16 @@
 
 	function setDates() {
 		const now = new Date();
-		const checkinDate = document.getElementById('checkinDate');
+		const checkinDate = document.getElementById('checkinDate');		
+		checkinDate.onchange = (evt) => {
+			const newStart = new Date(Date.parse(evt.target.value));
+			month = newStart.getMonth();
+			year = newStart.getFullYear();
+		};
+		checkinDate.onblur = (evt) => {
+			showCalendar(month, year, calendarDates);
+		};
+		
 		now.setMonth(now.getMonth() + 1);
 		checkinDate.value = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
 		const checkoutDate = document.getElementById('checkoutDate');
@@ -611,7 +620,7 @@
 		inventoryHeader.style.width = "10%";
 		inventoryHeader.innerHTML = "Inventory";
 		headerInventoryRow.appendChild(inventoryHeader);
-		rentDiv.appendChild(headerInventoryRow);
+		inventoryDiv.appendChild(headerInventoryRow);
 
 		inventoryDetails.forEach(z => {
 			const newRow = document.createElement("div");
@@ -722,7 +731,7 @@
 		createTaxFeeDetails(responseJSON.details.fees, "feeDetails");
 		createPromotionDetails(responseJSON.details.promotions);
 		createRateModificationDetails(responseJSON.details.rate_modifiers);
-		createInventoryDetails(responseJSON.details.inventory);
+		createInventoryDetails(responseJSON.details.inventories);
 	};
 
 	function setupTabs() {
