@@ -420,6 +420,8 @@
 	}
 
 	async function getFeedPrice() {
+	
+		let targetTab = "formattedTab";	
 		try {
 			const paramsObj = {
 				external_id: document.getElementById("orpExternalId").value,
@@ -440,7 +442,10 @@
 				method: "POST",
 				body: formData,
 			});
-
+			if (!response.ok) {
+				targetTab = "rawTab";
+			}
+			
 			const result = await response.json();
 			const theText = JSON.stringify(result, null, 2);
 			console.log(theText);
@@ -455,7 +460,9 @@
 			errorMessage.innerHTML = error;
 			document.getElementById("resultsPane").innerHTML = "";
 			document.getElementById("resultsPane").appendChild(errorMessage);
+			targetTab = "rawTab";
 		}
+		document.getElementById(targetTab).click();
 	}
 
 	function createRateModificationDetails(rateModDetails) {
@@ -750,6 +757,7 @@
 			})
 		});
 	}
+	
 
 	function daysInMonth(month, year) {
 		// day 0 here returns the last day of the PREVIOUS month
@@ -903,8 +911,8 @@
     </div>
 	<div class="container">	
 		<div class="tabs">
-            <span data-tab-value="#tab_1">Formatted Results</span>
-            <span data-tab-value="#tab_2">Raw Results</span>
+            <span id="formattedTab" data-tab-value="#tab_1">Formatted Results</span>
+            <span id="rawTab" data-tab-value="#tab_2">Raw Results</span>
         </div>
 		<div class="tab-content">
 			<div class="tabs__tab active" id="tab_1" data-tab-info>
