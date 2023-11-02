@@ -199,6 +199,11 @@
 			}
 		}
 		
+		.headerDivRow {
+			background-color: hsl(337.15, 53%, 75%);
+			display: flex;
+			flex-direction: row;
+		}
 
     </style>
   </head>
@@ -469,16 +474,15 @@
 		const rateModsDiv = document.getElementById("rateModDetails");
 		rateModsDiv.innerHTML = "";
 
-		const headerTaxFeeRow = document.createElement("div");
-		headerTaxFeeRow.style.display = "flex";
-		headerTaxFeeRow.style.flexDirection = "row";
+		const headerRateModRow = document.createElement("div");
+		headerRateModRow.classList.add("headerDivRow");
 
 		const multiplierHeader = document.createElement("span");
 		multiplierHeader.innerHTML = "Multiplier";
 		multiplierHeader.style.width = "10%";
-		headerTaxFeeRow.appendChild(multiplierHeader);
+		headerRateModRow.appendChild(multiplierHeader);
 
-		rateModsDiv.appendChild(headerTaxFeeRow);
+		rateModsDiv.appendChild(headerRateModRow);
 		rateModDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
@@ -498,8 +502,7 @@
 		taxFeeDiv.innerHTML = "";
 
 		const headerTaxFeeRow = document.createElement("div");
-		headerTaxFeeRow.style.display = "flex";
-		headerTaxFeeRow.style.flexDirection = "row";
+		headerTaxFeeRow.classList.add("headerDivRow");
 
 		const calcTypeHeader = document.createElement("span");
 		calcTypeHeader.innerHTML = "Calc Type";
@@ -544,8 +547,7 @@
 		promotionDiv.innerHTML = "";
 
 		const headerPromotionRow = document.createElement("div");
-		headerPromotionRow.style.display = "flex";
-		headerPromotionRow.style.flexDirection = "row";
+		headerPromotionRow.classList.add("headerDivRow");
 
 		const idHeader = document.createElement("span");
 		idHeader.innerHTML = "Id";
@@ -609,8 +611,7 @@
 		inventoryDiv.innerHTML = "";
 
 		const headerInventoryRow = document.createElement("div");
-		headerInventoryRow.style.display = "flex";
-		headerInventoryRow.style.flexDirection = "row";
+		headerInventoryRow.classList.add("headerDivRow");
 
 		const currentDayHeader = document.createElement("span");
 		currentDayHeader.innerHTML = "Current Day";
@@ -664,8 +665,7 @@
 		rentDiv.innerHTML = "";
 
 		const headerRentRow = document.createElement("div");
-		headerRentRow.style.display = "flex";
-		headerRentRow.style.flexDirection = "row";
+		headerRentRow.classList.add("headerDivRow");
 
 		const currentDayHeader = document.createElement("span");
 		currentDayHeader.innerHTML = "Current Day";
