@@ -5,7 +5,7 @@ from decimal import Decimal
 from glom import glom
 from pydapper import connect
 
-from data_messages import DateRange, LengthOfStay
+from data_messages import DateRange, LengthOfStay, BookingWindowInt
 from data_messages import FileInfo, DataHandlers
 from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
@@ -19,6 +19,7 @@ class RateModifications:
     checkout_dates: list[DateRange]
     price_adjustment: decimal
     length_of_stay: LengthOfStay
+    booking_window: BookingWindowInt
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -87,6 +88,19 @@ def create_tables(dsn: str):
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
                 PRIMARY KEY(external_id, file_id, min, max)
             )""")
+        commands.execute(f"""
+            create table if not exists RateModifications_BookingWindow
+            (
+                external_id varchar(20),
+                file_id int,
+                parent_id int,
+                min int,
+                max int,
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
+                PRIMARY KEY(external_id, file_id, min, max)
+            )""")
+
 
 def load_rate_modifications(rate_modifiers: list[RateModifications],
                             file_info: FileInfo.FileInfo,
@@ -234,6 +248,31 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         "min": rate_modifier.length_of_stay.min,
                         "max": rate_modifier.length_of_stay.max
                     })
+            if rate_modifier.booking_window is not None:
+                rowcount['bookingWindow'] = commands.execute(f"""
+                    INSERT INTO RateModifications_BookingWindow
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        min,
+                        max
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?min?,
+                        ?max?
+                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    param={
+                        "external_id": rate_modifier.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "min": rate_modifier.booking_window.min,
+                        "max": rate_modifier.booking_window.max
+                    })
     file_info.records = len(rate_modifiers)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
@@ -262,10 +301,12 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
         checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
         checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
         stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
+        booking_window = BookingWindowInt.parse_range(glom(itinerary, 'BookingWindow', default=None))
         new_modifiers.append(RateModifications(results.external_id,
                                          booking_dates,
                                          checkin_dates,
                                          checkout_dates,
                                          Decimal(multiplier["@multiplier"]),
-                                         stay_requires))
+                                         stay_requires,
+                                         booking_window))
     return new_modifiers, results

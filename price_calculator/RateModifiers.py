@@ -21,6 +21,8 @@ def get_rate_modifiers(external_id: str,
         return commands.query(f"""
             select r.external_id, r.multiplier
             from RateModifications r
+            left join RateModifications_BookingWindow rbw
+            on r.id = rbw.parent_id
             left join RateModifications_BookingDates rbd
             on r.id = rbd.parent_id
             and ?book_date? between COALESCE(rbd.start, DATE(?book_date?, '-1 day')) and COALESCE(rbd.end, DATE(?book_date?, '+1 day'))
@@ -33,7 +35,8 @@ def get_rate_modifiers(external_id: str,
             left join RateModifications_LengthOfStay rlos
             on r.id = rlos.parent_id
             WHERE r.external_id = ?external_id?
-            and (?nights? between COALESCE(rlos.min, ?nights?) and COALESCE(rlos.max, ?nights?))            
+            and (?nights? between COALESCE(rlos.min, ?nights?) and COALESCE(rlos.max, ?nights?))
+            and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(rbw.min, 0) and  COALESCE(rbw.max, 1000))
             """,
                               param={
                                   "external_id": external_id,
