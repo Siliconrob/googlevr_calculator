@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RateModifications timestamp="2023-11-02T12:12:46.3704018Z" partner="sample" id="743a6dbb-516b-46a4-bd60-5486f13420e3">
+  <HotelRateModifications hotel_id="rental" action="overlay">
+    <ItineraryRateModification id="Discount_for_28_nights">
+      <LengthOfStay min="28" />
+      <ModificationActions>
+        <PriceAdjustment multiplier="0.9000" />
+      </ModificationActions>
+    </ItineraryRateModification>
+  </HotelRateModifications>
+</RateModifications>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtraGuestCharges timestamp="2023-11-02T12:12:45.8758532Z" partner="sample" id="aaf0e027-400e-43bf-bc2e-f29b69661b08">
+  <HotelExtraGuestCharges hotel_id="rental" action="overlay">
+    <ExtraGuestCharge>
+      <StayDates>
+        <DateRange start="2023-11-02" end="2025-11-02" />
+      </StayDates>
+      <AgeBrackets>
+        <AdultCharge amount="35.0000" />
+      </AgeBrackets>
+    </ExtraGuestCharge>
+  </HotelExtraGuestCharges>
+</ExtraGuestCharges>

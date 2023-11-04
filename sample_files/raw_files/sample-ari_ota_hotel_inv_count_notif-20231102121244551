@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OTA_HotelInvCountNotifRQ EchoToken="dadfc75e-664b-472a-af95-0a3a46ff7e46" TimeStamp="2023-11-02T12:12:44.5515686Z" Version="3">
+  <POS>
+    <Source>
+      <RequestorID ID="sample" />
+    </Source>
+  </POS>
+  <Inventories HotelCode="rental">
+    <Inventory>
+      <StatusApplicationControl Start="2023-11-02" End="2023-11-19" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="1" CountType="2" />
+      </InvCounts>
+    </Inventory>
+    <Inventory>
+      <StatusApplicationControl Start="2023-11-19" End="2023-11-24" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="0" CountType="2" />
+      </InvCounts>
+    </Inventory>
+    <Inventory>
+      <StatusApplicationControl Start="2023-11-24" End="2024-05-25" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="1" CountType="2" />
+      </InvCounts>
+    </Inventory>
+    <Inventory>
+      <StatusApplicationControl Start="2024-05-25" End="2024-05-29" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="0" CountType="2" />
+      </InvCounts>
+    </Inventory>
+    <Inventory>
+      <StatusApplicationControl Start="2024-05-29" End="2025-04-25" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="1" CountType="2" />
+      </InvCounts>
+    </Inventory>
+    <Inventory>
+      <StatusApplicationControl Start="2025-04-25" End="2025-11-04" InvTypeCode="rental" RatePlanCode="rental" />
+      <InvCounts>
+        <InvCount Count="0" CountType="2" />
+      </InvCounts>
+    </Inventory>
+  </Inventories>
+</OTA_HotelInvCountNotifRQ>

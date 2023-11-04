@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TaxFeeInfo timestamp="2023-11-02T12:12:45.08996Z" id="c04d511d-e62e-4e0c-a605-0205554e8a47" partner="sample">
+  <Property>
+    <ID>rental</ID>
+    <Taxes>
+      <Tax>
+        <Type>percent</Type>
+        <Basis>room</Basis>
+        <Period>stay</Period>
+        <Currency>USD</Currency>
+        <Amount>14.0000</Amount>
+      </Tax>
+    </Taxes>
+    <Fees>
+      <Fee>
+        <Type>amount</Type>
+        <Basis>room</Basis>
+        <Period>stay</Period>
+        <Currency>USD</Currency>
+        <Amount>410.0000</Amount>
+      </Fee>
+      <Fee>
+        <Type>amount</Type>
+        <Basis>room</Basis>
+        <Period>stay</Period>
+        <Currency>USD</Currency>
+        <Amount>57.40000000</Amount>
+      </Fee>
+      <Fee>
+        <Type>percent</Type>
+        <Basis>room</Basis>
+        <Period>stay</Period>
+        <Currency>USD</Currency>
+        <Amount>3.5000</Amount>
+      </Fee>	  
+    </Fees>
+  </Property>
+</TaxFeeInfo>

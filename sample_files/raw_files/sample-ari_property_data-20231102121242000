@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Transaction timestamp="2023-11-02T12:12:42.9644404Z" id="3d73271b-4abc-42af-829b-177be786ce29" partner="sample">
+  <PropertyDataSet action="overlay">
+    <Property>rental</Property>
+    <RoomData>
+      <RoomID>rental</RoomID>
+      <Name>
+        <Text text="$150pp: Waterfront Oasis with Pool &amp; Pets" language="en" />
+      </Name>
+      <Description>
+        <Text text="Welcome to &quot;Stunning Sound front Oasis Pool&quot; - the perfect oceanfront vacation home for your family! This stunning 6 bedroom, 6 bathroom home in Trinitie Dr, Duck is the ultimate getaway for a memorable vacation experience. With no expense spared, this home offers exceptional amenities and breathtaking sound views. As you enter the top level, you'll be greeted by a spacious great room with updated kitchen and sound views. The fully enclosed porch allows you to maximize your enjoyment of the out" language="en" />
+      </Description>
+      <Capacity>12</Capacity>
+      <AdultCapacity>12</AdultCapacity>
+      <ChildCapacity>12</ChildCapacity>
+      <PhotoURL>
+        <Caption>
+          <Text text="Aerial-Rear-Exterior" language="en" />
+        </Caption>
+        <URL>https://uc.orez.io/f/b5293d3efb964fca9fedb8091db3744b</URL>
+      </PhotoURL>
+      <RoomFeatures>
+        <Beds>
+          <Bed size="king" />
+          <Bed size="king" />
+          <Bed size="king" />
+          <Bed size="king" />
+          <Bed size="queen" />
+          <Bed size="semi_double" />
+          <Bed size="semi_double" />
+        </Beds>
+        <Roomsharing>private</Roomsharing>
+        <Outdoor />
+        <Smoking>non_smoking</Smoking>
+        <AirConditioning />
+        <Balcony />
+        <Views>
+          <BeachView />
+          <CountrysideView />
+          <OceanView />
+          <PartialOceanView />
+        </Views>
+      </RoomFeatures>
+    </RoomData>
+    <PackageData>
+      <PackageID>rental</PackageID>
+      <Name>
+        <Text text="rental" language="en" />
+      </Name>
+      <Description>
+        <Text text="rental_description_1" language="en" />
+      </Description>
+      <Refundable available="true" refundable_until_days="60" refundable_until_time="00:00:00" />
+      <InternetIncluded>true</InternetIncluded>
+      <ParkingIncluded>true</ParkingIncluded>
+      <CheckinTime>16:00</CheckinTime>
+      <CheckoutTime>10:00</CheckoutTime>
+    </PackageData>
+  </PropertyDataSet>
+</Transaction>
