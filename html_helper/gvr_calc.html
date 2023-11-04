@@ -60,7 +60,8 @@
 	  }
 	  
 	  .headerDetail {
-		background-color: hsl(80, 50%, 50%);
+		background-color: hsl(74, 82%, 48%);
+		overflow: hidden;
 	  }
 	  
 	  .bigHeaderDetail {
@@ -96,13 +97,13 @@
         }
  
         .tabs span {
-            background: hsl(300, 50%, 75%);
+            background: hsl(277, 94%, 75%);
             padding: 10px;
             border: 1px solid rgb(255, 255, 255);
         }
  
         .tabs span:hover {
-            background: hsl(300, 80%, 50%);
+            background: hsl(48, 97%, 56%);
             cursor: pointer;
             color: black;
         }	  
@@ -200,9 +201,17 @@
 		}
 		
 		.headerDivRow {
-			background-color: hsl(337.15, 53%, 75%);
+			background-color: hsl(337, 73%, 84%);
 			display: flex;
 			flex-direction: row;
+		}
+		
+		.striping {
+			background-color: hsl(0, 0%, 90%)
+		}
+		
+		.rowData {
+			font-weight: normal;
 		}
 
     </style>
@@ -496,17 +505,23 @@
 		headerRateModRow.appendChild(multiplierHeader);
 
 		rateModsDiv.appendChild(headerRateModRow);
+		let rowIndex = 0;
 		rateModDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
 			newRow.style.flex_direction = "row";
+			if (rowIndex % 2 == 1) {
+				newRow.classList.add("striping");
+			}
 
 			const multiplier = document.createElement("span");
 			multiplier.style.width = "10%";
+			multiplier.classList.add("rowData");
 			multiplier.innerHTML = z.multiplier;
 			newRow.appendChild(multiplier);
 
 			rateModsDiv.appendChild(newRow);
+			rowIndex++;
 		});
 	}
 
@@ -531,27 +546,35 @@
 		headerTaxFeeRow.appendChild(amountHeader);
 
 		taxFeeDiv.appendChild(headerTaxFeeRow);
+		let rowIndex = 0;
 		taxFeeDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
 			newRow.style.flex_direction = "row";
+			if (rowIndex % 2 == 1) {
+				newRow.classList.add("striping");
+			}			
 
 			const calcType = document.createElement("span");
 			calcType.style.width = "10%";
+			calcType.classList.add("rowData");
 			calcType.innerHTML = z.calc_type;
 			newRow.appendChild(calcType);
 
 			const period = document.createElement("span");
 			period.style.width = "20%";
+			period.classList.add("rowData");
 			period.innerHTML = z.period;
 			newRow.appendChild(period);
 
 			const amount = document.createElement("span");
 			amount.style.width = "20%";
+			amount.classList.add("rowData");
 			amount.innerHTML = z.amount;
 			newRow.appendChild(amount);
 
 			taxFeeDiv.appendChild(newRow);
+			rowIndex++;
 		});
 	}
 
@@ -585,37 +608,47 @@
 
 		promotionDiv.appendChild(headerPromotionRow);
 
+		let rowIndex = 0;
 		promotionDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
 			newRow.style.flex_direction = "row";
+			if (rowIndex % 2 == 1) {
+				newRow.classList.add("striping");
+			}
 
 			const promotionId = document.createElement("span");
 			promotionId.style.width = "10%";
+			promotionId.classList.add("rowData");
 			promotionId.innerHTML = z.promotion_id;
 			newRow.appendChild(promotionId);
 
 			const percentage = document.createElement("span");
 			percentage.style.width = "20%";
+			percentage.classList.add("rowData");
 			percentage.innerHTML = z.percentage;
 			newRow.appendChild(percentage);
 
 			const fixedAmount = document.createElement("span");
 			fixedAmount.style.width = "20%";
+			fixedAmount.classList.add("rowData");
 			fixedAmount.innerHTML = z.fixed_amount;
 			newRow.appendChild(fixedAmount);
 
 			const fixedAmountPerNight = document.createElement("span");
 			fixedAmountPerNight.style.width = "10%";
+			fixedAmountPerNight.classList.add("rowData");
 			fixedAmountPerNight.innerHTML = z.fixed_amount_per_night;
 			newRow.appendChild(fixedAmountPerNight);
 
 			const fixedPrice = document.createElement("span");
 			fixedPrice.style.width = "10%";
+			fixedPrice.classList.add("rowData");
 			fixedPrice.innerHTML = z.fixed_price;
 			newRow.appendChild(fixedPrice);
 
 			promotionDiv.appendChild(newRow);
+			rowIndex++;
 		});
 	}
 
@@ -644,32 +677,44 @@
 		headerInventoryRow.appendChild(inventoryHeader);
 		inventoryDiv.appendChild(headerInventoryRow);
 
+		let rowIndex = 0;
 		inventoryDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
 			newRow.style.flex_direction = "row";
-
+			if (rowIndex % 2 == 1) {
+				newRow.classList.add("striping");
+			}
 			const currentDay = document.createElement("span");
 			currentDay.style.width = "10%";
+			currentDay.classList.add("rowData");
 			currentDay.innerHTML = z.current_day;
 			newRow.appendChild(currentDay);
 
 			const startDay = document.createElement("span");
 			startDay.style.width = "20%";
+			startDay.classList.add("rowData");
 			startDay.innerHTML = z.start;
 			newRow.appendChild(startDay);
 
 			const endDay = document.createElement("span");
 			endDay.style.width = "20%";
+			endDay.classList.add("rowData");
 			endDay.innerHTML = z.end;
 			newRow.appendChild(endDay);
 
 			const inventory = document.createElement("span");
 			inventory.style.width = "10%";
+			inventory.classList.add("rowData");
 			inventory.innerHTML = z.inventory;
+			
+			if (z.inventory == 0) {
+				newRow.style.backgroundColor = "red";
+			}
 			
 			newRow.appendChild(inventory);
 			inventoryDiv.appendChild(newRow);
+			rowIndex++;
 		});	
 	}
 
@@ -698,28 +743,35 @@
 		headerRentRow.appendChild(baseAmountHeader);
 		rentDiv.appendChild(headerRentRow);
 
+		let rowIndex = 0;
 		rentDetails.forEach(z => {
 			const newRow = document.createElement("div");
 			newRow.style.display = "flex";
 			newRow.style.flex_direction = "row";
-
+			if (rowIndex % 2 == 1) {
+				newRow.classList.add("striping");
+			}
 			const currentDay = document.createElement("span");
 			currentDay.style.width = "10%";
+			currentDay.classList.add("rowData");
 			currentDay.innerHTML = z.current_day;
 			newRow.appendChild(currentDay);
 
 			const startDay = document.createElement("span");
 			startDay.style.width = "20%";
+			startDay.classList.add("rowData");
 			startDay.innerHTML = z.start;
 			newRow.appendChild(startDay);
 
 			const endDay = document.createElement("span");
 			endDay.style.width = "20%";
+			endDay.classList.add("rowData");
 			endDay.innerHTML = z.end;
 			newRow.appendChild(endDay);
 
 			const baseAmount = document.createElement("span");
 			baseAmount.style.width = "10%";
+			baseAmount.classList.add("rowData");
 			baseAmount.innerHTML = z.base_amount;
 			
 			if (z.inventory_count == 0) {
@@ -728,6 +780,7 @@
 			
 			newRow.appendChild(baseAmount);
 			rentDiv.appendChild(newRow);
+			rowIndex++;
 		});
 	}
 
@@ -936,38 +989,38 @@
 						<div>
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Start Date</span>
-								<span id="startDate"></span>
+								<span class="rowData" id="startDate"></span>
 							</div>
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">End Date</span>
-								<span id="endDate"></span>
+								<span class="rowData" id="endDate"></span>
 							</div>
 						</div>
 						<div class="spacer"></div>
 						<div>
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Nights</span>
-								<span id="nights"></span>
+								<span class="rowData" id="nights"></span>
 							</div>						
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Rent</span>
-								<span id="rentAmount"></span>
+								<span class="rowData" id="rentAmount"></span>
 							</div>
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Promotions</span>
-								<span id="promotionsAmount"></span>
+								<span class="rowData" id="promotionsAmount"></span>
 							</div>
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Rate Modifiers</span>
-								<span id="rateModAmount"></span>
+								<span class="rowData" id="rateModAmount"></span>
 							</div>				
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Taxes and Fees</span>
-								<span id="taxesAndFeesAmount"></span>
+								<span class="rowData" id="taxesAndFeesAmount"></span>
 							</div>								
 							<div style="display: flex; flex-direction: row;">
 								<span style="width: 10%;">Total</span>
-								<span id="totalAmount"></span>
+								<span class="rowData" id="totalAmount"></span>
 							</div>				
 						</div>
 						<div class="spacer"></div>
