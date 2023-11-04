@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from glom import glom
 from pydapper import connect
 
-from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers
+from data_messages import DateRange, LengthOfStay, FileInfo, DataHandlers, BookingWindow
+from data_messages.BookingWindow import BookingWindowTimeSpan
 from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
@@ -17,6 +18,7 @@ class Promotion:
     checkin_dates: list[DateRange]
     checkout_dates: list[DateRange]
     length_of_stay: LengthOfStay
+    booking_window: BookingWindowTimeSpan
     percentage: decimal
     fixed_amount: decimal
     fixed_amount_per_night: decimal
@@ -93,6 +95,18 @@ def create_tables(dsn: str):
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,                                     
             UNIQUE(external_id, promotion_id, file_id))
             """)
+        commands.execute(f"""
+            create table if not exists Promotion_BookingWindow
+            (
+                external_id varchar(20),
+                file_id int,
+                parent_id int,
+                min int,
+                max int,
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,                 
+                PRIMARY KEY(external_id, file_id, min, max)
+            )""")
 
 
 def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -269,7 +283,32 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         "parent_id": last_id.seq,
                         "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
                         "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
-                    }),
+                    })
+            if promotion.booking_window is not None:
+                rowcount['bookingWindow'] = commands.execute(f"""
+                    INSERT INTO Promotion_BookingWindow
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        min,
+                        max
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?min?,
+                        ?max?
+                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    param={
+                        "external_id": promotion.external_id,
+                        "file_id": new_id,
+                        "parent_id": last_id.seq,
+                        "min": None if promotion.booking_window.min is None else promotion.booking_window.min.days,
+                        "max": None if promotion.booking_window.max is None else promotion.booking_window.max.days
+                    })
 
     file_info.records = len(promotions)
     file_info.xml_contents = file_args.file_contents
@@ -302,6 +341,7 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
                                     DateRange.parse_ranges(glom(promotion, 'CheckinDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckoutDates.DateRange', default=[])),
                                     LengthOfStay.parse_range(glom(promotion, 'LengthOfStay', default=None)),
+                                    BookingWindow.parse_range_timespans(glom(promotion, 'BookingWindow', default=None)),
                                     discount.get("@percentage"),
                                     discount.get("@fixed_amount"),
                                     discount.get("@fixed_amount_per_night"),

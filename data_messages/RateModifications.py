@@ -5,8 +5,9 @@ from decimal import Decimal
 from glom import glom
 from pydapper import connect
 
-from data_messages import DateRange, LengthOfStay, BookingWindowInt
+from data_messages import DateRange, LengthOfStay, BookingWindow
 from data_messages import FileInfo, DataHandlers
+from data_messages.BookingWindow import BookingWindowInt
 from data_messages.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
@@ -301,7 +302,7 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
         checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
         checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
         stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
-        booking_window = BookingWindowInt.parse_range(glom(itinerary, 'BookingWindow', default=None))
+        booking_window = BookingWindow.parse_range_int(glom(itinerary, 'BookingWindow', default=None))
         new_modifiers.append(RateModifications(results.external_id,
                                          booking_dates,
                                          checkin_dates,

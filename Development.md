@@ -50,6 +50,11 @@
   - [X] Show availability clearly marked on calendar and rates returned
   - [X] Load ORPxxx number automatically
   - [X] Change calendar view based on check in date
+  - [X] If uploading a single zip file instead of multiple files flip post methods as needed
 
 ### Debugging to get matches
 - [X] Example messages match to specific feed prices
+
+### Tests
+- [ ] Create tests to cover sample file inputs
+

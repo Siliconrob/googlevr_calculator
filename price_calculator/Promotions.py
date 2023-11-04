@@ -25,6 +25,8 @@ def get_promotions(external_id: str,
         return commands.query(f"""
             select p.external_id, p.promotion_id, p.percentage, p.fixed_amount, p.fixed_amount_per_night, p.fixed_price
             from Promotion p
+            left join Promotion_BookingWindow pbw
+            on p.id = pbw.parent_id            
             left join Promotion_BookingDates pbd
             on p.id = pbd.parent_id
             and ?book_date? between COALESCE(pbd.start, DATE(?book_date?, '-1 day')) and COALESCE(pbd.end, DATE(?book_date?, '+1 day'))
@@ -36,8 +38,9 @@ def get_promotions(external_id: str,
             and ?end_date? between COALESCE(pcod.start, DATE(?end_date?, '-1 day')) and COALESCE(pcod.end, DATE(?end_date?, '+1 day'))
             left join Promotion_LengthOfStay plos
             on p.id = plos.parent_id
-            and COALESCE(plos.min, ?nights?) <= ?nights? and COALESCE(plos.max, ?nights?) >= ?nights?        
             WHERE p.external_id = ?external_id?
+            and (?nights? between COALESCE(plos.min, ?nights?) and COALESCE(plos.max, ?nights?))
+            and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(pbw.min, 0) and  COALESCE(pbw.max, 1000))
             """,
                               param={
                                   "external_id": external_id,
