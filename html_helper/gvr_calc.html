@@ -424,28 +424,41 @@
 		readInventoryFiles();
 	}
 
-	async function getFeedPrice() {
-	
-		let targetTab = "formattedTab";	
-		try {
-			const paramsObj = {
-				external_id: document.getElementById("orpExternalId").value,
-				start_date: document.getElementById("checkinDate").value,
-				end_date: document.getElementById("checkoutDate").value,
-				booked_date: document.getElementById("bookingDate").value
-			};
+	function createRequestWithData() {
+		const paramsObj = {
+			external_id: document.getElementById("orpExternalId").value,
+			start_date: document.getElementById("checkinDate").value,
+			end_date: document.getElementById("checkoutDate").value,
+			booked_date: document.getElementById("bookingDate").value
+		};
 
-			const searchParams = new URLSearchParams(paramsObj).toString();
-			const requestUrl = `https://google-vr-calculator.district9.info/feed_from_xml?${searchParams}`;
-			const formData = new FormData();
+		const searchParams = new URLSearchParams(paramsObj).toString();	
+		const formData = new FormData();
+		let requestUrlMethod = "feed_from_xml";
+		if (currentFiles.length == 1 && currentFiles[0].name.endsWith(".zip")) {
+			requestUrlMethod = "feed";
+			formData.append("upload_file", currentFiles[0]);
+		}
+		else {
 			currentFiles.forEach(z => {
 				console.log(z.name);
 				formData.append("upload_files", z);
 			});
+		}					
+		return {
+			url: `https://google-vr-calculator.district9.info/${requestUrlMethod}?${searchParams}`,
+			postData: formData
+		}
+	}
 
-			const response = await fetch(requestUrl, {
+	async function getFeedPrice() {
+	
+		let targetTab = "formattedTab";	
+		try {
+			var requestDetails = createRequestWithData();
+			const response = await fetch(requestDetails.url, {
 				method: "POST",
-				body: formData,
+				body: requestDetails.postData,
 			});
 			if (!response.ok) {
 				targetTab = "rawTab";
