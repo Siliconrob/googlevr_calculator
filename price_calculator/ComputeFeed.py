@@ -48,7 +48,7 @@ class FeedPrice:
 def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
     for rent_record in charges.rent:
-        total += rent_record.base_amount
+        total += ic(rent_record.base_amount)
     return total
 
 
@@ -57,15 +57,15 @@ def promotions_adjustment(rent_total: decimal, nights: int, charges: ChargeDetai
     for promotion in charges.promotions:
         percent = None if promotion.percentage is None else Decimal(promotion.percentage)
         if percent is not None:
-            total += rent_total * percent
+            total += ic(rent_total * (percent / 100))
             continue
         fixed_amount = None if promotion.fixed_amount is None else Decimal(promotion.fixed_amount)
         if fixed_amount is not None:
-            total += fixed_amount
+            total += ic(fixed_amount)
             continue
         fixed_amount_per_night = None if promotion.fixed_amount_per_night is None else Decimal(promotion.fixed_amount_per_night)
         if fixed_amount_per_night is not None:
-            total += fixed_amount_per_night * nights
+            total += ic(fixed_amount_per_night * nights)
             continue
     return total
 
@@ -75,15 +75,15 @@ def rate_modifiers_adjustment(rent_total: decimal, charges: ChargeDetails) -> de
     for rate_modifier in charges.rate_modifiers:
         percent = None if rate_modifier.multiplier is None else Decimal(rate_modifier.multiplier)
         if percent is not None:
-            total += rent_total * (1 - percent)
+            total += ic(rent_total * (1 - percent))
             continue
     return total
 
 
 def taxes_and_fees(rent_amount: decimal, charges: ChargeDetails) -> decimal:
-    fees = tax_or_fee_total(charges.fees, charges.nights, rent_amount)
-    taxes = tax_or_fee_total(charges.taxes, charges.nights, rent_amount)
-    total = fees + taxes
+    fees = ic(tax_or_fee_total(charges.fees, charges.nights, rent_amount))
+    taxes = ic(tax_or_fee_total(charges.taxes, charges.nights, rent_amount))
+    total = ic(fees + taxes)
     return total
 
 
@@ -93,22 +93,22 @@ def tax_or_fee_total(tax_or_fees: list[TaxOrFee], nights: int, rent_amount: deci
         amount = Decimal(current_item.amount)
         if current_item.period == "night":
             if current_item.calc_type == "amount":
-                total += nights * amount
+                total += ic(nights * amount)
             continue
         if current_item.calc_type == "amount":
-            total += amount
+            total += ic(amount)
             continue
-        total += (amount / 100) * rent_amount
+        total += ic((amount / 100) * rent_amount)
     return total
 
 
 def compute_feed_price(external_id, start_date: date, end_date: date, book_date: date, dsn: str) -> FeedPrice:
-    start_date = pendulum.datetime(start_date.year, start_date.month, start_date.day)
-    end_date = pendulum.datetime(end_date.year, end_date.month, end_date.day)
-    book_date = pendulum.datetime(book_date.year, book_date.month, book_date.day)
-    duration = pendulum.period(start_date, end_date)
+    start_date = ic(pendulum.datetime(start_date.year, start_date.month, start_date.day))
+    end_date = ic(pendulum.datetime(end_date.year, end_date.month, end_date.day))
+    book_date = ic(pendulum.datetime(book_date.year, book_date.month, book_date.day))
+    duration = ic(pendulum.period(start_date, end_date))
 
-    details = ChargeDetails(
+    details = ic(ChargeDetails(
         start_date,
         end_date,
         book_date,
@@ -120,20 +120,20 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
         get_extra_guest_charges(external_id, start_date, end_date, dsn),
         get_rate_modifiers(external_id, start_date, end_date, duration.days, book_date, dsn),
         get_inventory(external_id, start_date, end_date, dsn)
-    )
+    ))
 
     total_rent = total_base_rent(details)
     ic(f'Total Base Rent: {total_rent}')
 
     total_rate_modifiers = rate_modifiers_adjustment(total_rent, details)
     ic(f'Rate Modifiers: {total_rate_modifiers}')
-    current_amount = total_rent - total_rate_modifiers
+    current_amount = ic(total_rent - total_rate_modifiers)
 
     total_promotions = promotions_adjustment(current_amount, duration.days, details)
     ic(f'Promotions: {total_promotions}')
-    current_amount = current_amount - total_promotions
+    current_amount = ic(current_amount - total_promotions)
 
-    total_taxes_fees = taxes_and_fees(current_amount, details)
+    total_taxes_fees = ic(taxes_and_fees(current_amount, details))
     ic(f'Taxes And Fees: {total_taxes_fees}')
 
     total = current_amount + total_taxes_fees
