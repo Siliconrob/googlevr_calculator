@@ -381,7 +381,11 @@
 		}
 	}
 
-	function readInventoryFiles() {		
+	function readInventoryFiles() {
+		if (currentFiles.length == 1 && currentFiles[0].name.endsWith(".zip")) {
+			extractZipFile(currentFiles[0]);			
+			return;
+		}
 		const inventoryFiles = currentFiles.filter(z => z.name.includes("ari_ota_hotel_inv_count_notif"));
 		if (inventoryFiles.length == 0) {
 			return;
@@ -394,6 +398,26 @@
 			const result = reader.result;
 			readInventoryFileContents(result);
 		};
+	}
+	
+	async function extractZipFile(zipFile) {
+		try {
+			const formData = new FormData();
+			formData.append("upload_file", zipFile);
+			const response = await fetch(`https://google-vr-calculator.district9.info/read_zip`, {
+				method: "POST",
+				body: formData,
+			});
+			const result = await response.json();			
+			if (!response.ok) {
+				console.log(result);
+				return;
+			}
+			const theText = JSON.stringify(result, null, 2);
+			console.log(theText);
+		} catch (error) {
+			console.error(error);
+		}		
 	}
 
 	function dropHandler(ev) {

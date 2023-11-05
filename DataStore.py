@@ -70,6 +70,29 @@ def load_db(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
     return read_folder(xml_messages_zipfile, dsn)
 
 
+def read_inventory(xml_messages_zipfile: zipfile.ZipFile):
+    if xml_messages_zipfile is None:
+        return None
+    for input_file in xml_messages_zipfile.filelist:
+        try:
+            file_contents = xml_messages_zipfile.read(input_file).decode("UTF-8")
+            xml_message_data = xmltodict.parse(file_contents)
+            if xml_message_data is None:
+                return None
+            args = DataHandlers.DataFileArgs(xml_message_data,
+                                             input_file.filename,
+                                             None,
+                                             file_contents)
+            new_inventories, results = data_messages.OTA_HotelInvCountNotifRQ.read_inventories(args)
+            if len(new_inventories) > 0:
+                return new_inventories
+        except UnicodeDecodeError:
+            ic(f'Unable to read {input_file} as text')
+        except ExpatError:
+            ic(f'Unable to parse {input_file} into XML')
+    return {}
+
+
 def load_db_files(xml_messages_files: dict, dsn: str) -> set:
     if len(xml_messages_files) == 0:
         return None

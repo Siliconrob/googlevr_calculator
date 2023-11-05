@@ -7,8 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse
-from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files
-from price_calculator.ComputeFeed import compute_feed_price, FeedPrice
+from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_inventory
+from price_calculator.ComputeFeed import compute_feed_price
 
 tags_metadata = [
     {"name": "Calculator", "description": "For performing calculation"},
@@ -49,12 +49,21 @@ def iter_file():  #
             yield from db_file
 
 
+@app.post("/extract_inventory", tags=["Calculator"], include_in_schema=False)
+async def extract_inventory(upload_file: UploadFile = File(...)):
+    if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
+        raise HTTPException(400, detail="File must be a zip file")
+    with zipfile.ZipFile(io.BytesIO(upload_file.file.read()), "r") as messages_zip_file:
+        current_files = read_inventory(messages_zip_file)
+    return current_files
+
+
 @app.post("/feed", tags=["Calculator"])
 async def feed_price_zip(upload_file: UploadFile = File(...),
-                     external_id: str = 'orp12345x',
-                     start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
-                     end_date: Annotated[date, "End"] = pendulum.now().add(months=1, weeks=1).to_date_string(),
-                     booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
+                         external_id: str = 'orp12345x',
+                         start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
+                         end_date: Annotated[date, "End"] = pendulum.now().add(months=1, weeks=1).to_date_string(),
+                         booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
         raise HTTPException(400, detail="File must be a zip file")
 
@@ -67,23 +76,20 @@ async def feed_price_zip(upload_file: UploadFile = File(...),
 
 @app.post("/feed_from_xml", tags=["Calculator"], include_in_schema=False)
 async def feed_price_xml(upload_files: list[UploadFile] = list[File(...)],
-                     external_id: str = 'orp12345x',
-                     start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
-                     end_date: Annotated[date, "End"] = pendulum.now().add(months=1, weeks=1).to_date_string(),
-                     booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
-
+                         external_id: str = 'orp12345x',
+                         start_date: Annotated[date, "Start"] = pendulum.now().add(months=1).to_date_string(),
+                         end_date: Annotated[date, "End"] = pendulum.now().add(months=1, weeks=1).to_date_string(),
+                         booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
     xml_files = {}
     for upload_file in upload_files:
         if upload_file.content_type not in ["application/xml", "application/octet-stream"]:
             raise HTTPException(400, detail=f"File {upload_file.filename} must be an XML file")
         xml_files[upload_file.filename] = upload_file.file.read()
 
-
     dsn = get_dsn(DB_NAME)
     db_load_results = load_db_files(xml_files, dsn)
     calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, dsn)
     return calculated_feed_price
-
 
 
 @app.get("/ping", tags=["Test"], include_in_schema=False)
