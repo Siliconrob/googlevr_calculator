@@ -491,6 +491,22 @@
 		}
 		document.getElementById(targetTab).click();
 	}
+	
+	function createDetailSpan(inputDetails) {
+		const newSpan = document.createElement("span");		
+		const defaultDetails = {
+			classStyles: [],
+			displayText: null,
+			width: 0,			
+		};
+		const details = Object.assign(defaultDetails, inputDetails);
+		newSpan.style.width = details.width;
+		details.classStyles.forEach(z => {
+			newSpan.classList.add(z);
+		});
+		newSpan.innerHTML = details.displayText;
+		return newSpan;
+	}
 
 	function createRateModificationDetails(rateModDetails) {
 		const rateModsDiv = document.getElementById("rateModDetails");
@@ -513,13 +529,7 @@
 			if (rowIndex % 2 == 1) {
 				newRow.classList.add("striping");
 			}
-
-			const multiplier = document.createElement("span");
-			multiplier.style.width = "10%";
-			multiplier.classList.add("rowData");
-			multiplier.innerHTML = z.multiplier;
-			newRow.appendChild(multiplier);
-
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.multiplier }));
 			rateModsDiv.appendChild(newRow);
 			rowIndex++;
 		});
@@ -531,19 +541,9 @@
 
 		const headerTaxFeeRow = document.createElement("div");
 		headerTaxFeeRow.classList.add("headerDivRow");
-
-		const calcTypeHeader = document.createElement("span");
-		calcTypeHeader.innerHTML = "Calc Type";
-		calcTypeHeader.style.width = "10%";
-		headerTaxFeeRow.appendChild(calcTypeHeader);
-		const periodHeader = document.createElement("span");
-		periodHeader.innerHTML = "Period";
-		periodHeader.style.width = "20%";
-		headerTaxFeeRow.appendChild(periodHeader);
-		const amountHeader = document.createElement("span");
-		amountHeader.style.width = "20%";
-		amountHeader.innerHTML = "Amount";
-		headerTaxFeeRow.appendChild(amountHeader);
+		headerTaxFeeRow.appendChild(createDetailSpan({ width: "10%", displayText: "Calc Type" }));		
+		headerTaxFeeRow.appendChild(createDetailSpan({ width: "20%", displayText: "Period" }));		
+		headerTaxFeeRow.appendChild(createDetailSpan({ width: "20%", displayText: "Amount" }));
 
 		taxFeeDiv.appendChild(headerTaxFeeRow);
 		let rowIndex = 0;
@@ -553,26 +553,10 @@
 			newRow.style.flex_direction = "row";
 			if (rowIndex % 2 == 1) {
 				newRow.classList.add("striping");
-			}			
-
-			const calcType = document.createElement("span");
-			calcType.style.width = "10%";
-			calcType.classList.add("rowData");
-			calcType.innerHTML = z.calc_type;
-			newRow.appendChild(calcType);
-
-			const period = document.createElement("span");
-			period.style.width = "20%";
-			period.classList.add("rowData");
-			period.innerHTML = z.period;
-			newRow.appendChild(period);
-
-			const amount = document.createElement("span");
-			amount.style.width = "20%";
-			amount.classList.add("rowData");
-			amount.innerHTML = z.amount;
-			newRow.appendChild(amount);
-
+			}
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.calc_type, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.period, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.amount, classStyles: ["rowData"] }));
 			taxFeeDiv.appendChild(newRow);
 			rowIndex++;
 		});
@@ -584,28 +568,11 @@
 
 		const headerPromotionRow = document.createElement("div");
 		headerPromotionRow.classList.add("headerDivRow");
-
-		const idHeader = document.createElement("span");
-		idHeader.innerHTML = "Id";
-		idHeader.style.width = "10%";
-		headerPromotionRow.appendChild(idHeader);
-		const percentageHeader = document.createElement("span");
-		percentageHeader.innerHTML = "Percentage";
-		percentageHeader.style.width = "20%";
-		headerPromotionRow.appendChild(percentageHeader);
-		const fixedAmountHeader = document.createElement("span");
-		fixedAmountHeader.style.width = "20%";
-		fixedAmountHeader.innerHTML = "Fixed Amount";
-		headerPromotionRow.appendChild(fixedAmountHeader);
-		const fixedAmountPerNightHeader = document.createElement("span");
-		fixedAmountPerNightHeader.style.width = "10%";
-		fixedAmountPerNightHeader.innerHTML = "Fixed Amount Per Night";
-		headerPromotionRow.appendChild(fixedAmountPerNightHeader);
-		const fixedPriceHeader = document.createElement("span");
-		fixedPriceHeader.style.width = "10%";
-		fixedPriceHeader.innerHTML = "Fixed Price";
-		headerPromotionRow.appendChild(fixedPriceHeader);
-
+		headerPromotionRow.appendChild(createDetailSpan({ width: "10%", displayText: "Id" }));
+		headerPromotionRow.appendChild(createDetailSpan({ width: "20%", displayText: "Percentage" }));
+		headerPromotionRow.appendChild(createDetailSpan({ width: "20%", displayText: "Fixed Amount" }));
+		headerPromotionRow.appendChild(createDetailSpan({ width: "20%", displayText: "Fixed Amount Per Night" }));
+		headerPromotionRow.appendChild(createDetailSpan({ width: "10%", displayText: "Fixed Price" }));
 		promotionDiv.appendChild(headerPromotionRow);
 
 		let rowIndex = 0;
@@ -616,37 +583,11 @@
 			if (rowIndex % 2 == 1) {
 				newRow.classList.add("striping");
 			}
-
-			const promotionId = document.createElement("span");
-			promotionId.style.width = "10%";
-			promotionId.classList.add("rowData");
-			promotionId.innerHTML = z.promotion_id;
-			newRow.appendChild(promotionId);
-
-			const percentage = document.createElement("span");
-			percentage.style.width = "20%";
-			percentage.classList.add("rowData");
-			percentage.innerHTML = z.percentage;
-			newRow.appendChild(percentage);
-
-			const fixedAmount = document.createElement("span");
-			fixedAmount.style.width = "20%";
-			fixedAmount.classList.add("rowData");
-			fixedAmount.innerHTML = z.fixed_amount;
-			newRow.appendChild(fixedAmount);
-
-			const fixedAmountPerNight = document.createElement("span");
-			fixedAmountPerNight.style.width = "10%";
-			fixedAmountPerNight.classList.add("rowData");
-			fixedAmountPerNight.innerHTML = z.fixed_amount_per_night;
-			newRow.appendChild(fixedAmountPerNight);
-
-			const fixedPrice = document.createElement("span");
-			fixedPrice.style.width = "10%";
-			fixedPrice.classList.add("rowData");
-			fixedPrice.innerHTML = z.fixed_price;
-			newRow.appendChild(fixedPrice);
-
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.promotion_id, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.percentage, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.fixed_amount, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.fixed_amount_per_night, classStyles: ["rowData"] }));
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.fixed_price, classStyles: ["rowData"] }));
 			promotionDiv.appendChild(newRow);
 			rowIndex++;
 		});
@@ -658,23 +599,10 @@
 
 		const headerInventoryRow = document.createElement("div");
 		headerInventoryRow.classList.add("headerDivRow");
-
-		const currentDayHeader = document.createElement("span");
-		currentDayHeader.innerHTML = "Current Day";
-		currentDayHeader.style.width = "10%";
-		headerInventoryRow.appendChild(currentDayHeader);
-		const startDayHeader = document.createElement("span");
-		startDayHeader.innerHTML = "Start Day";
-		startDayHeader.style.width = "20%";
-		headerInventoryRow.appendChild(startDayHeader);
-		const endDayHeader = document.createElement("span");
-		endDayHeader.style.width = "20%";
-		endDayHeader.innerHTML = "End Day";
-		headerInventoryRow.appendChild(endDayHeader);
-		const inventoryHeader = document.createElement("span");
-		inventoryHeader.style.width = "10%";
-		inventoryHeader.innerHTML = "Inventory";
-		headerInventoryRow.appendChild(inventoryHeader);
+		headerInventoryRow.appendChild(createDetailSpan({ width: "10%", displayText: "Current Day" }));
+		headerInventoryRow.appendChild(createDetailSpan({ width: "20%", displayText: "Start Day" }));
+		headerInventoryRow.appendChild(createDetailSpan({ width: "20%", displayText: "End Day" }));
+		headerInventoryRow.appendChild(createDetailSpan({ width: "10%", displayText: "Inventory" }));
 		inventoryDiv.appendChild(headerInventoryRow);
 
 		let rowIndex = 0;
@@ -684,35 +612,14 @@
 			newRow.style.flex_direction = "row";
 			if (rowIndex % 2 == 1) {
 				newRow.classList.add("striping");
-			}
-			const currentDay = document.createElement("span");
-			currentDay.style.width = "10%";
-			currentDay.classList.add("rowData");
-			currentDay.innerHTML = z.current_day;
-			newRow.appendChild(currentDay);
-
-			const startDay = document.createElement("span");
-			startDay.style.width = "20%";
-			startDay.classList.add("rowData");
-			startDay.innerHTML = z.start;
-			newRow.appendChild(startDay);
-
-			const endDay = document.createElement("span");
-			endDay.style.width = "20%";
-			endDay.classList.add("rowData");
-			endDay.innerHTML = z.end;
-			newRow.appendChild(endDay);
-
-			const inventory = document.createElement("span");
-			inventory.style.width = "10%";
-			inventory.classList.add("rowData");
-			inventory.innerHTML = z.inventory;
-			
+			}		
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.current_day, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.inventory, classStyles: ["rowData"]  }));			
 			if (z.inventory == 0) {
 				newRow.style.backgroundColor = "red";
-			}
-			
-			newRow.appendChild(inventory);
+			}			
 			inventoryDiv.appendChild(newRow);
 			rowIndex++;
 		});	
@@ -724,23 +631,10 @@
 
 		const headerRentRow = document.createElement("div");
 		headerRentRow.classList.add("headerDivRow");
-
-		const currentDayHeader = document.createElement("span");
-		currentDayHeader.innerHTML = "Current Day";
-		currentDayHeader.style.width = "10%";
-		headerRentRow.appendChild(currentDayHeader);
-		const startDayHeader = document.createElement("span");
-		startDayHeader.innerHTML = "Start Day";
-		startDayHeader.style.width = "20%";
-		headerRentRow.appendChild(startDayHeader);
-		const endDayHeader = document.createElement("span");
-		endDayHeader.style.width = "20%";
-		endDayHeader.innerHTML = "End Day";
-		headerRentRow.appendChild(endDayHeader);
-		const baseAmountHeader = document.createElement("span");
-		baseAmountHeader.style.width = "10%";
-		baseAmountHeader.innerHTML = "Base Amount";
-		headerRentRow.appendChild(baseAmountHeader);
+		headerRentRow.appendChild(createDetailSpan({ width: "10%", displayText: "Current Day" }));
+		headerRentRow.appendChild(createDetailSpan({ width: "20%", displayText: "Start Day" }));
+		headerRentRow.appendChild(createDetailSpan({ width: "20%", displayText: "End Day" }));
+		headerRentRow.appendChild(createDetailSpan({ width: "10%", displayText: "Base Amount" }));
 		rentDiv.appendChild(headerRentRow);
 
 		let rowIndex = 0;
@@ -751,34 +645,13 @@
 			if (rowIndex % 2 == 1) {
 				newRow.classList.add("striping");
 			}
-			const currentDay = document.createElement("span");
-			currentDay.style.width = "10%";
-			currentDay.classList.add("rowData");
-			currentDay.innerHTML = z.current_day;
-			newRow.appendChild(currentDay);
-
-			const startDay = document.createElement("span");
-			startDay.style.width = "20%";
-			startDay.classList.add("rowData");
-			startDay.innerHTML = z.start;
-			newRow.appendChild(startDay);
-
-			const endDay = document.createElement("span");
-			endDay.style.width = "20%";
-			endDay.classList.add("rowData");
-			endDay.innerHTML = z.end;
-			newRow.appendChild(endDay);
-
-			const baseAmount = document.createElement("span");
-			baseAmount.style.width = "10%";
-			baseAmount.classList.add("rowData");
-			baseAmount.innerHTML = z.base_amount;
-			
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.current_day, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.base_amount, classStyles: ["rowData"]  }));			
 			if (z.inventory_count == 0) {
 				newRow.style.backgroundColor = "red";
-			}
-			
-			newRow.appendChild(baseAmount);
+			}			
 			rentDiv.appendChild(newRow);
 			rowIndex++;
 		});
