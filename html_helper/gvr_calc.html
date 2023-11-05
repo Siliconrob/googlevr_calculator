@@ -400,21 +400,37 @@
 		};
 	}
 	
+	function customDateTimeParse(dateTimeText) {
+		const regex = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/gm;
+		const match = regex.exec(dateTimeText).groups;
+		return new Date(parseInt(match.year), parseInt(match.month) - 1, parseInt(match.day))
+	}
+	
+	
 	async function extractZipFile(zipFile) {
 		try {
 			const formData = new FormData();
 			formData.append("upload_file", zipFile);
-			const response = await fetch(`https://google-vr-calculator.district9.info/read_zip`, {
+			const response = await fetch(`https://google-vr-calculator.district9.info/extract_inventory`, {
 				method: "POST",
 				body: formData,
 			});
-			const result = await response.json();			
+			const inventories = await response.json();			
 			if (!response.ok) {
-				console.log(result);
+				console.log(inventories);
 				return;
 			}
-			const theText = JSON.stringify(result, null, 2);
+			const theText = JSON.stringify(inventories, null, 2);
 			console.log(theText);
+			calendarDates = getCalendarDates(inventories.map((z) => {
+				return {
+					Start: customDateTimeParse(z.start),
+					End: customDateTimeParse(z.end),
+					Available: z.inventory > 0 ? true : false
+				}
+			}));
+			showCalendar(month, year, calendarDates);
+			document.getElementById("orpExternalId").value = inventories.pop().external_id;			
 		} catch (error) {
 			console.error(error);
 		}		
