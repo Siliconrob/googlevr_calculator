@@ -615,7 +615,7 @@
 			}		
 			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.current_day, classStyles: ["rowData"]  }));
 			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
-			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.end, classStyles: ["rowData"]  }));
 			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.inventory, classStyles: ["rowData"]  }));			
 			if (z.inventory == 0) {
 				newRow.style.backgroundColor = "red";
@@ -647,7 +647,7 @@
 			}
 			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.current_day, classStyles: ["rowData"]  }));
 			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
-			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.start, classStyles: ["rowData"]  }));
+			newRow.appendChild(createDetailSpan({ width: "20%", displayText: z.end, classStyles: ["rowData"]  }));
 			newRow.appendChild(createDetailSpan({ width: "10%", displayText: z.base_amount, classStyles: ["rowData"]  }));			
 			if (z.inventory_count == 0) {
 				newRow.style.backgroundColor = "red";
