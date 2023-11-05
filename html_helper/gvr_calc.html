@@ -436,6 +436,54 @@
 		}		
 	}
 
+	function configureUploads() {
+		const uploadedFiles = document.createElement('ul');
+		currentFiles.map(z => {
+			const newFileDetail = document.createElement("li");
+			newFileDetail.innerHTML = `${z.name}`;
+			newFileDetail.setAttribute('style', 'display: block;');
+			uploadedFiles.appendChild(newFileDetail);
+		});
+		document.getElementById("drop_zone").appendChild(uploadedFiles);
+		readInventoryFiles();	
+	}
+	
+	async function loadCachedFile() {
+		try {
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.length == 0) {
+				return;
+			}
+			const externalId = urlParams.get("external_id");		
+			const response = await fetch(`https://google-vr-calculator.district9.info/get_property_file?external_id=${externalId}`);
+			const zip_file = await response.blob();
+			if (!response.ok) {
+				console.log(zip_file);
+				return;
+			}
+			if (zip_file.type == "application/json") {
+				console.log("No match");
+				return;
+			}			
+			const timestamp = (new Date()).getTime();		
+			const cached_zip_file = new File([zip_file], `${externalId}_${timestamp}.zip`, { type: "application/zip" });
+			currentFiles = [];
+			currentFiles.push(cached_zip_file);
+			configureUploads();
+			
+			const arrival = urlParams.get("arrival");
+			if (arrival != null) {
+				document.getElementById("checkinDate").value = arrival;
+			}			
+			const departure = urlParams.get("departure");
+			if (departure != null) {
+				document.getElementById("checkoutDate").value = departure;
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	}	
+
 	function dropHandler(ev) {
 		console.log("File(s) dropped");
 
@@ -461,16 +509,7 @@
 				currentFiles.push(file);
 			});
 		}
-
-		const uploadedFiles = document.createElement('ul');
-		currentFiles.map(z => {
-			const newFileDetail = document.createElement("li");
-			newFileDetail.innerHTML = `${z.name}`;
-			newFileDetail.setAttribute('style', 'display: block;');
-			uploadedFiles.appendChild(newFileDetail);
-		});
-		document.getElementById("drop_zone").appendChild(uploadedFiles);
-		readInventoryFiles();
+		configureUploads();
 	}
 
 	function createRequestWithData() {
@@ -844,7 +883,8 @@
 		setDates();
 		setupTabs();
 		setupCalendar();
-	};	
+		loadCachedFile();
+	};
     </script>
 
     <div class="example-parent">
