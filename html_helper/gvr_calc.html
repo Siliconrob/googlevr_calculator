@@ -479,6 +479,7 @@
 			if (departure != null) {
 				document.getElementById("checkoutDate").value = departure;
 			}
+			await getFeedPrice();
 		} catch (error) {
 			console.error(error);
 		}
