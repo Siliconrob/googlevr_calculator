@@ -1,3 +1,4 @@
+import datetime
 import os
 import pydapper
 import zipfile
@@ -6,6 +7,7 @@ from pyexpat import ExpatError
 import xmltodict
 import data_messages.OTA_HotelRateAmountNotifRQ
 from data_messages import DataHandlers
+from data_messages.CacheStore import CacheItem
 from data_messages.ExtraGuestCharges import ExtraGuestCharges
 from data_messages.OTA_HotelAvailNotifRQ import OTAHotelAvailNotifRQ
 from data_messages.OTA_HotelInvCountNotifRQ import OTAHotelInvCountNotifRQ
@@ -20,6 +22,14 @@ ic.configureOutput(prefix='|> ')
 
 def get_dsn(db_name: str) -> str:
     return f'sqlite+sqlite3://{db_name}'
+
+
+def save_cache_item(key: str, data: bytearray, dsn: str) -> int:
+    return data_messages.CacheStore.save(key, data, dsn)
+
+
+def get_cache_item(key: str, dsn: str) -> CacheItem:
+    return data_messages.CacheStore.get(key, dsn)
 
 
 def read_folder(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:

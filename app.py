@@ -8,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse
-from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_inventory
+from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_inventory, save_cache_item, \
+    get_cache_item
 from price_calculator.ComputeFeed import compute_feed_price
 from icecream import ic
 
@@ -43,10 +44,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-MAX_FILES_TO_CACHE = 20
-
-app.state.properties = {}
 
 
 def iter_file():  #
@@ -113,22 +110,22 @@ async def reset():
 
 @app.post("/save_property_file", tags=["Calculator"], include_in_schema=False)
 async def save_property_file(upload_file: UploadFile = File(...), external_id: str = 'orp12345x'):
-    ic(app.state.properties.clear())
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
         raise HTTPException(400, detail="File must be a zip file")
     data = upload_file.file.read()
-    app.state.properties[external_id] = ic(data)
+    save_result = ic(save_cache_item(external_id, data, get_dsn(DB_NAME)))
+    return save_result
 
 
 @app.get("/get_property_file", tags=["Calculator"], include_in_schema=False)
 async def get_property_file(external_id: str = 'orp12345x'):
-    if external_id in app.state.properties:
-        zip_file_contents = ic(app.state.properties[external_id])
-        timestamp = re.sub("[^0-9]","", pendulum.now().to_datetime_string())
-        return Response(zip_file_contents, headers={'Content-Disposition': f'attachment; filename="{external_id}_{timestamp}.zip"'})
-    if len(app.state.properties) > MAX_FILES_TO_CACHE:
-        ic(app.state.properties.clear())
-    return ic(None)
+    saved_item = ic(get_cache_item(external_id, get_dsn(DB_NAME)))
+    if saved_item is None:
+        return ic(None)
+
+    timestamp = re.sub("[^0-9]", "", saved_item.timestamp)
+    return Response(saved_item.contents,
+                    headers={'Content-Disposition': f'attachment; filename="{external_id}_{timestamp}.zip"'})
 
 
 @app.get("/datasource", tags=["Maintenance"], include_in_schema=False)
