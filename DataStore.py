@@ -24,7 +24,7 @@ def get_dsn(db_name: str) -> str:
     return f'sqlite+sqlite3://{db_name}'
 
 
-def save_cache_item(key: str, data: bytearray, dsn: str) -> int:
+def save_cache_item(key: str, data: bytes, dsn: str) -> int:
     return data_messages.CacheStore.save(key, data, dsn)
 
 

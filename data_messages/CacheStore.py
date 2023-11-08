@@ -13,10 +13,10 @@ ic.configureOutput(prefix='|> ')
 class CacheItem:
     cache_key: str = None
     timestamp: datetime.datetime = None
-    contents: bytearray = None
+    contents: bytes = None
 
 
-def save(key: str, data: bytearray, db_name: str) -> int:
+def save(key: str, data: bytes, db_name: str) -> int:
     remove_expired(db_name)
     insert_datetime = ic(pendulum.now().utcnow())
     with connect(db_name) as commands:
@@ -50,7 +50,7 @@ def get(key: str, db_name: str) -> CacheItem:
             default=None)
 
 
-def remove_expired(db_name: str):
+def remove_expired(db_name: str) -> None:
     expiration_datetime = ic(pendulum.now().utcnow().subtract(minutes=5))
     with connect(db_name) as commands:
         commands.execute(f"""
