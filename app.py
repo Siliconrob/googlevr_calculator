@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
-from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.responses import FileResponse, Response, StreamingResponse, RedirectResponse
 from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_inventory, save_cache_item, \
     get_cache_item
 from price_calculator.ComputeFeed import compute_feed_price
@@ -131,3 +131,8 @@ async def get_property_file(external_id: str = 'orp12345x'):
 @app.get("/datasource", tags=["Maintenance"], include_in_schema=False)
 async def current_db():
     return StreamingResponse(content=iter_file(), media_type="application/octet")
+
+
+@app.get("/", tags=["Maintenance"], include_in_schema=False)
+async def to_docs():
+    return RedirectResponse("/docs")
