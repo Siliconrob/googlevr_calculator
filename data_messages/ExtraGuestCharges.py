@@ -6,7 +6,8 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import DateRange
-from data_messages import FileInfo, DataHandlers
+from data_messages import FileInfo
+from fileset import DataHandlers
 from data_messages.LastId import LastId
 
 
@@ -49,8 +50,8 @@ def create_tables(dsn: str):
 
 
 def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
-                      file_info: FileInfo.FileInfo,
-                      file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+                       file_info: FileInfo.FileInfo,
+                       file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if extra_guest_charges is None:
         return None
 

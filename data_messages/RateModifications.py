@@ -6,9 +6,10 @@ from glom import glom
 from pydapper import connect
 
 from data_messages import DateRange, LengthOfStay, BookingWindow
-from data_messages import FileInfo, DataHandlers
+from data_messages import FileInfo
+from fileset import DataHandlers
 from data_messages.BookingWindow import BookingWindowInt
-from data_messages.DataHandlers import get_safe_list
+from fileset.DataHandlers import get_safe_list
 from data_messages.LastId import LastId
 
 

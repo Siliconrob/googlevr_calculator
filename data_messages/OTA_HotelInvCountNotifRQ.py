@@ -5,8 +5,9 @@ import pendulum
 from glom import glom
 from pydapper import connect
 
-from data_messages import FileInfo, DataHandlers
-from data_messages.DataHandlers import get_safe_list
+from data_messages import FileInfo
+from fileset import DataHandlers
+from fileset.DataHandlers import get_safe_list
 
 
 @dataclass
@@ -40,8 +41,8 @@ def create_tables(dsn: str):
 
 
 def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
-               file_info: FileInfo.FileInfo,
-               file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+                     file_info: FileInfo.FileInfo,
+                     file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if len(inventories) == 0:
         return None
 

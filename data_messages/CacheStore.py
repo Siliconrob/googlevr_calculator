@@ -1,19 +1,10 @@
-import datetime
-from dataclasses import dataclass
-
 import pendulum
 from icecream import ic
 from pydapper import connect
 from data_messages.LastId import get_last_inserted_id
+from fileset.CacheItem import CacheItem
 
 ic.configureOutput(prefix='|> ')
-
-
-@dataclass
-class CacheItem:
-    cache_key: str = None
-    timestamp: datetime.datetime = None
-    contents: bytes = None
 
 
 def save(key: str, data: bytes, db_name: str) -> int:
@@ -27,11 +18,11 @@ def save(key: str, data: bytes, db_name: str) -> int:
             DO UPDATE SET contents = ?contents?,
                 timestamp = ?timestamp?
             """,
-            param={
-                "cache_key": key,
-                "contents": data,
-                "timestamp": insert_datetime.isoformat()
-            })
+                         param={
+                             "cache_key": key,
+                             "contents": data,
+                             "timestamp": insert_datetime.isoformat()
+                         })
 
     new_id = get_last_inserted_id(db_name, "CacheStore")
     return new_id
@@ -45,9 +36,9 @@ def get(key: str, db_name: str) -> CacheItem:
             FROM CacheStore
             WHERE cache_key = ?cache_key?
             """,
-            param={"cache_key": key},
-            model=CacheItem,
-            default=None)
+                                               param={"cache_key": key},
+                                               model=CacheItem,
+                                               default=None)
 
 
 def remove_expired(db_name: str) -> None:
@@ -63,6 +54,6 @@ def remove_expired(db_name: str) -> None:
             )
             """)
         commands.execute(f"delete from CacheStore where timestamp < ?expiration_datetime?",
-        param={
-            "expiration_datetime": expiration_datetime.isoformat()
-        })
+                         param={
+                             "expiration_datetime": expiration_datetime.isoformat()
+                         })

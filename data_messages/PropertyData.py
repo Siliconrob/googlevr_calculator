@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from glom import glom
 
-from data_messages import FileInfo, DataHandlers
+from data_messages import FileInfo
+from fileset import DataHandlers
 
 
 @dataclass
