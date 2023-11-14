@@ -106,7 +106,11 @@
             background: hsl(48, 97%, 56%);
             cursor: pointer;
             color: black;
-        }	  
+        }
+		
+		pre {
+			text-wrap: pretty;
+		}
 
 		#calendar {
 			max-width: 600px;
@@ -541,6 +545,18 @@
 			postData: formData
 		}
 	}
+	
+	function convertXML(inputXML) {
+		const replacements = {
+			"<": "&lt;",
+			">": "&gt;",
+			"\"": "&quot;",
+			"'": "&apos;",
+			"&": "&amp;",
+			"<>": "&lt;&gt;"
+		};
+		return inputXML.replace(/(&|<|>|\"|'|<>)/gi, (z) => { return replacements[z]; });
+	}
 
 	async function getFeedPrice() {
 	
@@ -559,7 +575,7 @@
 			const theText = JSON.stringify(result, null, 2);
 			console.log(theText);
 			let content = document.createElement("PRE");
-			content.innerHTML = theText;
+			content.innerHTML = convertXML(theText);
 			document.getElementById("resultsPane").innerHTML = "";
 			document.getElementById("resultsPane").appendChild(content);
 			formatResults(result);
