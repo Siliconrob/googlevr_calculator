@@ -9,6 +9,7 @@ from pydapper import connect
 class ExtraGuestCharge:
     external_id: str
     adult_charges: decimal
+    xml_contents: str
 
 
 def get_extra_guest_charges(external_id: str,
@@ -17,7 +18,7 @@ def get_extra_guest_charges(external_id: str,
                             dsn: str) -> list[ExtraGuestCharge]:
     with connect(dsn) as commands:
         return commands.query(f"""
-            select e.external_id, e.adult_charges
+            select e.external_id, e.adult_charges, e.xml_contents
             from ExtraGuestCharges e
             left join ExtraGuestCharges_StayDates esd
             on e.id = esd.parent_id

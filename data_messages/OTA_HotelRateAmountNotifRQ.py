@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 import pendulum
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -19,6 +20,7 @@ class OTAHotelRateAmountNotifRQ:
     end: datetime.date
     base_amount: decimal
     guest_count: int
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -38,6 +40,7 @@ def create_tables(dsn: str):
                 end TEXT,
                 base_amount DECIMAL(18,6),
                 guest_count int,
+                xml_contents TEXT,
                 file_id int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 UNIQUE(external_id, file_id, start, end)
@@ -66,7 +69,8 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 start,
                 end,
                 base_amount,
-                guest_count
+                guest_count,
+                xml_contents
             )
             values
             (
@@ -75,7 +79,8 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 ?start?,
                 ?end?,
                 ?base_amount?, 
-                ?guest_count?
+                ?guest_count?,
+                ?xml_contents?
             )
             ON CONFLICT (external_id, file_id, start, end)
             DO UPDATE SET base_amount = ?base_amount?,
@@ -87,7 +92,8 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
                 "start": rate.start.isoformat(),
                 "end": rate.end.isoformat(),
                 "base_amount": float(rate.base_amount),
-                "guest_count": rate.guest_count
+                "guest_count": rate.guest_count,
+                "xml_contents": rate.xml_contents
             } for rate in rates],
         )
     file_info.records = len(rates)
@@ -119,6 +125,7 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
                                              start,
                                              end,
                                              Decimal(base_by_amount["@AmountBeforeTax"]),
-                                             int(base_by_amount.get("@NumberOfGuests", 2)))
+                                             int(base_by_amount.get("@NumberOfGuests", 2)),
+                                             xmltodict.unparse({"RateAmountMessage": rate_amount_message }))
         rates.append(new_rate)
     return rates, results

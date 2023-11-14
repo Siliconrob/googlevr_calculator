@@ -2,6 +2,7 @@ import decimal
 from dataclasses import dataclass
 from decimal import Decimal
 
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -24,6 +25,7 @@ class TaxOrFee:
     currency: str
     amount: decimal
     extract_type: str
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -61,6 +63,7 @@ def create_tables(table_prefix: str, dsn: str):
             period varchar(30),
             currency varchar(5),
             amount DECIMAL(18,6),
+            xml_contents TEXT,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE)
             """)
@@ -120,8 +123,28 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
         param={"file_id": file_id})
         for record in records:
             rowcounts[table_prefix] = commands.execute(f"""
-                INSERT INTO {table_prefix} (external_id, calc_type, basis, period, currency, amount, file_id)
-                values (?external_id?, ?calc_type?, ?basis?, ?period?, ?currency?, ?amount?, ?file_id?)
+                INSERT INTO {table_prefix}
+                (
+                    external_id,
+                    calc_type,
+                    basis,
+                    period,
+                    currency,
+                    amount,
+                    xml_contents,
+                    file_id
+                )
+                values
+                (
+                    ?external_id?,
+                    ?calc_type?,
+                    ?basis?,
+                    ?period?,
+                    ?currency?,
+                    ?amount?,
+                    ?xml_contents?,
+                    ?file_id?
+                )
                 """,
                 param={
                     "external_id": record.external_id,
@@ -130,6 +153,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     "period": record.period,
                     "currency": record.currency,
                     "amount": None if record.amount is None else float(record.amount),
+                    "xml_contents": record.xml_contents,
                     "file_id": file_id
                 })
 
@@ -235,7 +259,8 @@ def read_tax_fee_data(external_id, file_input, spec, extract_type) -> list[TaxOr
                                       glom(tax_or_fee, 'Period', default=None),
                                       glom(tax_or_fee, 'Currency', default=None),
                                       None if extracted_amount is None else Decimal(extracted_amount),
-                                      extract_type))
+                                      extract_type,
+                                      xmltodict.unparse({extract_type: tax_or_fee })))
     return taxes_or_fees
 
 

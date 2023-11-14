@@ -11,11 +11,12 @@ class TaxOrFee:
     calc_type: str
     period: str
     amount: decimal
+    xml_contents: str
 
 
 def tax_or_fee_base_query(table_prefix: str):
     return f"""
-        select tf.external_id, tf.calc_type, tf.period, tf.amount
+        select tf.external_id, tf.calc_type, tf.period, tf.amount, tf.xml_contents
         from {table_prefix} tf
         left join {table_prefix}_BookingDates tfbd
         on tf.id = tfbd.parent_id

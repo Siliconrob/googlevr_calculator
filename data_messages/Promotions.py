@@ -1,6 +1,7 @@
 import decimal
 from dataclasses import dataclass
 
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -25,6 +26,7 @@ class Promotion:
     fixed_amount_per_night: decimal
     fixed_price: decimal
     stacking: str
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -44,6 +46,7 @@ def create_tables(dsn: str):
             fixed_amount DECIMAL(18,6),
             fixed_amount_per_night DECIMAL(18,6),
             fixed_price DECIMAL(18,6),
+            xml_contents TEXT,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,              
             UNIQUE(external_id, promotion_id, file_id))
@@ -131,7 +134,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     percentage,
                     fixed_amount,
                     fixed_amount_per_night,
-                    fixed_price
+                    fixed_price,
+                    xml_contents
                 )
                 values (
                     ?external_id?,
@@ -140,14 +144,16 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     ?percentage?,
                     ?fixed_amount?,
                     ?fixed_amount_per_night?,
-                    ?fixed_price?
+                    ?fixed_price?,
+                    ?xml_contents?
                 )
                 ON CONFLICT (external_id, promotion_id, file_id)
                 DO UPDATE
                     SET percentage = ?percentage?,
                     fixed_amount = ?fixed_amount?,
                     fixed_amount_per_night = ?fixed_amount_per_night?,
-                    fixed_price = ?fixed_price?
+                    fixed_price = ?fixed_price?,
+                    xml_contents = ?xml_contents?
                     """,
                 param={
                     "external_id": promotion.external_id,
@@ -157,6 +163,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     "fixed_amount": None if promotion.fixed_amount is None else float(promotion.fixed_amount),
                     "fixed_amount_per_night": None if promotion.fixed_amount_per_night is None else float(promotion.fixed_amount_per_night),
                     "fixed_price": None if promotion.fixed_price is None else float(promotion.fixed_price),
+                    "xml_contents": promotion.xml_contents
                 })
             last_id = commands.query_first_or_default(f"""
                 select seq
@@ -347,5 +354,6 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
                                     discount.get("@fixed_amount"),
                                     discount.get("@fixed_amount_per_night"),
                                     discount.get("@fixed_price"),
-                                    stacking_type))
+                                    stacking_type,
+                                    xmltodict.unparse({"Promotion": promotion })))
     return promotions, results

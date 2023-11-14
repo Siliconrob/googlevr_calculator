@@ -2,6 +2,7 @@ import decimal
 from dataclasses import dataclass
 from decimal import Decimal
 
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -22,6 +23,7 @@ class RateModifications:
     price_adjustment: decimal
     length_of_stay: LengthOfStay
     booking_window: BookingWindowInt
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -38,6 +40,7 @@ def create_tables(dsn: str):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 external_id varchar(20),
                 multiplier DECIMAL(18,6),
+                xml_contents TEXT,
                 file_id int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,                
                 UNIQUE(external_id, file_id, multiplier)
@@ -124,20 +127,23 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                 (
                     external_id,
                     file_id,
-                    multiplier
+                    multiplier,
+                    xml_contents
                 )
                 values
                 (
                     ?external_id?,
                     ?file_id?,
-                    ?multiplier?
+                    ?multiplier?,
+                    ?xml_contents?
                 ) ON CONFLICT (external_id, file_id, multiplier)
                 DO NOTHING
                 """,
                 param={
                     "external_id": rate_modifier.external_id,
                     "file_id": new_id,
-                    "multiplier": float(rate_modifier.price_adjustment)
+                    "multiplier": float(rate_modifier.price_adjustment),
+                    "xml_contents": rate_modifier.xml_contents
                 })
             last_id = commands.query_first_or_default(f"""
                 select seq
@@ -310,5 +316,6 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
                                          checkout_dates,
                                          Decimal(multiplier["@multiplier"]),
                                          stay_requires,
-                                         booking_window))
+                                         booking_window,
+                                         xmltodict.unparse({"ItineraryRateModification": itinerary })))
     return new_modifiers, results

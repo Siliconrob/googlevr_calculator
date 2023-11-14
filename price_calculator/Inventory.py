@@ -10,6 +10,7 @@ class Inventory:
     start: datetime.date
     end: datetime.date
     inventory: int
+    xml_contents: str
 
 
 def get_inventory(external_id: str, start: datetime, end: datetime, dsn: str) -> list[Inventory]:
@@ -19,7 +20,8 @@ def get_inventory(external_id: str, start: datetime, end: datetime, dsn: str) ->
                        date(aa.td, '-1 day') current_day,
                        o.start,
                        o.end,
-	                   o.inventory
+	                   o.inventory,
+	                   o.xml_contents
                 from OTAHotelInvCountNotifRQ o
                 inner join
                 (

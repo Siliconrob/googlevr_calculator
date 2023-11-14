@@ -9,6 +9,7 @@ from pydapper import connect
 class RateModifier:
     external_id: str
     multiplier: decimal
+    xml_contents: str
 
 
 def get_rate_modifiers(external_id: str,
@@ -19,7 +20,7 @@ def get_rate_modifiers(external_id: str,
                    dsn: str) -> list[RateModifier]:
     with connect(dsn) as commands:
         return commands.query(f"""
-            select r.external_id, r.multiplier
+            select r.external_id, r.multiplier, r.xml_contents
             from RateModifications r
             left join RateModifications_BookingWindow rbw
             on r.id = rbw.parent_id

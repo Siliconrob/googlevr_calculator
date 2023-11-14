@@ -2,6 +2,7 @@ import datetime
 from dataclasses import dataclass
 
 import pendulum
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -18,6 +19,7 @@ class OTAHotelAvailNotifRQ:
     min_length_of_stay: int
     max_length_of_stay: int
     available: bool
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -37,6 +39,7 @@ def create_tables(dsn: str):
             min_length_of_stay int,
             max_length_of_stay int,
             available bool,
+            xml_contents TEXT,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             UNIQUE(external_id, file_id, start, end))
@@ -65,7 +68,8 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             end,
             min_length_of_stay,
             max_length_of_stay,
-            available
+            available,
+            xml_contents
         )
         values
         (
@@ -75,7 +79,8 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             ?end?,
             ?min_length_of_stay?,
             ?max_length_of_stay?,
-            ?available?
+            ?available?,
+            ?xml_contents?
         )
         ON CONFLICT (external_id, file_id, start, end)
         DO UPDATE SET min_length_of_stay = ?min_length_of_stay?,
@@ -90,6 +95,7 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
                 "min_length_of_stay": availability.min_length_of_stay,
                 "max_length_of_stay": availability.max_length_of_stay,
                 "available": availability.available,
+                "xml_contents": availability.xml_contents
             } for availability in availabilities],
         )
     file_info.records = len(availabilities)
@@ -134,5 +140,6 @@ def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAva
                                                    end,
                                                    parsed_min_time,
                                                    parsed_max_time,
-                                                   status))
+                                                   status,
+                                                   xmltodict.unparse({"AvailStatusMessage": avail_status_message })))
     return availabilities, results

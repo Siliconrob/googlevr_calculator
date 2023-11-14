@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import pendulum
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -16,6 +17,7 @@ class OTAHotelInvCountNotifRQ:
     start: datetime.date
     end: datetime.date
     inventory: int
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -34,6 +36,7 @@ def create_tables(dsn: str):
                 start TEXT,
                 end TEXT,
                 inventory int,
+                xml_contents TEXT,
                 file_id int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 UNIQUE(external_id, file_id, start, end)
@@ -61,7 +64,8 @@ def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
                 file_id,
                 start,
                 end,
-                inventory
+                inventory,
+                xml_contents
             )
             values
             (
@@ -69,7 +73,8 @@ def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
                 ?file_id?,
                 ?start?,
                 ?end?,
-                ?inventory? 
+                ?inventory?,
+                ?xml_contents?
             )
             ON CONFLICT (external_id, file_id, start, end)
             DO UPDATE SET inventory = ?inventory?
@@ -79,7 +84,8 @@ def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
                 "file_id": new_id,
                 "start": inventory.start.isoformat(),
                 "end": inventory.end.isoformat(),
-                "inventory": inventory.inventory
+                "inventory": inventory.inventory,
+                "xml_contents": inventory.xml_contents
             } for inventory in inventories],
         )
     file_info.records = len(inventories)
@@ -110,6 +116,7 @@ def read_inventories(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelInvC
         new_inventory = OTAHotelInvCountNotifRQ(results.external_id,
                                              start,
                                              end,
-                                             int(inventory_count.get("@Count", 1)))
+                                             int(inventory_count.get("@Count", 1)),
+                                             xmltodict.unparse({"Inventory": inventory_message }))
         new_inventories.append(new_inventory)
     return new_inventories, results

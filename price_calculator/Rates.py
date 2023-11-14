@@ -13,6 +13,7 @@ class Rate:
     base_amount: decimal
     guest_count: int
     inventory_count: int
+    xml_contents: str
 
 
 def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> list[Rate]:
@@ -24,7 +25,8 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
                        o.end,
                        o.base_amount,
                        o.guest_count,
-                       COALESCE(oi.inventory, 1) inventory_count
+                       COALESCE(oi.inventory, 1) inventory_count,
+                       o.xml_contents
                 from OTAHotelRateAmountNotifRQ o
                 inner join
                 (

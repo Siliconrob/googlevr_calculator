@@ -55,6 +55,10 @@
 ### Debugging to get matches
 - [X] Example messages match to specific feed prices
 
+### Include XML snippets
+- [X] Show XML snippets that data is constructed from in `xml_contents` field
+
+
 ### Tests
 - [ ] Create tests to cover sample file inputs
 

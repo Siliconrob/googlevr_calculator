@@ -13,6 +13,7 @@ class Promotion:
     fixed_amount: decimal
     fixed_amount_per_night: decimal
     fixed_price: decimal
+    xml_contents: str
 
 
 def get_promotions(external_id: str,
@@ -23,7 +24,7 @@ def get_promotions(external_id: str,
                    dsn: str) -> list[Promotion]:
     with connect(dsn) as commands:
         return commands.query(f"""
-            select p.external_id, p.promotion_id, p.percentage, p.fixed_amount, p.fixed_amount_per_night, p.fixed_price
+            select p.external_id, p.promotion_id, p.percentage, p.fixed_amount, p.fixed_amount_per_night, p.fixed_price, p.xml_contents
             from Promotion p
             left join Promotion_BookingWindow pbw
             on p.id = pbw.parent_id            

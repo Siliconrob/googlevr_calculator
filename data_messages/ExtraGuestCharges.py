@@ -2,6 +2,7 @@ import decimal
 from dataclasses import dataclass
 from decimal import Decimal
 
+import xmltodict
 from glom import glom
 from pydapper import connect
 
@@ -16,6 +17,7 @@ class ExtraGuestCharges:
     external_id: str
     stay_dates: list[DateRange]
     adult_charges: decimal
+    xml_contents: str
 
 
 def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
@@ -31,6 +33,7 @@ def create_tables(dsn: str):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             external_id varchar(20),
             adult_charges DECIMAL(18,6),
+            xml_contents TEXT,
             file_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE)
             """)
@@ -40,7 +43,7 @@ def create_tables(dsn: str):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 external_id varchar(20),
                 start TEXT,
-                end TEXT,
+                end TEXT,                
                 file_id int,
                 parent_id int,            
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
@@ -73,18 +76,21 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
             (
                 external_id,
                 adult_charges,
+                xml_contents,
                 file_id
             )
             values
             (
                 ?external_id?,
                 ?adult_charges?,
+                ?xml_contents?,
                 ?file_id?
             )
             """,
            param={
                "external_id": extra_guest_charges.external_id,
                "adult_charges": None if extra_guest_charges.adult_charges is None else float(extra_guest_charges.adult_charges),
+               "xml_contents": extra_guest_charges.xml_contents,
                "file_id": new_id
            })
         last_id = commands.query_first_or_default(f"""
@@ -130,4 +136,10 @@ def read_extra_charges(file_args: DataHandlers.DataFileArgs) -> (ExtraGuestCharg
         None, None
     charge_amount = Decimal(extra_adult_charge["@amount"])
     stay_dates = DateRange.parse_ranges(glom(extra_guest_charges, 'StayDates.DateRange', default=[]))
-    return ExtraGuestCharges(results.external_id, stay_dates, charge_amount), results
+    charges_dict = glom(file_args.formatted_data, 'ExtraGuestCharges.HotelExtraGuestCharges')
+    extras = ExtraGuestCharges(results.external_id,
+                               stay_dates,
+                               charge_amount,
+                               xmltodict.unparse({'HotelExtraGuestCharges': charges_dict}))
+
+    return extras, results
