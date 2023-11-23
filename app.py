@@ -23,7 +23,7 @@ tags_metadata = [
 
 app = FastAPI(title="Google Vacation Rentals Calculator",
               description="Calculates a rental price based on ARI XML messages",
-              version="0.0.1",
+              version="0.0.2",
               terms_of_service="Strength is irrelevant. Resistance is futile. We wish to improve ourselves. We will add your biological and technological distinctiveness to our own.",
               contact={
                   "url": "https://siliconheaven.info",

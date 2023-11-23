@@ -58,6 +58,13 @@
 ### Include XML snippets
 - [X] Show XML snippets that data is constructed from in `xml_contents` field
 
+### Upgrades
+- [X] Upgrade to Python 3.12
+- [X] Upgrade all applicable packages
+
+### Create pypi package
+- [ ] Isolate calculator as separate package
+- [ ] Publish package and place web/command line interface over the top as functional application
 
 ### Tests
 - [ ] Create tests to cover sample file inputs

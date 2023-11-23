@@ -106,7 +106,7 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
     start_date = ic(pendulum.datetime(start_date.year, start_date.month, start_date.day))
     end_date = ic(pendulum.datetime(end_date.year, end_date.month, end_date.day))
     book_date = ic(pendulum.datetime(book_date.year, book_date.month, book_date.day))
-    duration = ic(pendulum.period(start_date, end_date))
+    duration = ic(end_date.diff(start_date))
 
     details = ic(ChargeDetails(
         start_date,
@@ -116,7 +116,7 @@ def compute_feed_price(external_id, start_date: date, end_date: date, book_date:
         get_rates(external_id, start_date, end_date, dsn),
         get_taxes(external_id, start_date, end_date, duration.days, book_date, dsn),
         get_fees(external_id, start_date, end_date, duration.days, book_date, dsn),
-        get_promotions(external_id, start_date, end_date, duration.days, book_date, dsn),
+        get_promotions(external_id, start_date, end_date, duration.in_days(), book_date, dsn),
         get_extra_guest_charges(external_id, start_date, end_date, dsn),
         get_rate_modifiers(external_id, start_date, end_date, duration.days, book_date, dsn),
         get_inventory(external_id, start_date, end_date, dsn)
