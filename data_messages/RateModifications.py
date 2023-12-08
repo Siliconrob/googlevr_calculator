@@ -175,8 +175,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         "external_id": rate_modifier.external_id,
                         "file_id": new_id,
                         "parent_id": last_id.seq,
-                        "start": date_range.start.isoformat(),
-                        "end": date_range.end.isoformat()
+                        "start": None if date_range.start is None else date_range.start.isoformat(),
+                        "end": None if date_range.end is None else date_range.end.isoformat()
                     } for date_range in rate_modifier.booking_dates]),
             if len(rate_modifier.checkin_dates) > 0:
                 rowcount['checkinDates'] = commands.execute(f"""
@@ -202,8 +202,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         "external_id": rate_modifier.external_id,
                         "file_id": new_id,
                         "parent_id": last_id.seq,
-                        "start": dateRange.start.isoformat(),
-                        "end": dateRange.end.isoformat()
+                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
+                        "end": None if dateRange.end is None else dateRange.end.isoformat(),
                     } for dateRange in rate_modifier.checkin_dates]),
             if len(rate_modifier.checkout_dates) > 0:
                 rowcount['checkoutDates'] = commands.execute(f"""
@@ -228,8 +228,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         "external_id": rate_modifier.external_id,
                         "file_id": new_id,
                         "parent_id": last_id.seq,
-                        "start": dateRange.start.isoformat(),
-                        "end": dateRange.end.isoformat()
+                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
+                        "end": None if dateRange.end is None else dateRange.end.isoformat(),
                     } for dateRange in rate_modifier.checkout_dates]),
             if rate_modifier.length_of_stay is not None:
                 rowcount['lengthOfStay'] = commands.execute(f"""
