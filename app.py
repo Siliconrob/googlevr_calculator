@@ -12,6 +12,7 @@ from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_i
     get_cache_item
 from price_calculator.ComputeFeed import compute_feed_price
 from icecream import ic
+from middlewares.exceptionhandler import ExceptionHandlerMiddleware
 
 ic.configureOutput(prefix='|> ')
 
@@ -45,6 +46,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(ExceptionHandlerMiddleware)
 
 def iter_file():  #
     if not os.path.exists(DB_NAME):
