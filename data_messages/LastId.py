@@ -15,5 +15,5 @@ def get_last_inserted_id(db_name: str, table_name: str) -> int:
             from sqlite_sequence
             WHERE name = ?table_name?
             """,
-            param={"table_name": table_name}, model=LastId, default=LastId())
+                                                  param={"table_name": table_name}, model=LastId, default=LastId())
         return last_id.seq

@@ -13,11 +13,11 @@ class RateModifier:
 
 
 def get_rate_modifiers(external_id: str,
-                   start: datetime,
-                   end: datetime,
-                   nights: int,
-                   book_date: datetime,
-                   dsn: str) -> list[RateModifier]:
+                       start: datetime,
+                       end: datetime,
+                       nights: int,
+                       book_date: datetime,
+                       dsn: str) -> list[RateModifier]:
     with connect(dsn) as commands:
         return commands.query(f"""
             select r.external_id, r.multiplier, r.xml_contents

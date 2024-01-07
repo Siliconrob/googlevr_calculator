@@ -48,6 +48,7 @@ app.add_middleware(
 
 app.add_middleware(ExceptionHandlerMiddleware)
 
+
 def iter_file():  #
     if not os.path.exists(DB_NAME):
         yield from ()

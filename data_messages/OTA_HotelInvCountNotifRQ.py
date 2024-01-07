@@ -56,7 +56,7 @@ def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
             delete from OTAHotelInvCountNotifRQ
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         rowcount["inventories"] = commands.execute(f"""
             INSERT INTO OTAHotelInvCountNotifRQ
             (
@@ -79,15 +79,15 @@ def load_inventories(inventories: list[OTAHotelInvCountNotifRQ],
             ON CONFLICT (external_id, file_id, start, end)
             DO UPDATE SET inventory = ?inventory?
             """,
-            param=[{
-                "external_id": inventory.external_id,
-                "file_id": new_id,
-                "start": inventory.start.isoformat(),
-                "end": inventory.end.isoformat(),
-                "inventory": inventory.inventory,
-                "xml_contents": inventory.xml_contents
-            } for inventory in inventories],
-        )
+                                                   param=[{
+                                                       "external_id": inventory.external_id,
+                                                       "file_id": new_id,
+                                                       "start": inventory.start.isoformat(),
+                                                       "end": inventory.end.isoformat(),
+                                                       "inventory": inventory.inventory,
+                                                       "xml_contents": inventory.xml_contents
+                                                   } for inventory in inventories],
+                                                   )
     file_info.records = len(inventories)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
@@ -99,7 +99,7 @@ def read_inventories(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelInvC
         return [], None
 
     results = FileInfo.FileInfo(file_args.file_name)
-    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data,'OTA_HotelInvCountNotifRQ.@TimeStamp'))
+    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'OTA_HotelInvCountNotifRQ.@TimeStamp'))
     results.external_id = glom(file_args.formatted_data, 'OTA_HotelInvCountNotifRQ.Inventories.@HotelCode')
     new_inventories = []
     file_inventories = glom(file_args.formatted_data, '**.Inventory')
@@ -114,9 +114,9 @@ def read_inventories(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelInvC
         start, end = pendulum.parse(status_application_control["@Start"]), pendulum.parse(
             status_application_control["@End"])
         new_inventory = OTAHotelInvCountNotifRQ(results.external_id,
-                                             start,
-                                             end,
-                                             int(inventory_count.get("@Count", 1)),
-                                             xmltodict.unparse({"Inventory": inventory_message }))
+                                                start,
+                                                end,
+                                                int(inventory_count.get("@Count", 1)),
+                                                xmltodict.unparse({"Inventory": inventory_message}))
         new_inventories.append(new_inventory)
     return new_inventories, results

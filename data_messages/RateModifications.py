@@ -120,7 +120,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
             delete from RateModifications
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         for rate_modifier in rate_modifiers:
             rowcount['ratemodifiers'] = commands.execute(f"""
                 INSERT INTO RateModifications
@@ -139,18 +139,19 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                 ) ON CONFLICT (external_id, file_id, multiplier)
                 DO NOTHING
                 """,
-                param={
-                    "external_id": rate_modifier.external_id,
-                    "file_id": new_id,
-                    "multiplier": float(rate_modifier.price_adjustment),
-                    "xml_contents": rate_modifier.xml_contents
-                })
+                                                         param={
+                                                             "external_id": rate_modifier.external_id,
+                                                             "file_id": new_id,
+                                                             "multiplier": float(rate_modifier.price_adjustment),
+                                                             "xml_contents": rate_modifier.xml_contents
+                                                         })
             last_id = commands.query_first_or_default(f"""
                 select seq
                 from sqlite_sequence
                 WHERE name = ?table_name?
                 """,
-              param={"table_name": "RateModifications"}, model=LastId, default=LastId())
+                                                      param={"table_name": "RateModifications"}, model=LastId,
+                                                      default=LastId())
 
             if len(rate_modifier.booking_dates) > 0:
                 rowcount['bookingDates'] = commands.execute(f"""
@@ -171,13 +172,13 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?end?
                     ) ON CONFLICT (external_id, file_id, start, end) DO NOTHING
                     """,
-                    param=[{
-                        "external_id": rate_modifier.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if date_range.start is None else date_range.start.isoformat(),
-                        "end": None if date_range.end is None else date_range.end.isoformat()
-                    } for date_range in rate_modifier.booking_dates]),
+                                                            param=[{
+                                                                "external_id": rate_modifier.external_id,
+                                                                "file_id": new_id,
+                                                                "parent_id": last_id.seq,
+                                                                "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                "end": None if date_range.end is None else date_range.end.isoformat()
+                                                            } for date_range in rate_modifier.booking_dates]),
             if len(rate_modifier.checkin_dates) > 0:
                 rowcount['checkinDates'] = commands.execute(f"""
                     INSERT INTO RateModifications_CheckinDates
@@ -198,13 +199,13 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                     ) ON CONFLICT (external_id, file_id, start, end)
                     DO NOTHING
                     """,
-                    param=[{
-                        "external_id": rate_modifier.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                        "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                    } for dateRange in rate_modifier.checkin_dates]),
+                                                            param=[{
+                                                                "external_id": rate_modifier.external_id,
+                                                                "file_id": new_id,
+                                                                "parent_id": last_id.seq,
+                                                                "start": None if dateRange.start is None else dateRange.start.isoformat(),
+                                                                "end": None if dateRange.end is None else dateRange.end.isoformat(),
+                                                            } for dateRange in rate_modifier.checkin_dates]),
             if len(rate_modifier.checkout_dates) > 0:
                 rowcount['checkoutDates'] = commands.execute(f"""
                     INSERT INTO RateModifications_CheckoutDates
@@ -224,13 +225,13 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?end?
                     ) ON CONFLICT (external_id, file_id, start, end)
                     DO NOTHING""",
-                    param=[{
-                        "external_id": rate_modifier.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                        "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                    } for dateRange in rate_modifier.checkout_dates]),
+                                                             param=[{
+                                                                 "external_id": rate_modifier.external_id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "start": None if dateRange.start is None else dateRange.start.isoformat(),
+                                                                 "end": None if dateRange.end is None else dateRange.end.isoformat(),
+                                                             } for dateRange in rate_modifier.checkout_dates]),
             if rate_modifier.length_of_stay is not None:
                 rowcount['lengthOfStay'] = commands.execute(f"""
                     INSERT INTO RateModifications_LengthOfStay
@@ -249,13 +250,13 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?min?,
                         ?max?
                     ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
-                    param={
-                        "external_id": rate_modifier.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "min": rate_modifier.length_of_stay.min,
-                        "max": rate_modifier.length_of_stay.max
-                    })
+                                                            param={
+                                                                "external_id": rate_modifier.external_id,
+                                                                "file_id": new_id,
+                                                                "parent_id": last_id.seq,
+                                                                "min": rate_modifier.length_of_stay.min,
+                                                                "max": rate_modifier.length_of_stay.max
+                                                            })
             if rate_modifier.booking_window is not None:
                 rowcount['bookingWindow'] = commands.execute(f"""
                     INSERT INTO RateModifications_BookingWindow
@@ -274,13 +275,13 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?min?,
                         ?max?
                     ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
-                    param={
-                        "external_id": rate_modifier.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "min": rate_modifier.booking_window.min,
-                        "max": rate_modifier.booking_window.max
-                    })
+                                                             param={
+                                                                 "external_id": rate_modifier.external_id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "min": rate_modifier.booking_window.min,
+                                                                 "max": rate_modifier.booking_window.max
+                                                             })
     file_info.records = len(rate_modifiers)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
@@ -311,11 +312,11 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
         stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
         booking_window = BookingWindow.parse_range_int(glom(itinerary, 'BookingWindow', default=None))
         new_modifiers.append(RateModifications(results.external_id,
-                                         booking_dates,
-                                         checkin_dates,
-                                         checkout_dates,
-                                         Decimal(multiplier["@multiplier"]),
-                                         stay_requires,
-                                         booking_window,
-                                         xmltodict.unparse({"ItineraryRateModification": itinerary })))
+                                               booking_dates,
+                                               checkin_dates,
+                                               checkout_dates,
+                                               Decimal(multiplier["@multiplier"]),
+                                               stay_requires,
+                                               booking_window,
+                                               xmltodict.unparse({"ItineraryRateModification": itinerary})))
     return new_modifiers, results

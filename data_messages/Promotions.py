@@ -113,7 +113,8 @@ def create_tables(dsn: str):
             )""")
 
 
-def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
+                    file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if len(promotions) == 0:
         return None
     new_id = FileInfo.load_file(file_info.file_name, file_args.dsn)
@@ -123,7 +124,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
             delete from Promotion
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         for promotion in promotions:
             rowcount['promotion'] = commands.execute(
                 f"""
@@ -161,7 +162,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                     "file_id": new_id,
                     "percentage": None if promotion.percentage is None else float(promotion.percentage),
                     "fixed_amount": None if promotion.fixed_amount is None else float(promotion.fixed_amount),
-                    "fixed_amount_per_night": None if promotion.fixed_amount_per_night is None else float(promotion.fixed_amount_per_night),
+                    "fixed_amount_per_night": None if promotion.fixed_amount_per_night is None else float(
+                        promotion.fixed_amount_per_night),
                     "fixed_price": None if promotion.fixed_price is None else float(promotion.fixed_price),
                     "xml_contents": promotion.xml_contents
                 })
@@ -170,7 +172,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                 from sqlite_sequence
                 WHERE name = ?table_name?
                 """,
-                param={"table_name": "Promotion"}, model=LastId, default=LastId())
+                                                      param={"table_name": "Promotion"}, model=LastId, default=LastId())
 
             if len(promotion.booking_dates) > 0:
                 rowcount['booking_dates'] = commands.execute(f"""
@@ -195,14 +197,14 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                 ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
-                    param=[{
-                        "external_id": promotion.external_id,
-                        "promotion_id": promotion.id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if date_range.start is None else date_range.start.isoformat(),
-                        "end": None if date_range.end is None else date_range.end.isoformat()
-                    } for date_range in promotion.booking_dates]),
+                                                             param=[{
+                                                                 "external_id": promotion.external_id,
+                                                                 "promotion_id": promotion.id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat()
+                                                             } for date_range in promotion.booking_dates]),
             if len(promotion.checkin_dates) > 0:
                 rowcount['checkin_dates'] = commands.execute(f"""
                 INSERT INTO Promotion_CheckinDates
@@ -225,14 +227,14 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                 ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
-                    param=[{
-                        "external_id": promotion.external_id,
-                        "promotion_id": promotion.id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if date_range.start is None else date_range.start.isoformat(),
-                        "end": None if date_range.end is None else date_range.end.isoformat()
-                    } for date_range in promotion.checkin_dates]),
+                                                             param=[{
+                                                                 "external_id": promotion.external_id,
+                                                                 "promotion_id": promotion.id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat()
+                                                             } for date_range in promotion.checkin_dates]),
             if len(promotion.checkout_dates) > 0:
                 rowcount['checkout_dates'] = commands.execute(f"""
                 INSERT INTO Promotion_CheckoutDates
@@ -255,14 +257,14 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                 ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
                 """,
-                    param=[{
-                        "external_id": promotion.external_id,
-                        "promotion_id": promotion.id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "start": None if date_range.start is None else date_range.start.isoformat(),
-                        "end": None if date_range.end is None else date_range.end.isoformat()
-                    } for date_range in promotion.checkout_dates]),
+                                                              param=[{
+                                                                  "external_id": promotion.external_id,
+                                                                  "promotion_id": promotion.id,
+                                                                  "file_id": new_id,
+                                                                  "parent_id": last_id.seq,
+                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                  "end": None if date_range.end is None else date_range.end.isoformat()
+                                                              } for date_range in promotion.checkout_dates]),
             if promotion.length_of_stay is not None:
                 rowcount['length_of_stay'] = commands.execute(f"""
                 INSERT INTO Promotion_LengthOfStay
@@ -284,14 +286,14 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                 ) ON CONFLICT (external_id, promotion_id, file_id)
                 DO NOTHING
                 """,
-                    param={
-                        "external_id": promotion.external_id,
-                        "promotion_id": promotion.id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
-                        "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
-                    })
+                                                              param={
+                                                                  "external_id": promotion.external_id,
+                                                                  "promotion_id": promotion.id,
+                                                                  "file_id": new_id,
+                                                                  "parent_id": last_id.seq,
+                                                                  "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
+                                                                  "max": None if promotion.length_of_stay.max is None else promotion.length_of_stay.max
+                                                              })
             if promotion.booking_window is not None:
                 rowcount['bookingWindow'] = commands.execute(f"""
                     INSERT INTO Promotion_BookingWindow
@@ -310,13 +312,13 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo, f
                         ?min?,
                         ?max?
                     ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
-                    param={
-                        "external_id": promotion.external_id,
-                        "file_id": new_id,
-                        "parent_id": last_id.seq,
-                        "min": None if promotion.booking_window.min is None else promotion.booking_window.min.days,
-                        "max": None if promotion.booking_window.max is None else promotion.booking_window.max.days
-                    })
+                                                             param={
+                                                                 "external_id": promotion.external_id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "min": None if promotion.booking_window.min is None else promotion.booking_window.min.days,
+                                                                 "max": None if promotion.booking_window.max is None else promotion.booking_window.max.days
+                                                             })
 
     file_info.records = len(promotions)
     file_info.xml_contents = file_args.file_contents
@@ -355,5 +357,5 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
                                     discount.get("@fixed_amount_per_night"),
                                     discount.get("@fixed_price"),
                                     stacking_type,
-                                    xmltodict.unparse({"Promotion": promotion })))
+                                    xmltodict.unparse({"Promotion": promotion})))
     return promotions, results

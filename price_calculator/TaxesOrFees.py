@@ -34,7 +34,8 @@ def tax_or_fee_base_query(table_prefix: str):
         """
 
 
-def get_taxes_or_fees(table_prefix: str, external_id: str, start: datetime, end: datetime, nights: int, book_date: datetime, dsn: str) -> list[TaxOrFee]:
+def get_taxes_or_fees(table_prefix: str, external_id: str, start: datetime, end: datetime, nights: int,
+                      book_date: datetime, dsn: str) -> list[TaxOrFee]:
     with connect(dsn) as commands:
         return commands.query(tax_or_fee_base_query(table_prefix),
                               param={
@@ -46,9 +47,11 @@ def get_taxes_or_fees(table_prefix: str, external_id: str, start: datetime, end:
                               }, model=TaxOrFee)
 
 
-def get_taxes(external_id: str, start: datetime, end: datetime, nights: int, book_date: datetime, dsn: str) -> list[TaxOrFee]:
+def get_taxes(external_id: str, start: datetime, end: datetime, nights: int, book_date: datetime, dsn: str) -> list[
+    TaxOrFee]:
     return get_taxes_or_fees("Tax", external_id, start, end, nights, book_date, dsn)
 
 
-def get_fees(external_id: str, start: datetime, end: datetime, nights: int, book_date: datetime, dsn: str) -> list[TaxOrFee]:
+def get_fees(external_id: str, start: datetime, end: datetime, nights: int, book_date: datetime, dsn: str) -> list[
+    TaxOrFee]:
     return get_taxes_or_fees("Fee", external_id, start, end, nights, book_date, dsn)

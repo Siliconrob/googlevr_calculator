@@ -60,7 +60,7 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
             delete from OTAHotelRateAmountNotifRQ
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         rowcount["rates"] = commands.execute(f"""
             INSERT INTO OTAHotelRateAmountNotifRQ
             (
@@ -86,16 +86,16 @@ def load_rates(rates: list[OTAHotelRateAmountNotifRQ],
             DO UPDATE SET base_amount = ?base_amount?,
                 guest_count = ?guest_count?
             """,
-            param=[{
-                "external_id": rate.external_id,
-                "file_id": new_id,
-                "start": rate.start.isoformat(),
-                "end": rate.end.isoformat(),
-                "base_amount": float(rate.base_amount),
-                "guest_count": rate.guest_count,
-                "xml_contents": rate.xml_contents
-            } for rate in rates],
-        )
+                                             param=[{
+                                                 "external_id": rate.external_id,
+                                                 "file_id": new_id,
+                                                 "start": rate.start.isoformat(),
+                                                 "end": rate.end.isoformat(),
+                                                 "base_amount": float(rate.base_amount),
+                                                 "guest_count": rate.guest_count,
+                                                 "xml_contents": rate.xml_contents
+                                             } for rate in rates],
+                                             )
     file_info.records = len(rates)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
@@ -107,7 +107,7 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
         return [], None
 
     results = FileInfo.FileInfo(file_args.file_name)
-    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data,'OTA_HotelRateAmountNotifRQ.@TimeStamp'))
+    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'OTA_HotelRateAmountNotifRQ.@TimeStamp'))
     results.external_id = glom(file_args.formatted_data, 'OTA_HotelRateAmountNotifRQ.RateAmountMessages.@HotelCode')
     rates = []
     file_rates = glom(file_args.formatted_data, '**.RateAmountMessage')
@@ -126,6 +126,6 @@ def read_rates(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelRateAmount
                                              end,
                                              Decimal(base_by_amount["@AmountBeforeTax"]),
                                              int(base_by_amount.get("@NumberOfGuests", 2)),
-                                             xmltodict.unparse({"RateAmountMessage": rate_amount_message }))
+                                             xmltodict.unparse({"RateAmountMessage": rate_amount_message}))
         rates.append(new_rate)
     return rates, results

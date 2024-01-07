@@ -65,12 +65,12 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
             delete from ExtraGuestCharges
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         commands.execute(f"""
             delete from ExtraGuestCharges_StayDates
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         rowcounts["ExtraGuestCharges"] = commands.execute(f"""
             INSERT INTO ExtraGuestCharges
             (
@@ -87,18 +87,20 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
                 ?file_id?
             )
             """,
-           param={
-               "external_id": extra_guest_charges.external_id,
-               "adult_charges": None if extra_guest_charges.adult_charges is None else float(extra_guest_charges.adult_charges),
-               "xml_contents": extra_guest_charges.xml_contents,
-               "file_id": new_id
-           })
+                                                          param={
+                                                              "external_id": extra_guest_charges.external_id,
+                                                              "adult_charges": None if extra_guest_charges.adult_charges is None else float(
+                                                                  extra_guest_charges.adult_charges),
+                                                              "xml_contents": extra_guest_charges.xml_contents,
+                                                              "file_id": new_id
+                                                          })
         last_id = commands.query_first_or_default(f"""
             select seq
             from sqlite_sequence
             WHERE name = ?table_name?
             """,
-          param={"table_name": "ExtraGuestCharges"}, model=LastId, default=LastId())
+                                                  param={"table_name": "ExtraGuestCharges"}, model=LastId,
+                                                  default=LastId())
         rowcounts['stay_dates'] = commands.execute(
             f"""
                 INSERT INTO ExtraGuestCharges_StayDates (external_id, start, end, file_id, parent_id)

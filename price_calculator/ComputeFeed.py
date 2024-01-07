@@ -12,6 +12,7 @@ from price_calculator.RateModifiers import get_rate_modifiers, RateModifier
 from price_calculator.Rates import get_rates, Rate
 from price_calculator.TaxesOrFees import get_taxes, get_fees, TaxOrFee
 from icecream import ic
+
 ic.configureOutput(prefix='|> ')
 
 
@@ -63,7 +64,8 @@ def promotions_adjustment(rent_total: decimal, nights: int, charges: ChargeDetai
         if fixed_amount is not None:
             total += ic(fixed_amount)
             continue
-        fixed_amount_per_night = None if promotion.fixed_amount_per_night is None else Decimal(promotion.fixed_amount_per_night)
+        fixed_amount_per_night = None if promotion.fixed_amount_per_night is None else Decimal(
+            promotion.fixed_amount_per_night)
         if fixed_amount_per_night is not None:
             total += ic(fixed_amount_per_night * nights)
             continue

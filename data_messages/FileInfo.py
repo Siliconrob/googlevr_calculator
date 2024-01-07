@@ -41,9 +41,9 @@ def load_file(file_name: str, db_name: str) -> int:
             ON CONFLICT (file_name)
             DO NOTHING
             """,
-            param={
-                "file_name": file_name
-            })
+                         param={
+                             "file_name": file_name
+                         })
 
     new_id = get_last_inserted_id(db_name, "FileInfo")
     return new_id
@@ -59,18 +59,18 @@ def update_file(info: FileInfo, db_name: str):
                 xml_contents = ?xml_contents?
             WHERE file_name = ?file_name?
             """,
-             param={
-                 "file_name": info.file_name,
-                 "external_id": info.external_id,
-                 "timestamp": None if info.timestamp is None else info.timestamp.isoformat(),
-                 "records": info.records,
-                 "xml_contents": info.xml_contents
-             })
+                         param={
+                             "file_name": info.file_name,
+                             "external_id": info.external_id,
+                             "timestamp": None if info.timestamp is None else info.timestamp.isoformat(),
+                             "records": info.records,
+                             "xml_contents": info.xml_contents
+                         })
         return commands.query_first_or_default("""
             SELECT *
             FROM FileInfo
             WHERE file_name = ?file_name?
             """,
-            param={"file_name": info.file_name},
-            model=FileInfo,
-            default=FileInfo())
+                                               param={"file_name": info.file_name},
+                                               model=FileInfo,
+                                               default=FileInfo())

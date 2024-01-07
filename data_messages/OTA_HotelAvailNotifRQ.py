@@ -58,7 +58,7 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             delete from OTAHotelAvailNotifRQ
             where file_id != ?file_id?
             """,
-            param={"file_id": new_id})
+                         param={"file_id": new_id})
         rowcount = commands.execute(f"""
         INSERT INTO OTAHotelAvailNotifRQ
         (
@@ -87,17 +87,17 @@ def load_availability(availabilities: list[OTAHotelAvailNotifRQ],
             max_length_of_stay = ?max_length_of_stay?,
             available = ?available?
             """,
-            param=[{
-                "external_id": availability.external_id,
-                "file_id": new_id,
-                "start": availability.start.isoformat(),
-                "end": availability.end.isoformat(),
-                "min_length_of_stay": availability.min_length_of_stay,
-                "max_length_of_stay": availability.max_length_of_stay,
-                "available": availability.available,
-                "xml_contents": availability.xml_contents
-            } for availability in availabilities],
-        )
+                                    param=[{
+                                        "external_id": availability.external_id,
+                                        "file_id": new_id,
+                                        "start": availability.start.isoformat(),
+                                        "end": availability.end.isoformat(),
+                                        "min_length_of_stay": availability.min_length_of_stay,
+                                        "max_length_of_stay": availability.max_length_of_stay,
+                                        "available": availability.available,
+                                        "xml_contents": availability.xml_contents
+                                    } for availability in availabilities],
+                                    )
     file_info.records = len(availabilities)
     file_info.xml_contents = file_args.file_contents
     return FileInfo.update_file(file_info, file_args.dsn)
@@ -141,5 +141,5 @@ def read_availability(file_args: DataHandlers.DataFileArgs) -> (list[OTAHotelAva
                                                    parsed_min_time,
                                                    parsed_max_time,
                                                    status,
-                                                   xmltodict.unparse({"AvailStatusMessage": avail_status_message })))
+                                                   xmltodict.unparse({"AvailStatusMessage": avail_status_message})))
     return availabilities, results

@@ -35,7 +35,8 @@ def insert_records(file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     return load_taxes_fees(taxes_and_fees, file_info, file_args)
 
 
-def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo, file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
+def load_taxes_fees(taxes_and_fees: dict, file_info: FileInfo.FileInfo,
+                    file_args: DataHandlers.DataFileArgs) -> FileInfo.FileInfo:
     if taxes_and_fees is None:
         return None
 
@@ -120,7 +121,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
             delete from {table_prefix}
             where file_id != ?file_id?
             """,
-        param={"file_id": file_id})
+                         param={"file_id": file_id})
         for record in records:
             rowcounts[table_prefix] = commands.execute(f"""
                 INSERT INTO {table_prefix}
@@ -146,23 +147,25 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     ?file_id?
                 )
                 """,
-                param={
-                    "external_id": record.external_id,
-                    "calc_type": record.type,
-                    "basis": record.basis,
-                    "period": record.period,
-                    "currency": record.currency,
-                    "amount": None if record.amount is None else float(record.amount),
-                    "xml_contents": record.xml_contents,
-                    "file_id": file_id
-                })
+                                                       param={
+                                                           "external_id": record.external_id,
+                                                           "calc_type": record.type,
+                                                           "basis": record.basis,
+                                                           "period": record.period,
+                                                           "currency": record.currency,
+                                                           "amount": None if record.amount is None else float(
+                                                               record.amount),
+                                                           "xml_contents": record.xml_contents,
+                                                           "file_id": file_id
+                                                       })
 
             last_id = commands.query_first_or_default(f"""
                 select seq
                 from sqlite_sequence
                 WHERE name = ?table_name?
                 """,
-                param={"table_name": table_prefix}, model=LastId, default=LastId())
+                                                      param={"table_name": table_prefix}, model=LastId,
+                                                      default=LastId())
 
             if len(record.booking_dates) > 0:
                 rowcounts['bookingDates'] = commands.execute(
@@ -260,7 +263,5 @@ def read_tax_fee_data(external_id, file_input, spec, extract_type) -> list[TaxOr
                                       glom(tax_or_fee, 'Currency', default=None),
                                       None if extracted_amount is None else Decimal(extracted_amount),
                                       extract_type,
-                                      xmltodict.unparse({extract_type: tax_or_fee })))
+                                      xmltodict.unparse({extract_type: tax_or_fee})))
     return taxes_or_fees
-
-

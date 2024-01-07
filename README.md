@@ -1,23 +1,30 @@
 # We are live now
 
 ## Web interface + API
+
 - [Google Vacation Rentals Calculator Live App](https://zipzap.sfo2.digitaloceanspaces.com/gvr_calc.html)
 - [Google Vacation Rentals Calculator Live API](https://google-vr-calculator.district9.info/docs)
 
 ![DigitalOcean](https://img.shields.io/badge/DigitalOcean-%230167ff.svg?style=for-the-badge&logo=digitalOcean&logoColor=white)
 
 ## Run sample inputs as command line script commands
+
 ```
 zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"' | jq . > feed_results_$(date +%Y%m%d%H%M%S).json
 ```
 
 **Individual commands with explanation**
-- Build the zip file input `zip -jr - sample_files > sample_input.zip` This wipes current `sample_input.zip` file each time to avoid zip files building junk inside
-- Send the input data files with parameters to compute a feed price `curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"'`
+
+- Build the zip file input `zip -jr - sample_files > sample_input.zip` This wipes current `sample_input.zip` file each
+  time to avoid zip files building junk inside
+- Send the input data files with parameters to compute a feed
+  price `curl --location 'https://google-vr-calculator.district9.info/feed?external_id=rental1&start_date=2024-02-01&end_date=2024-02-08&booked_date=2023-10-21' --form 'upload_file=@"sample_input.zip"'`
 - Display the JSON response in a nice human readable format `jq .`
-- Send the JSON response data into a `feed_results` JSON file with timestamp uniqueness `feed_results_$(date +%Y%m%d%H%M%S).json`
+- Send the JSON response data into a `feed_results` JSON file with timestamp
+  uniqueness `feed_results_$(date +%Y%m%d%H%M%S).json`
 
 **Sample output**
+
 ```
 {
   "total": 2605.09,
@@ -36,9 +43,9 @@ zip -jr - sample_files > sample_input.zip && curl --location 'https://google-vr-
 - Grab all the applicable ARI XML message files
 - Drag and drop them on the big green box labeled drop the ARI XML files here
 - If you include the Inventory File
-  - ORP number loads automatically
-  - Availability is parsed and loaded into the calendar
-  - Changing the check in date moves calendar
+    - ORP number loads automatically
+    - Availability is parsed and loaded into the calendar
+    - Changing the check in date moves calendar
 - Fill in the relevant fields ORPxxxx, Arrival, Departure, and date Booking occurred
 - Click the `Get Feed Price` button
 - Flip between the `Formatted Results, Raw Results` tab panes

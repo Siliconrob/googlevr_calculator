@@ -44,7 +44,7 @@ def read_property_data(file_args: DataHandlers.DataFileArgs) -> (PropertyData, F
         return None, None
 
     results = FileInfo.FileInfo(file_args.file_name)
-    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data,'Transaction.@timestamp'))
+    results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'Transaction.@timestamp'))
     results.external_id = glom(file_args.formatted_data, 'Transaction.PropertyDataSet.Property')
     property_data_sets = None
     if property_data_sets is None:
