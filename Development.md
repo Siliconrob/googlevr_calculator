@@ -16,6 +16,7 @@
 - [X] Load Extra Guests into database
 - [X] Read Hotel Inventory from XML file
 - [X] Load Hotel Inventory into database
+- [ ] Handle Day of the Week specifications
 
 ### Command line options to calculate rates
 
