@@ -57,11 +57,12 @@ def create_tables(dsn: str):
             promotion_id varchar(100),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
-            UNIQUE(external_id, promotion_id, file_id, start, end))
+            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckinDates (
@@ -69,11 +70,12 @@ def create_tables(dsn: str):
             promotion_id varchar(100),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
-            UNIQUE(external_id, promotion_id, file_id, start, end))
+            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckoutDates (
@@ -81,11 +83,12 @@ def create_tables(dsn: str):
             promotion_id varchar(100),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,
-            UNIQUE(external_id, promotion_id, file_id, start, end))
+            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_LengthOfStay (
@@ -192,9 +195,10 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
-                    ?end?
+                    ?end?,
+                    ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
@@ -203,7 +207,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                                                                  "file_id": new_id,
                                                                  "parent_id": last_id.seq,
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
-                                                                 "end": None if date_range.end is None else date_range.end.isoformat()
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                 "days_of_week": date_range.days_of_week
                                                              } for date_range in promotion.booking_dates]),
             if len(promotion.checkin_dates) > 0:
                 rowcount['checkin_dates'] = commands.execute(f"""
@@ -214,7 +219,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     file_id,
                     parent_id,
                     start,
-                    end
+                    end,
+                    days_of_week
                 )
                 values (
                     ?external_id?,
@@ -222,9 +228,10 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
-                    ?end?
+                    ?end?,
+                    ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
@@ -233,7 +240,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                                                                  "file_id": new_id,
                                                                  "parent_id": last_id.seq,
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
-                                                                 "end": None if date_range.end is None else date_range.end.isoformat()
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                 "days_of_week": date_range.days_of_week
                                                              } for date_range in promotion.checkin_dates]),
             if len(promotion.checkout_dates) > 0:
                 rowcount['checkout_dates'] = commands.execute(f"""
@@ -244,7 +252,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     file_id,
                     parent_id,
                     start,
-                    end
+                    end,
+                    days_of_week
                 )
                 values (
                     ?external_id?,
@@ -252,7 +261,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
-                    ?end?
+                    ?end?,
+                    ?days_of_week?
                     )
                 ON CONFLICT (external_id, promotion_id, file_id, start, end)
                 DO NOTHING
@@ -263,7 +273,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                                                                   "file_id": new_id,
                                                                   "parent_id": last_id.seq,
                                                                   "start": None if date_range.start is None else date_range.start.isoformat(),
-                                                                  "end": None if date_range.end is None else date_range.end.isoformat()
+                                                                  "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                  "days_of_week": date_range.days_of_week
                                                               } for date_range in promotion.checkout_dates]),
             if promotion.length_of_stay is not None:
                 rowcount['length_of_stay'] = commands.execute(f"""

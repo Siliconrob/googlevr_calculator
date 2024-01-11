@@ -53,9 +53,10 @@ def create_tables(dsn: str):
                 parent_id int,
                 start TEXT,
                 end TEXT,
+                days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                                 
-                UNIQUE(external_id, file_id, start, end)
+                UNIQUE(external_id, file_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckinDates
@@ -65,9 +66,10 @@ def create_tables(dsn: str):
                 parent_id int,
                 start TEXT,
                 end TEXT,
+                days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, start, end)
+                PRIMARY KEY(external_id, file_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckoutDates
@@ -77,9 +79,10 @@ def create_tables(dsn: str):
                 parent_id int,
                 start TEXT,
                 end TEXT,
+                days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, start, end)
+                PRIMARY KEY(external_id, file_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_LengthOfStay
@@ -161,7 +164,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         file_id,
                         parent_id,
                         start,
-                        end
+                        end,
+                        days_of_week
                     )
                     values
                     (
@@ -169,15 +173,17 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?file_id?,
                         ?parent_id?,
                         ?start?,
-                        ?end?
-                    ) ON CONFLICT (external_id, file_id, start, end) DO NOTHING
+                        ?end?,
+                        ?days_of_week?
+                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week) DO NOTHING
                     """,
                                                             param=[{
                                                                 "external_id": rate_modifier.external_id,
                                                                 "file_id": new_id,
                                                                 "parent_id": last_id.seq,
                                                                 "start": None if date_range.start is None else date_range.start.isoformat(),
-                                                                "end": None if date_range.end is None else date_range.end.isoformat()
+                                                                "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                "days_of_week": date_range.days_of_week
                                                             } for date_range in rate_modifier.booking_dates]),
             if len(rate_modifier.checkin_dates) > 0:
                 rowcount['checkinDates'] = commands.execute(f"""
@@ -187,7 +193,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         file_id,
                         parent_id,
                         start,
-                        end
+                        end,
+                        days_of_week
                     )
                     values
                     (
@@ -195,17 +202,19 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?file_id?,
                         ?parent_id?,
                         ?start?,
-                        ?end?
-                    ) ON CONFLICT (external_id, file_id, start, end)
+                        ?end?,
+                        ?days_of_week?
+                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week)
                     DO NOTHING
                     """,
                                                             param=[{
                                                                 "external_id": rate_modifier.external_id,
                                                                 "file_id": new_id,
                                                                 "parent_id": last_id.seq,
-                                                                "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                                                                "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                                                            } for dateRange in rate_modifier.checkin_dates]),
+                                                                "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                "days_of_week": date_range.days_of_week
+                                                            } for date_range in rate_modifier.checkin_dates]),
             if len(rate_modifier.checkout_dates) > 0:
                 rowcount['checkoutDates'] = commands.execute(f"""
                     INSERT INTO RateModifications_CheckoutDates
@@ -214,7 +223,8 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         file_id,
                         parent_id,
                         start,
-                        end
+                        end,
+                        days_of_week
                     )
                     values
                     (
@@ -222,16 +232,18 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?file_id?,
                         ?parent_id?,
                         ?start?,
-                        ?end?
-                    ) ON CONFLICT (external_id, file_id, start, end)
+                        ?end?,
+                        ?days_of_week?
+                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week)
                     DO NOTHING""",
                                                              param=[{
                                                                  "external_id": rate_modifier.external_id,
                                                                  "file_id": new_id,
                                                                  "parent_id": last_id.seq,
-                                                                 "start": None if dateRange.start is None else dateRange.start.isoformat(),
-                                                                 "end": None if dateRange.end is None else dateRange.end.isoformat(),
-                                                             } for dateRange in rate_modifier.checkout_dates]),
+                                                                 "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                 "days_of_week": date_range.days_of_week
+                                                             } for date_range in rate_modifier.checkout_dates]),
             if rate_modifier.length_of_stay is not None:
                 rowcount['lengthOfStay'] = commands.execute(f"""
                     INSERT INTO RateModifications_LengthOfStay

@@ -43,7 +43,8 @@ def create_tables(dsn: str):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 external_id varchar(20),
                 start TEXT,
-                end TEXT,                
+                end TEXT,
+                days_of_week TEXT,              
                 file_id int,
                 parent_id int,            
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
@@ -103,14 +104,15 @@ def load_extra_charges(extra_guest_charges: ExtraGuestCharges,
                                                   default=LastId())
         rowcounts['stay_dates'] = commands.execute(
             f"""
-                INSERT INTO ExtraGuestCharges_StayDates (external_id, start, end, file_id, parent_id)
-                values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                INSERT INTO ExtraGuestCharges_StayDates (external_id, start, end, days_of_week, file_id, parent_id)
+                values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
                 ON CONFLICT DO NOTHING
                 """,
             param=[{
                 "external_id": extra_guest_charges.external_id,
                 "start": None if date_range.start is None else date_range.start.isoformat(),
                 "end": None if date_range.end is None else date_range.end.isoformat(),
+                "days_of_week": date_range.days_of_week,
                 "file_id": new_id,
                 "parent_id": last_id.seq
             } for date_range in extra_guest_charges.stay_dates]),

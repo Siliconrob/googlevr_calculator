@@ -73,33 +73,36 @@ def create_tables(table_prefix: str, dsn: str):
             (external_id varchar(20),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,
-            PRIMARY KEY(external_id, start, end, file_id, parent_id))
+            PRIMARY KEY(external_id, start, end, days_of_week, file_id, parent_id))
             """)
         commands.execute(f"""
             create table if not exists {table_prefix}_CheckinDates
             (external_id varchar(20),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,            
-            PRIMARY KEY(external_id, start, end, file_id, parent_id))
+            PRIMARY KEY(external_id, start, end, days_of_week, file_id, parent_id))
             """)
         commands.execute(f"""
             create table if not exists {table_prefix}_CheckoutDates
             (external_id varchar(20),
             start TEXT,
             end TEXT,
+            days_of_week TEXT,
             file_id int,
             parent_id int,            
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES {table_prefix}(id) ON DELETE CASCADE,             
-            PRIMARY KEY(external_id, start, end, file_id, parent_id))
+            PRIMARY KEY(external_id, start, end, days_of_week, file_id, parent_id))
             """)
         commands.execute(f"""
             create table if not exists {table_prefix}_LengthOfStay
@@ -170,42 +173,45 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
             if len(record.booking_dates) > 0:
                 rowcounts['bookingDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_BookingDates (external_id, start, end, file_id, parent_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        INSERT INTO {table_prefix}_BookingDates (external_id, start, end, days_of_week, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
                         ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
+                        "days_of_week": date_range.days_of_week,
                         "file_id": file_id,
                         "parent_id": last_id.seq
                     } for date_range in record.booking_dates]),
             if len(record.checkin_dates) > 0:
                 rowcounts['checkinDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_CheckinDates (external_id, start, end, file_id, parent_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        INSERT INTO {table_prefix}_CheckinDates (external_id, start, end, days_of_week, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
                         ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
+                        "days_of_week": date_range.days_of_week,
                         "file_id": file_id,
                         "parent_id": last_id.seq
                     } for date_range in record.checkin_dates]),
             if len(record.checkout_dates) > 0:
                 rowcounts['checkoutDates'] = commands.execute(
                     f"""
-                        INSERT INTO {table_prefix}_CheckoutDates (external_id, start, end, file_id, parent_id)
-                        values (?external_id?, ?start?, ?end?, ?file_id?, ?parent_id?)
+                        INSERT INTO {table_prefix}_CheckoutDates (external_id, start, end, days_of_week, file_id, parent_id)
+                        values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
                         ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
                         "start": None if date_range.start is None else date_range.start.isoformat(),
                         "end": None if date_range.end is None else date_range.end.isoformat(),
+                        "days_of_week": date_range.days_of_week,
                         "file_id": file_id,
                         "parent_id": last_id.seq
                     } for date_range in record.checkout_dates]),
