@@ -14,6 +14,7 @@ from data_messages.Promotions import Promotion
 from data_messages.RateModifications import RateModifications
 from data_messages.TaxesAndFees import TaxOrFee
 from data_messages.PropertyData import PropertyData
+from data_messages.DayOfTheWeek import DayOfTheWeek
 from icecream import ic
 
 ic.configureOutput(prefix='|> ')
@@ -70,6 +71,7 @@ def read_file_into_db(file_args: DataHandlers.DataFileArgs) -> dict:
     record_counts["extra_guest_charges"] = data_messages.ExtraGuestCharges.insert_records(file_args)
     record_counts["property_data"] = data_messages.PropertyData.insert_records(file_args)
     record_counts["hotel_inventory"] = data_messages.OTA_HotelInvCountNotifRQ.insert_records(file_args)
+    record_counts["day_of_week"] = data_messages.DayOfTheWeek.create_lookups(file_args.dsn)
     return record_counts
 
 

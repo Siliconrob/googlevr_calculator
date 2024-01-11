@@ -38,6 +38,14 @@ def get_rate_modifiers(external_id: str,
             WHERE r.external_id = ?external_id?
             and (?nights? between COALESCE(rlos.min, ?nights?) and COALESCE(rlos.max, ?nights?))
             and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(rbw.min, 0) and  COALESCE(rbw.max, 1000))
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(rbd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?book_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE rbd.days_of_week IS NULL
+            )
             """,
                               param={
                                   "external_id": external_id,
