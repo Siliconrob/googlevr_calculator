@@ -31,6 +31,30 @@ def tax_or_fee_base_query(table_prefix: str):
         on tf.id = tflos.parent_id
         and COALESCE(tflos.min, ?nights?) <= ?nights? and COALESCE(tflos.max, ?nights?) >= ?nights?
         WHERE tf.external_id = ?external_id?
+        and EXISTS
+        (
+            select day_id
+            from DayOfTheWeek dw
+            where instr((select upper(tfbd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?book_date?)
+            UNION
+            select day_id from DayOfTheWeek dw WHERE tfbd.days_of_week IS NULL
+        )
+        and EXISTS
+        (
+            select day_id
+            from DayOfTheWeek dw
+            where instr((select upper(tfcid.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?start_date?)
+            UNION
+            select day_id from DayOfTheWeek dw WHERE tfcid.days_of_week IS NULL
+        )
+        and EXISTS
+        (
+            select day_id
+            from DayOfTheWeek dw
+            where instr((select upper(tfcod.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?end_date?)
+            UNION
+            select day_id from DayOfTheWeek dw WHERE tfcod.days_of_week IS NULL
+        )        
         """
 
 

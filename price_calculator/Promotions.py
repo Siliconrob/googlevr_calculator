@@ -42,6 +42,30 @@ def get_promotions(external_id: str,
             WHERE p.external_id = ?external_id?
             and (?nights? between COALESCE(plos.min, ?nights?) and COALESCE(plos.max, ?nights?))
             and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(pbw.min, 0) and  COALESCE(pbw.max, 1000))
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(pbd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?book_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE pbd.days_of_week IS NULL
+            )
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(pcid.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?start_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE pcid.days_of_week IS NULL
+            )
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(pcod.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?end_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE pcod.days_of_week IS NULL
+            )
             """,
                               param={
                                   "external_id": external_id,

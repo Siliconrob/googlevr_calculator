@@ -24,7 +24,7 @@ def get_extra_guest_charges(external_id: str,
             on e.id = esd.parent_id
             and ?start_date? between COALESCE(esd.start, DATE(?start_date?, '-1 day')) and COALESCE(esd.end, DATE(?start_date?, '+1 day'))
             and ?end_date? between COALESCE(esd.end, DATE(?end_date?, '-1 day')) and COALESCE(esd.end, DATE(?end_date?, '+1 day'))
-            where e.external_id = ?external_id?     
+            where e.external_id = ?external_id?                
             """,
                               param={
                                   "external_id": external_id,

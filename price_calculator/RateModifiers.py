@@ -46,6 +46,22 @@ def get_rate_modifiers(external_id: str,
                 UNION
                 select day_id from DayOfTheWeek dw WHERE rbd.days_of_week IS NULL
             )
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(rcid.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?start_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE rcid.days_of_week IS NULL
+            )
+            and EXISTS
+            (
+                select day_id
+                from DayOfTheWeek dw
+                where instr((select upper(rcod.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', ?end_date?)
+                UNION
+                select day_id from DayOfTheWeek dw WHERE rcod.days_of_week IS NULL
+            )            
             """,
                               param={
                                   "external_id": external_id,
