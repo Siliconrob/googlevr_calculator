@@ -29,8 +29,8 @@ def tax_or_fee_base_query(table_prefix: str):
         and ?end_date? between COALESCE(tfcod.start, DATE(?end_date?, '-1 day')) and COALESCE(tfcod.end, DATE(?end_date?, '+1 day'))
         left join {table_prefix}_LengthOfStay tflos
         on tf.id = tflos.parent_id
-        and COALESCE(tflos.min, ?nights?) <= ?nights? and COALESCE(tflos.max, ?nights?) >= ?nights?
         WHERE tf.external_id = ?external_id?
+        AND COALESCE(tflos.min, ?nights?) <= ?nights? and COALESCE(tflos.max, ?nights?) >= ?nights?
         and EXISTS
         (
             select day_id
