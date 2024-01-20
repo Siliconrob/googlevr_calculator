@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfPointOfSale>
+  <PointOfSale id="test">
+    <DisplayNames display_text="Testing &amp; Business" display_language="en" />
+    <Match status="yes" language="en" />
+    <Match status="yes" sitetype="mapresults" />
+    <Match status="yes" sitetype="localuniversal" />
+    <Match status="yes" brand="test" />
+    <Match status="yes" currency="USD" />
+    <URL>https://www.abc.d.adad.com/rental?or_channel=test&amp;or_arrival=2024-02-20&amp;or_departure=2024-02-27&amp;or_guests=2&amp;or_adults=1&amp;or_children=1</URL>
+  </PointOfSale>
+</ArrayOfPointOfSale>

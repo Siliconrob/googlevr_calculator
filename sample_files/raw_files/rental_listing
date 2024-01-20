@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<listings>
+  <language>en</language>
+  <listing>
+    <id>rental</id>
+    <relation>
+      <parent_id>test</parent_id>
+      <relation_type>member_of_chain</relation_type>
+    </relation>
+    <name language="en">200Palms,2.5 mi→AMI+Htd Pool+BBQ+Treehouse+Stream</name>
+    <address>
+      <component name="addr1">1 Main Street</component>
+      <component name="addr2" />
+      <component name="province">Florida</component>
+      <component name="city">Someplace</component>
+      <component name="postal_code">12345</component>
+    </address>
+    <country>US</country>
+    <latitude>27.45996000</latitude>
+    <longitude>-82.66297000</longitude>
+    <location_precision>0</location_precision>
+    <phone type="main">1234568888</phone>
+    <category>Apartment</category>
+    <content>
+      <text type="description">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Two hundred</title>
+        <author>Testing &amp; Business</author>
+        <body>&lt;p&gt;At Two Hundred Palms, prepare to relax as you enter the front door and keep the fun going in the tropical backyard! &lt;br/&gt;&lt;br/&gt;Located in the quiet, historic fishing village of Cortez, our home is only a 4 minute drive to amazing Anna Maria Island and a short drive to the conveniences of Bradenton. &lt;br/&gt;&lt;br/&gt;A heated pool, large outdoor kitchen with TV, relaxing backyard with fresh water stream &amp;amp; treehouse sunbathing deck to enjoy on those quieter days at home. &lt;br/&gt;&lt;br/&gt;Perfect for families and restful getaways!&lt;br/&gt;&lt;br/&gt;Inside Amenities:&lt;br/&gt;-Fully equipped kitchen w/ stainless steel appliances&lt;br/&gt;-Coffee bar and tea&lt;br/&gt;-Work space&lt;br/&gt;-Natural lighting throughout&lt;br/&gt;-Self check-in&lt;br/&gt;-Smart TV’s and high-speed WiFi&lt;br/&gt;-Luggage racks&lt;br/&gt;-On-site washer &amp;amp; dryer&lt;/p&gt;&lt;p&gt;Sleeping Accommodations:&lt;br/&gt;-Spacious home for up to 10 guests&lt;br/&gt;-Split floor plan with private main bedroom and ensuite&lt;br/&gt;-Main bedroom: King bed, full futon, desk, 43&amp;quot; smart TV + cable, ensuite bathroom with tub and large walk-in tile shower&lt;br/&gt;-2nd bedroom: Queen bed, twin futon, desk, 43&amp;quot; smart TV&lt;br/&gt;-Loft bedroom: Queen bed, desk, ensuite bathroom with shower&lt;br/&gt;-Living room: sofa sleeper&lt;/p&gt;&lt;p&gt;Kid Friendly Options: &lt;br/&gt;-Board games &amp;amp; card games&lt;br/&gt;-Books available for adults &amp;amp; kids&lt;br/&gt;-Children wood toys&lt;br/&gt;-Pack &amp;amp; Play for infants/toddlers&lt;br/&gt;-Beach toys in outdoor shed&lt;/p&gt;&lt;p&gt;Outside Amenities:&lt;br/&gt;-Heated pool (for an additional fee, upon request)&lt;br/&gt;-Relaxing fresh water stream &lt;br/&gt;-Large outdoor kitchen with BBQ grill, dining area and 58” Smart TV&lt;br/&gt;-Treehouse sun deck&lt;br/&gt;-Beach cruiser bicycles (4)&lt;br/&gt;-Cornhole&lt;br/&gt;-Herb garden&lt;br/&gt;-Cabana bathroom&lt;br/&gt;-Wagon, Beach chairs &amp;amp; umbrella in outdoor shed&lt;br/&gt;-Basketball goal &amp;amp; basketball&lt;/p&gt;&lt;p&gt;Area&lt;br/&gt;-Quiet, mature neighborhood only 4 minutes to Anna Maria Island and located in historic fishing town of  Cortez Village&lt;br/&gt;-4 minute drive to AMI, nearby to Bradenton &amp;amp; Sarasota&lt;br/&gt;-2 1/2 hour drive to Disney&lt;br/&gt;-Free parking&lt;br/&gt;&lt;br/&gt;Before you arrive, you will receive a unique code to unlock the door&lt;br/&gt;&lt;br/&gt;We offer self check-in via a private code sent prior to your arrival.&lt;br/&gt;We also have a Ring spotlight camera facing the driveway to provide you with security and peace of mind while staying at our home.&lt;br/&gt;&lt;br/&gt;Come into a quiet neighborhood near the water. Enjoy riding the bikes around the area and can even use the bike lanes and ride directly to the beaches on Anna Maria Island if you desire.&lt;br/&gt;The home is in historic Cortez fishing village, one of the oldest commercial fishing villages in the United States - make sure to enjoy the local seafood!&lt;br/&gt;&lt;br/&gt;As traffic to AMI increases, we recommend leaving early for the beach and when turning left from 101st Street you should pull into the turning lane on Cortez Road so that you can merge safely with the westbound traffic.&lt;br/&gt;&lt;br/&gt;The pool is heated to 76 degrees free of charge. Additional pool heat (up to 84 degrees) is available upon request for $16/day during your stay. A 24-hour notice is required and heat may not be available if temperatures drop below 65 degrees.&lt;br/&gt;Propane is provided for the grill free of charge.&lt;br/&gt;We also provide beach supplies - beach towels, chairs, cooler, umbrella and toys.&lt;/p&gt;</body>
+        <date year="2023" month="6" day="28" />
+      </text>
+      <review type="user">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <rating>6</rating>
+        <body>Yes</body>
+        <date year="2023" month="6" day="7" />
+        <servicedate year="2023" month="7" day="15" />
+      </review>
+      <attributes>
+        <website>https://www.abc.d.adad.com/200palms-rental</website>
+        <client_attr name="self_checkin_checkout">Yes</client_attr>
+        <client_attr name="enhanced_cleaning_practices">Yes</client_attr>
+        <client_attr name="ac">Yes</client_attr>
+        <client_attr name="balcony">Yes</client_attr>
+        <client_attr name="beach_access">No</client_attr>
+        <client_attr name="child_friendly">Yes</client_attr>
+        <client_attr name="crib">Yes</client_attr>
+        <client_attr name="elevator">No</client_attr>
+        <client_attr name="fire_place">No</client_attr>
+        <client_attr name="free_breakfast">No</client_attr>
+        <client_attr name="gym_fitness_equipment">No</client_attr>
+        <client_attr name="heating">Yes</client_attr>
+        <client_attr name="hot_tub">No</client_attr>
+        <client_attr name="instant_bookable">Yes</client_attr>
+        <client_attr name="ironing_board">Yes</client_attr>
+        <client_attr name="kitchen">Yes</client_attr>
+        <client_attr name="microwave">Yes</client_attr>
+        <client_attr name="outdoor_grill">Yes</client_attr>
+        <client_attr name="oven_stove">Yes</client_attr>
+        <client_attr name="patio">Yes</client_attr>
+        <client_attr name="pets_allowed">Yes</client_attr>
+        <client_attr name="private_beach_access">No</client_attr>
+        <client_attr name="smoking_free_property">Yes</client_attr>
+        <client_attr name="tv">Yes</client_attr>
+        <client_attr name="washer_dryer">Yes</client_attr>
+        <client_attr name="wheelchair_accessible">No</client_attr>
+        <client_attr name="check_in_time">16:00:00</client_attr>
+        <client_attr name="check_out_time">10:00:00</client_attr>
+        <client_attr name="capacity">10</client_attr>
+        <client_attr name="min_days_between_stays">0</client_attr>
+        <client_attr name="number_of_bedrooms">3</client_attr>
+        <client_attr name="number_of_beds">5</client_attr>
+        <client_attr name="rating_num">1</client_attr>
+        <client_attr name="minimum_days_advance_purchase">2</client_attr>
+        <client_attr name="minimum_night_stay">1</client_attr>
+        <client_attr name="number_of_living_rooms">0</client_attr>
+        <client_attr name="number_of_bathrooms">4</client_attr>
+        <client_attr name="rating">3.00</client_attr>
+        <client_attr name="cancellation_policy">Guest receives 100.00% if cancellation occurs at least 5 days before arrival; No refunds within 5 days of arrival.</client_attr>
+        <client_attr name="hotel_brand">ora7ccdcde5bx</client_attr>
+        <client_attr name="host_language">en</client_attr>
+        <client_attr name="room_type">Entire Place</client_attr>
+        <client_attr name="pool_type">Outdoors</client_attr>
+        <client_attr name="wifi_type">Free</client_attr>
+      </attributes>
+      <image type="photo" url="https://dev.uc.orez.io/f/a04b93901cb34fa183a8d36b7947dc80" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>#Relaxing tropical backyard pool surrounded by fresh water steam and seating.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/4539e26c41d94c908112cb1cc5898206" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Bar seating near outdoor grill for spending time together</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/f7c25eec77ab4633a00f94fb3d7992ce" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Propane grill in Outdoor Kitchen, with multiple grilling features for all your surf &amp; turf. Propane included.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/902b632c7f3b4dfca30a4f86e9238293" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Large private heated pool surrounded by multiple palm trees and freshwater stream makes for a true tropical oasis</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/e37c41fc224e4a7c889af13eab53bffd" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Spacious dining room seats 8 and another 2 at the kitchen island</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/48efc3f900b640db914ad76cdfb7391b" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Kitchen filled with nearly everything you have at home including spices, pots and pans</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/461231bea3f746f596137092261c3294" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Keep your vacation going with the help of our dishwasher</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/13181647f45f464ebad003df8d6583da" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Drip coffee maker, pour-over carafe and tea kettle - also includes tea, sugar, creamer and Splenda</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/a585a612973b4980bd9d18dd3b03e5c4" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Main bedroom includes a King bed, 43" 4k Roku tv, bedside lamps with charging ports and a luggage rack.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/5fa5ee5e205c4c18837ed8a81ddd5e99" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Work from home with our office desk and chair. And for those extra guests the futon makes into a full bed.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/6b71da85534349f695dbb98c8532be68" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Spray or soak away the day in the main ensuite with our walk-in tile shower and jetted tub.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/d31d3a8d14584e0eaa6e7e99692e47be" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The rain drop shower head and handheld sprayhead will make for a relaxing stay.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/174c356a98ec431bac3cf7ce3ebb2cbb" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The large vanity provides for your styling needs including black makeup removing clothes, hair dryer, and hair straightener.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/1fa9e3a0874a4208ab1c5d01854ae2bc" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The 2nd bedroom in our split floorplan provides more privacy with a Queen bed and Twin futon</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/ce8b69feb3014634afba577b0046f8f5" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>A great room for all ages with a 43" 4k Roku TV with books &amp; wooden toys for children</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/1dea2b338fdc48898345a80d0f7f208d" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>All sizes welcome, however best suited for those under 6' our upstairs ensuite loft bedroom with Queen Bed overlooks the living room.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/3e7a692747fd40e9bd6dd30fea857940" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>You only have to walk a few steps from your loft Queen bed to start your morning in the large shower.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/fd476869fcfb47fd831ca1a4c9230247" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>A few more steps and you can welcome the day on our balcony overlooking the pool among the palm tree tops.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/701b5642dcd440e6a6fc337cdad33f5f" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Sleeper sofa, 65" 4k Roku TV, and shelving including games &amp; books</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/84051db8bf074019b832df4ea452f695" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Relax in the large living room with our 2 reclining loveseats</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/55dfdecfdb0f4c9c95c015c918020861" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Our ductless AC unit is quick to cool both the loft bedroom and the living room</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/1e6bc382fbf34faf814d9a67313ccab3" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Put your quarters away! We have free on-site washer, dryer, detergent and wool balls for all of your laundry needs.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/9f36e63233c0444f9f5f3940cde4205f" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Outdoor kitchen area offers plenty of room for guests to enjoy conversation and the 58" 4k Roku TV</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/ba7edc575e404ac0a31ef91802d0c444" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>No sharing here! The house and backyard is all yours.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/86f6a15d602a4791a5b4d1edebb7c988" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Pool too chilly? We can heat it for you for a small daily fee</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/dd396feb631a4774a2cf05b0448a73c7" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Relax to the sounds of our freshwater stream surrounding the pool</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/fa4dd38612aa4f5e8e37097a9c7d7e24" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Tree house lounge area atop large mango tree offers a great spot to perfect that tan</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/d5f5b88b38144f189ee11416f5f83960" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Four cruiser bicycles available for guests to enjoy</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/f2a85902c78a4e09beca37b14e013235" width="1050" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Beach supplies included - chairs, towels, cart, umbrella and cooler.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/387f5f7b34fb4a3ea5f56af436f40fee" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The front yard palm trees and lighting make our home easy to find.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/fd5de05860ba4bd09f1d5487ce3c4bdc" width="1280" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The large driveway can accommodate up to 4 vehicles</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/5633a443fa4a4ba7a040969b59717a9a" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Our tropical oasis even includes a cabana bathroom so you maximize your outdoor time.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/30856fb54bc3486e99a064fb238a14e6" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>We are located near the main road to Anna Maria Island to make your beach trips that much faster.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/d70dd09b21ad4d0c9fd75562e582c97d" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Our favorite beach is Cortez Beach as it is the first one south of Cortez Road. Parking can fill up quickly though, so make sure to go early!</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/29a6314a921142a398bf94f0e324eaf5" width="1280" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>Anna Maria Island City Pier hosts farmer's markets and nearby there are several shops</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/0eb31df032b6476d88e5b5ad09002288" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The north end of AMI, with the Rod &amp; Reel Pier to the left. Rod &amp; Reel Pier boasts a great (small) restaurant.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/c7c548499cdb4e6a9ce74d818d7d88b8" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The northern beaches (Bean Point, Manatee County, Anna Maria Public) are closer to amenities but have a lot more people and less parking.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+      <image type="photo" url="https://dev.uc.orez.io/f/a4ff888fc7c64541b6c67bb0ade26ee9" width="1440" height="960">
+        <link>https://www.abc.d.adad.com/200palms-rental</link>
+        <title>The locals go to the beaches on the south end - Cortez and Coquina. Just as nice, fewer people and more parking.</title>
+        <author>Testing &amp; Business</author>
+        <date year="2022" month="3" day="25" />
+      </image>
+    </content>
+  </listing>
+</listings>
