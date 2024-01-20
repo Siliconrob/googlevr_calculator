@@ -175,7 +175,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     f"""
                         INSERT INTO {table_prefix}_BookingDates (external_id, start, end, days_of_week, file_id, parent_id)
                         values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
-                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
+                        ON CONFLICT (external_id, start, end, days_of_week, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
@@ -190,7 +190,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     f"""
                         INSERT INTO {table_prefix}_CheckinDates (external_id, start, end, days_of_week, file_id, parent_id)
                         values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
-                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
+                        ON CONFLICT (external_id, start, end, days_of_week, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,
@@ -205,7 +205,7 @@ def insert_tax_fee_records(db_name: str, records: list[TaxOrFee], table_prefix: 
                     f"""
                         INSERT INTO {table_prefix}_CheckoutDates (external_id, start, end, days_of_week, file_id, parent_id)
                         values (?external_id?, ?start?, ?end?, ?days_of_week?, ?file_id?, ?parent_id?)
-                        ON CONFLICT (external_id, start, end, file_id, parent_id) DO NOTHING
+                        ON CONFLICT (external_id, start, end, days_of_week, file_id, parent_id) DO NOTHING
                         """,
                     param=[{
                         "external_id": record.external_id,

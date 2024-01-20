@@ -264,7 +264,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?end?,
                     ?days_of_week?
                     )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end)
+                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                               param=[{
