@@ -459,26 +459,37 @@
         document.getElementById("orpExternalId").value = inventories.pop().external_id;
     }
 
+    function getRandomColor() {
+        const letters = "0123456789ABCDEF";
+        let color = "#";
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
     function updateMap(listings) {
         if (listings.length == 0) {
             return;
         }
-        property_listing = listings.shift();
+        property = listings.shift();
         mapMarkers.forEach(z => z.remove());
         mapMarkers = [];
 
         const position = [
-            property_listing.location.longitude,
-            property_listing.location.latitude
+            property.location.longitude,
+            property.location.latitude
         ];
 
-        const title = property_listing.name;        
-        const address = Object.keys(property.address).reduce((acc, key) => acc + `${dict[key]}` ,' ');
-        const description = property_listing.description;
+        const title = property.name;
+        const addressData = Object.entries(property.address).reduce((a, [k, v]) => (v == null ? a : (a[k] = v, a)), {});
+        const addressLine = Object.keys(addressData).reduce((acc, key) => acc + `${addressData[key]} ` ,'');
+        const descriptionText = property.description || "";
+        const description = descriptionText.length <= 50 ? descriptionText : descriptionText.slice(0, 50);
 
         const newMarker = new mapboxgl.Marker({ color: getRandomColor() })
             .setLngLat(position)
-            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<h2>${title}</h2><br/><h3>${address}</h3><p>${description}</p>`)).addTo(map);
+            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<h3>${title}</h3><p>${addressLine}<br/>${description}</p>`)).addTo(map);
         mapMarkers.push(newMarker);
         map.flyTo({ center: position, zoom: 18 });
     }
