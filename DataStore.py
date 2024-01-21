@@ -17,6 +17,8 @@ from data_messages.PropertyData import PropertyData
 from data_messages.DayOfTheWeek import DayOfTheWeek
 from icecream import ic
 
+from fileset.ExtractedFiles import ExtractedFiles
+
 ic.configureOutput(prefix='|> ')
 
 
@@ -81,9 +83,10 @@ def load_db(xml_messages_zipfile: zipfile.ZipFile, dsn: str) -> set:
     return read_folder(xml_messages_zipfile, dsn)
 
 
-def read_inventory(xml_messages_zipfile: zipfile.ZipFile):
+def read_details(xml_messages_zipfile: zipfile.ZipFile) -> ExtractedFiles:
     if xml_messages_zipfile is None:
         return None
+    parsed_files = ExtractedFiles()
     for input_file in xml_messages_zipfile.filelist:
         try:
             file_contents = xml_messages_zipfile.read(input_file).decode("UTF-8")
@@ -94,14 +97,23 @@ def read_inventory(xml_messages_zipfile: zipfile.ZipFile):
                                              input_file.filename,
                                              None,
                                              file_contents)
-            new_inventories, results = data_messages.OTA_HotelInvCountNotifRQ.read_inventories(args)
+            new_inventories, inventory_results = data_messages.OTA_HotelInvCountNotifRQ.read_inventories(args)
             if len(new_inventories) > 0:
-                return new_inventories
+                parsed_files.Inventory = new_inventories
+                continue
+            new_listings, listing_results = data_messages.Listings.read_listings(args)
+            if len(new_listings) > 0:
+                parsed_files.Listing = new_listings
+                continue
+            new_landing_pages, landing_page_results = data_messages.LandingPages.read_landing_pages(args)
+            if len(new_landing_pages) > 0:
+                parsed_files.LandingPage = new_landing_pages
+                continue
         except UnicodeDecodeError:
             ic(f'Unable to read {input_file} as text')
         except ExpatError:
             ic(f'Unable to parse {input_file} into XML')
-    return {}
+    return parsed_files
 
 
 def load_db_files(xml_messages_files: dict, dsn: str) -> set:

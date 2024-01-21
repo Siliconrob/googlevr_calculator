@@ -8,8 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse, RedirectResponse
-from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, read_inventory, save_cache_item, \
-    get_cache_item
+from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, save_cache_item, get_cache_item, read_details
 from price_calculator.ComputeFeed import compute_feed_price
 from icecream import ic
 from middlewares.exceptionhandler import ExceptionHandlerMiddleware
@@ -57,12 +56,12 @@ def iter_file():  #
             yield from db_file
 
 
-@app.post("/extract_inventory", tags=["Calculator"], include_in_schema=False)
+@app.post("/extract_details", tags=["Calculator"], include_in_schema=True)
 async def extract_inventory(upload_file: UploadFile = File(...)):
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
         raise HTTPException(400, detail="File must be a zip file")
     with zipfile.ZipFile(io.BytesIO(upload_file.file.read()), "r") as messages_zip_file:
-        current_files = read_inventory(messages_zip_file)
+        current_files = read_details(messages_zip_file)
     return current_files
 
 

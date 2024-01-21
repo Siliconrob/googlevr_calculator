@@ -230,9 +230,30 @@
 
         .rightSummaryPane {
             width: 30%;
+            border: red;
+            border-style: dashed;
+        }
+
+        .headerDivBlock {
+            width: 15%;
+        }
+
+        .mapboxgl-popup {
+            max-width: 200px;
+        }
+
+        .mapboxgl-popup-content {
+            text-align: center;
+            font-family: monospace, sans-serif;
+        }
+
+        .map {
+            width: -webkit-fill-available;
         }
 
     </style>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
 </head>
 <body>
 <script>
@@ -287,6 +308,9 @@
     let dayInt = today.getDate();
     let month = today.getMonth();
     let year = today.getFullYear();
+
+    let map = null;
+    let mapMarkers = [];
 
     const months = [
         "January",
@@ -384,7 +408,7 @@
         showCalendar(month, year, calendarDates);
     }
 
-    function readInventoryFileContents(fileText) {
+    function readXmlFileContents(fileText, parseFunction) {
         if (fileText.length == 0) {
             return;
         }
@@ -392,7 +416,7 @@
             const parser = new DOMParser();
             const xml = parser.parseFromString(fileText, "text/xml");
             const resultObject = xmlToJson(xml);
-            parseInventoryData(resultObject);
+            parseFunction(resultObject);
         } catch (err) {
             console.log(err);
         }
@@ -413,7 +437,7 @@
         reader.readAsText(inventoryFile);
         reader.onload = () => {
             const result = reader.result;
-            readInventoryFileContents(result);
+            readXmlFileContents(result, parseInventoryData);
         };
     }
 
@@ -423,31 +447,70 @@
         return new Date(parseInt(match.year), parseInt(match.month) - 1, parseInt(match.day))
     }
 
-
-    async function extractZipFile(zipFile) {
-        try {
-            const formData = new FormData();
-            formData.append("upload_file", zipFile);
-            const response = await fetch(`https://google-vr-calculator.district9.info/extract_inventory`, {
-                method: "POST",
-                body: formData,
-            });
-            const inventories = await response.json();
-            if (!response.ok) {
-                console.log(inventories);
-                return;
-            }
-            const theText = JSON.stringify(inventories, null, 2);
-            console.log(theText);
-            calendarDates = getCalendarDates(inventories.map((z) => {
+    function setAvailability(inventories) {
+        calendarDates = getCalendarDates(inventories.map((z) => {
                 return {
                     Start: customDateTimeParse(z.start),
                     End: customDateTimeParse(z.end),
                     Available: z.inventory > 0 ? true : false
                 }
             }));
-            showCalendar(month, year, calendarDates);
-            document.getElementById("orpExternalId").value = inventories.pop().external_id;
+        showCalendar(month, year, calendarDates);
+        document.getElementById("orpExternalId").value = inventories.pop().external_id;
+    }
+
+    function updateMap(listings) {
+        if (listings.length == 0) {
+            return;
+        }
+        property_listing = listings.shift();
+        mapMarkers.forEach(z => z.remove());
+        mapMarkers = [];
+
+        const position = [
+            property_listing.location.longitude,
+            property_listing.location.latitude
+        ];
+
+        const title = property_listing.name;        
+        const address = Object.keys(property.address).reduce((acc, key) => acc + `${dict[key]}` ,' ');
+        const description = property_listing.description;
+
+        const newMarker = new mapboxgl.Marker({ color: getRandomColor() })
+            .setLngLat(position)
+            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<h2>${title}</h2><br/><h3>${address}</h3><p>${description}</p>`)).addTo(map);
+        mapMarkers.push(newMarker);
+        map.flyTo({ center: position, zoom: 18 });
+    }
+
+    let directPriceUrl = null;
+
+    function updateLandingPage(landingPages) {
+        if (landingPages.length == 0) {
+            return;
+        }
+        landingPage = landingPages.shift();
+        directPriceUrl = new URL(landingPage.url);
+    }
+
+    async function extractZipFile(zipFile) {
+        try {
+            const formData = new FormData();
+            formData.append("upload_file", zipFile);
+            const response = await fetch(`https://google-vr-calculator.district9.info/extract_details`, {
+                method: "POST",
+                body: formData,
+            });
+            const fileDetails = await response.json();
+            if (!response.ok) {
+                console.log(fileDetails);
+                return;
+            }
+            const fileDetailText = JSON.stringify(fileDetails, null, 2);
+            console.log(fileDetailText);
+            setAvailability(fileDetails.Inventory);
+            updateMap(fileDetails.Listing);
+            updateLandingPage(fileDetails.LandingPage);
         } catch (error) {
             console.error(error);
         }
@@ -916,27 +979,14 @@
         showCalendar(month, year, calendarDates);
     }
 
-    let directPriceframe;
-    const priceFrameParser = new DOMParser();
-    let priceInternalFrame;
-
-    function setupDirectPriceTracker() {
-        directPriceframe = document.createElement('iframe');
-        const renderPane = document.getElementById("directPriceDiv");
-        renderPane.style.display = "none";
-        renderPane.innerHTML = "";
-        renderPane.appendChild(directPriceframe);
-        directPriceframe.onload = priceFrameLoaded;
-    }
-
-    function priceFrameLoaded(e) {
-        priceInternalFrame = priceFrameParser.parseFromString(e.target, "text/html");
-        console.log("here");        
-    }
-
-    function getDirectPrice() {
-		console.log("not yet");
-        // directPriceframe.src = "https://www.premiumrentals.com/orp5b5301cx?or_arrival=2024-02-03&or_departure=2024-02-06&or_adults=2";
+    function setupMap() {
+        mapboxgl.accessToken = "pk.eyJ1Ijoic2lsaWNvbnJvYiIsImEiOiIxOWM1MmVlNGJjNmQ2NjI0ZWY1OTE5Y2QyY2Y1MWI0MCJ9.bp9QpwF5XACrQI4C8NRORQ";
+        map = new mapboxgl.Map({
+            container: "map",
+            style: "mapbox://styles/mapbox/streets-v12",
+            center: [0, 0],
+            zoom: 0,
+        });
     }
 
     window.onload = (event) => {
@@ -944,7 +994,7 @@
         setupTabs();
         setupCalendar();
         loadCachedFile();
-        setupDirectPriceTracker();
+        setupMap();
     };
 </script>
 
@@ -952,7 +1002,7 @@
     <div class="example-origin">
         <div style="margin-top: 1rem;">
             <span style="width: 10rem; display: block;">ORP External Id</span>
-            <input id="orpExternalId" placeholder="orp12345x" type="text"/>
+            <input id="orpExternalId" placeholder="orp12345x" type="text" style="width: 7rem;"/>
         </div>
         <div style="margin-top: 1rem;">
             <span style="width: 10rem; display: block;">Checkin Date</span>
@@ -988,6 +1038,8 @@
          ondrop="dropHandler(event);">
         <p>Drag and drop the ARI XML files <i>here</i>.</p>
     </div>
+    <div class="map" id="map">
+    </div>
 </div>
 <div class="container">
     <div class="tabs">
@@ -997,51 +1049,56 @@
     <div class="tab-content">
         <div class="tabs__tab active" data-tab-info id="tab_1">
             <div class="example-results">
-                <div class="bigHeaderDetail"><h2>Details</h2></div>
+                <div class="bigHeaderDetail">
+                    <div style="display: flex;">
+                        <div>
+                            <h2>Details</h2>
+                        </div>
+                    </div>
+                </div>
                 <div id="tableHeaderRow">
                     <div id="resultsRange">
                         <div class="summaryPane">
                             <div class="leftSummaryPane">
                                 <div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Start Date</span>
+                                        <span class="headerDivBlock">Start Date</span>
                                         <span class="rowData" id="startDate"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">End Date</span>
+                                        <span class="headerDivBlock">End Date</span>
                                         <span class="rowData" id="endDate"></span>
                                     </div>
                                 </div>
                                 <div class="spacer"></div>
                                 <div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Nights</span>
+                                        <span class="headerDivBlock">Nights</span>
                                         <span class="rowData" id="nights"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Rent</span>
+                                        <span class="headerDivBlock">Rent</span>
                                         <span class="rowData" id="rentAmount"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Promotions</span>
+                                        <span class="headerDivBlock">Promotions</span>
                                         <span class="rowData" id="promotionsAmount"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Rate Modifiers</span>
+                                        <span class="headerDivBlock">Rate Modifiers</span>
                                         <span class="rowData" id="rateModAmount"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Taxes and Fees</span>
+                                        <span class="headerDivBlock">Taxes and Fees</span>
                                         <span class="rowData" id="taxesAndFeesAmount"></span>
                                     </div>
                                     <div style="display: flex; flex-direction: row;">
-                                        <span style="width: 10%;">Total</span>
+                                        <span class="headerDivBlock">Total</span>
                                         <span class="rowData" id="totalAmount"></span>
                                     </div>
                                 </div>    
                             </div>
                             <div class="rightSummaryPane" >
-                                <input id="getDirectPrice" onclick="getDirectPrice()" type="button" value="Get Direct Price"/>
                                 <div id="directPriceDiv">
                                 </div>
                             </div>
