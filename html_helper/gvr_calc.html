@@ -994,6 +994,7 @@
         const checkOut = document.getElementById('checkoutDate').value;
         targetUrl.searchParams.set("or_arrival", checkIn);
         targetUrl.searchParams.set("or_departure", checkOut);
+        targetUrl.searchParams.delete("or_children");
         return targetUrl.toString();
     }
 
@@ -1021,11 +1022,29 @@
             }
             const fileDetailText = JSON.stringify(fileDetails, null, 2);
             console.log(fileDetailText);
-            const displayPriceDiv = document.getElementById("directPriceDiv");
-            displayPriceDiv.innerHTML = "";
+            const displayPriceDiv = document.getElementById("directPricePane");
+            directPricePane.innerHTML = "";
             let content = document.createElement("PRE");
             content.innerHTML = fileDetailText;
-            directPriceDiv.appendChild(content);
+            directPricePane.appendChild(content);
+
+            const priceDetail = fileDetails.result;
+
+            if (priceDetail != null) {
+
+                let summary = document.createElement("ul");
+                let total = document.createElement("li");
+                total.innerText = `Total: ${priceDetail.total}`;
+                summary.appendChild(total);
+
+                let nights = document.createElement("li");
+                nights.innerText = `Nights: ${priceDetail.nights}`;
+                summary.appendChild(nights);
+
+                const displayPriceDiv = document.getElementById("directPriceDiv");
+                displayPriceDiv.innerHTML = "";
+                displayPriceDiv.appendChild(summary);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -1097,6 +1116,7 @@
     <div class="tabs">
         <span data-tab-value="#tab_1" id="formattedTab">Formatted Results</span>
         <span data-tab-value="#tab_2" id="rawTab">Raw Results</span>
+        <span data-tab-value="#tab_3" id="directPriceTab">Direct Price Results</span>
     </div>
     <div class="tab-content">
         <div class="tabs__tab active" data-tab-info id="tab_1">
@@ -1189,6 +1209,12 @@
             <div class="example-results">
                 <div class="bigHeaderDetail"><h2>Response Data</h2></div>
                 <div id="resultsPane"></div>
+            </div>
+        </div>
+        <div class="tabs__tab" data-tab-info id="tab_3"></div>
+            <div class="example-results">
+                <div class="bigHeaderDetail"><h2>Direct Price</h2></div>
+                <div id="directPricePane"></div>
             </div>
         </div>
     </div>
