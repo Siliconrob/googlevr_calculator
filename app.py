@@ -56,7 +56,7 @@ def iter_file():  #
             yield from db_file
 
 
-@app.post("/extract_details", tags=["Calculator"], include_in_schema=True)
+@app.post("/extract_details", tags=["Calculator"], include_in_schema=False)
 async def extract_inventory(upload_file: UploadFile = File(...)):
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
         raise HTTPException(400, detail="File must be a zip file")
