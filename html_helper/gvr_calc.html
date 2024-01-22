@@ -230,8 +230,6 @@
 
         .rightSummaryPane {
             width: 30%;
-            border: red;
-            border-style: dashed;
         }
 
         .headerDivBlock {
@@ -328,7 +326,6 @@
     ];
 
     let calendarDates = []
-
 
     // Modified from https://davidwalsh.name/convert-xml-json
     function xmlToJson(xmlDoc) {
@@ -667,6 +664,7 @@
             document.getElementById("resultsPane").innerHTML = "";
             document.getElementById("resultsPane").appendChild(content);
             formatResults(result);
+            await getDirectPrice();
         } catch (error) {
             console.error(error);
             let errorMessage = document.createElement("PRE");
@@ -988,6 +986,49 @@
             previous();
         };
         showCalendar(month, year, calendarDates);
+    }
+
+    function getPriceUrl() {
+        let targetUrl = new URL(directPriceUrl);
+        const checkIn = document.getElementById('checkinDate').value;
+        const checkOut = document.getElementById('checkoutDate').value;
+        targetUrl.searchParams.set("or_arrival", checkIn);
+        targetUrl.searchParams.set("or_departure", checkOut);
+        return targetUrl.toString();
+    }
+
+    async function getDirectPrice() {
+        try {
+            if ((directPriceUrl || "").length == 0) {
+                return;
+            }
+            const targetRequest = {
+                target_url: getPriceUrl(),
+                watermark: "a21d27a5-52e4-44c7-b5f6-dd4698193a99"
+            };
+            const response = await fetch(`https://headless-horseman.district9.info/retrieve_price`, {
+                headers: {
+                    "accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: JSON.stringify(targetRequest)
+            });
+            const fileDetails = await response.json();
+            if (!response.ok) {
+                console.log(fileDetails);
+                return;
+            }
+            const fileDetailText = JSON.stringify(fileDetails, null, 2);
+            console.log(fileDetailText);
+            const displayPriceDiv = document.getElementById("directPriceDiv");
+            displayPriceDiv.innerHTML = "";
+            let content = document.createElement("PRE");
+            content.innerHTML = fileDetailText;
+            directPriceDiv.appendChild(content);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     function setupMap() {
