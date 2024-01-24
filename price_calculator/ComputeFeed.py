@@ -50,7 +50,7 @@ def total_base_rent(charges: ChargeDetails) -> decimal:
     total = 0
     for rent_record in charges.rent:
         total += ic(rent_record.base_amount)
-    return total
+    return decimal.Decimal(total)
 
 
 def promotions_adjustment(rent_total: decimal, nights: int, charges: ChargeDetails) -> decimal:
@@ -69,7 +69,7 @@ def promotions_adjustment(rent_total: decimal, nights: int, charges: ChargeDetai
         if fixed_amount_per_night is not None:
             total += ic(fixed_amount_per_night * nights)
             continue
-    return total
+    return decimal.Decimal(total)
 
 
 def rate_modifiers_adjustment(rent_total: decimal, charges: ChargeDetails) -> decimal:
@@ -79,14 +79,14 @@ def rate_modifiers_adjustment(rent_total: decimal, charges: ChargeDetails) -> de
         if percent is not None:
             total += ic(rent_total * (1 - percent))
             continue
-    return total
+    return decimal.Decimal(total)
 
 
 def taxes_and_fees(rent_amount: decimal, charges: ChargeDetails) -> decimal:
     fees = ic(tax_or_fee_total(charges.fees, charges.nights, rent_amount))
     taxes = ic(tax_or_fee_total(charges.taxes, charges.nights, rent_amount))
     total = ic(fees + taxes)
-    return total
+    return decimal.Decimal(total)
 
 
 def tax_or_fee_total(tax_or_fees: list[TaxOrFee], nights: int, rent_amount: decimal) -> decimal:
@@ -101,7 +101,7 @@ def tax_or_fee_total(tax_or_fees: list[TaxOrFee], nights: int, rent_amount: deci
             total += ic(amount)
             continue
         total += ic((amount / 100) * rent_amount)
-    return total
+    return decimal.Decimal(total)
 
 
 def compute_feed_price(external_id, start_date: date, end_date: date, book_date: date, dsn: str) -> FeedPrice:
