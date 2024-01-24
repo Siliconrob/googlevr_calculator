@@ -10,6 +10,7 @@ from data_messages import DateRange
 from data_messages import FileInfo
 from fileset import DataHandlers
 from data_messages.LastId import LastId
+from fileset.DataHandlers import get_safe_list
 
 
 @dataclass
@@ -129,8 +130,7 @@ def read_extra_charges(file_args: DataHandlers.DataFileArgs) -> (ExtraGuestCharg
 
     results = FileInfo.FileInfo(file_args.file_name)
     results.timestamp = FileInfo.get_timestamp(glom(file_args.formatted_data, 'ExtraGuestCharges.@timestamp'))
-    results.external_id = glom(file_args.formatted_data, 'ExtraGuestCharges.HotelExtraGuestCharges.@hotel_id')
-
+    results.external_id = get_safe_list(glom(file_args.formatted_data, '**.@hotel_id'))
     extra_guest_charges = glom(file_args.formatted_data, '**.ExtraGuestCharge')
     if len(extra_guest_charges) == 0:
         return None, None
