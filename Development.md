@@ -70,6 +70,11 @@
 - [X] Upgrade to Python 3.12
 - [X] Upgrade all applicable packages
 
+### Deployments
+
+- [X] Dockerfile created
+- [X] Automatically publish docker image to [GitHub Container Registry](https://ghcr.io)
+
 ### Create pypi package
 
 - [ ] Isolate calculator as separate package
