@@ -19,17 +19,17 @@ def tax_or_fee_base_query(table_prefix: str):
         select tf.external_id, tf.calc_type, tf.period, tf.amount, tf.xml_contents
         from {table_prefix} tf
         left join {table_prefix}_BookingDates tfbd
-        on tf.id = tfbd.parent_id
-        and ?book_date? between COALESCE(tfbd.start, DATE(?book_date?, '-1 day')) and COALESCE(tfbd.end, DATE(?book_date?, '+1 day'))
+        on tf.id = tfbd.parent_id        
         left join {table_prefix}_CheckinDates tfcid
-        on tf.id = tfcid.parent_id
-        and ?start_date? between COALESCE(tfcid.start, DATE(?start_date?, '-1 day')) and COALESCE(tfcid.end, DATE(?start_date?, '+1 day'))
+        on tf.id = tfcid.parent_id        
         left join {table_prefix}_CheckoutDates tfcod
-        on tf.id = tfcod.parent_id
-        and ?end_date? between COALESCE(tfcod.start, DATE(?end_date?, '-1 day')) and COALESCE(tfcod.end, DATE(?end_date?, '+1 day'))
+        on tf.id = tfcod.parent_id        
         left join {table_prefix}_LengthOfStay tflos
         on tf.id = tflos.parent_id
         WHERE tf.external_id = ?external_id?
+        and ?book_date? between COALESCE(tfbd.start, DATE(?book_date?, '-1 day')) and COALESCE(tfbd.end, DATE(?book_date?, '+1 day'))
+        and ?start_date? between COALESCE(tfcid.start, DATE(?start_date?, '-1 day')) and COALESCE(tfcid.end, DATE(?start_date?, '+1 day'))
+        and ?end_date? between COALESCE(tfcod.start, DATE(?end_date?, '-1 day')) and COALESCE(tfcod.end, DATE(?end_date?, '+1 day'))
         AND COALESCE(tflos.min, ?nights?) <= ?nights? and COALESCE(tflos.max, ?nights?) >= ?nights?
         and EXISTS
         (

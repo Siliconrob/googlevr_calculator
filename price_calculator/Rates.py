@@ -43,9 +43,9 @@ def get_rates(external_id: str, start: datetime, end: datetime, dsn: str) -> lis
                 ) aa
                 on aa.td between o.start and o.end
                 left join OTAHotelInvCountNotifRQ oi
-                on o.external_id = oi.external_id
-                and aa.td between oi.start and oi.end
+                on o.external_id = oi.external_id                
                 where o.external_id = ?external_id?
+                and aa.td between oi.start and oi.end
                 """,
                               param={
                                   "external_id": external_id,

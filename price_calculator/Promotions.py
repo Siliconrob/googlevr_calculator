@@ -29,17 +29,17 @@ def get_promotions(external_id: str,
             left join Promotion_BookingWindow pbw
             on p.id = pbw.parent_id            
             left join Promotion_BookingDates pbd
-            on p.id = pbd.parent_id
-            and ?book_date? between COALESCE(pbd.start, DATE(?book_date?, '-1 day')) and COALESCE(pbd.end, DATE(?book_date?, '+1 day'))
+            on p.id = pbd.parent_id            
             left join Promotion_CheckinDates pcid
-            on p.id = pcid.parent_id
-            and ?start_date? between COALESCE(pcid.start, DATE(?start_date?, '-1 day')) and COALESCE(pcid.end, DATE(?start_date?, '+1 day'))
+            on p.id = pcid.parent_id            
             left join Promotion_CheckoutDates pcod
-            on p.id = pcod.parent_id
-            and ?end_date? between COALESCE(pcod.start, DATE(?end_date?, '-1 day')) and COALESCE(pcod.end, DATE(?end_date?, '+1 day'))
+            on p.id = pcod.parent_id            
             left join Promotion_LengthOfStay plos
             on p.id = plos.parent_id
             WHERE p.external_id = ?external_id?
+            and ?book_date? between COALESCE(pbd.start, DATE(?book_date?, '-1 day')) and COALESCE(pbd.end, DATE(?book_date?, '+1 day'))
+            and ?start_date? between COALESCE(pcid.start, DATE(?start_date?, '-1 day')) and COALESCE(pcid.end, DATE(?start_date?, '+1 day'))
+            and ?end_date? between COALESCE(pcod.start, DATE(?end_date?, '-1 day')) and COALESCE(pcod.end, DATE(?end_date?, '+1 day'))
             and (?nights? between COALESCE(plos.min, ?nights?) and COALESCE(plos.max, ?nights?))
             and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(pbw.min, 0) and  COALESCE(pbw.max, 1000))
             and EXISTS

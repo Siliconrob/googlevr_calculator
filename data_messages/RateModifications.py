@@ -58,7 +58,7 @@ def create_tables(dsn: str):
                 days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                                 
-                UNIQUE(external_id, file_id, start, end, days_of_week)
+                UNIQUE(external_id, file_id, parent_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckinDates
@@ -71,7 +71,7 @@ def create_tables(dsn: str):
                 days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, start, end, days_of_week)
+                PRIMARY KEY(external_id, file_id, parent_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckoutDates
@@ -84,7 +84,7 @@ def create_tables(dsn: str):
                 days_of_week TEXT,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, start, end, days_of_week)
+                PRIMARY KEY(external_id, file_id, parent_id, start, end, days_of_week)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_LengthOfStay
@@ -96,7 +96,7 @@ def create_tables(dsn: str):
                 max int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, min, max)
+                PRIMARY KEY(external_id, file_id, parent_id, min, max)
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_BookingWindow
@@ -108,7 +108,7 @@ def create_tables(dsn: str):
                 max int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, min, max)
+                PRIMARY KEY(external_id, file_id, parent_id, min, max)
             )""")
 
 
@@ -180,7 +180,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?start?,
                         ?end?,
                         ?days_of_week?
-                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week) DO NOTHING
+                    ) ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week) DO NOTHING
                     """,
                                                             param=[{
                                                                 "external_id": rate_modifier.external_id,
@@ -209,7 +209,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?start?,
                         ?end?,
                         ?days_of_week?
-                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week)
+                    ) ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
                     DO NOTHING
                     """,
                                                             param=[{
@@ -239,7 +239,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?start?,
                         ?end?,
                         ?days_of_week?
-                    ) ON CONFLICT (external_id, file_id, start, end, days_of_week)
+                    ) ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
                     DO NOTHING""",
                                                              param=[{
                                                                  "external_id": rate_modifier.external_id,
@@ -266,7 +266,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?parent_id?,
                         ?min?,
                         ?max?
-                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    ) ON CONFLICT (external_id, file_id, parent_id, min, max) DO NOTHING""",
                                                             param={
                                                                 "external_id": rate_modifier.external_id,
                                                                 "file_id": new_id,
@@ -291,7 +291,7 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                         ?parent_id?,
                         ?min?,
                         ?max?
-                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    ) ON CONFLICT (external_id, file_id, parent_id, min, max) DO NOTHING""",
                                                              param={
                                                                  "external_id": rate_modifier.external_id,
                                                                  "file_id": new_id,

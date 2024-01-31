@@ -27,18 +27,18 @@ def get_rate_modifiers(external_id: str,
             on r.id = rbw.parent_id
             left join RateModifications_BookingDates rbd
             on r.id = rbd.parent_id
-            and ?book_date? between COALESCE(rbd.start, DATE(?book_date?, '-1 day')) and COALESCE(rbd.end, DATE(?book_date?, '+1 day'))
             left join RateModifications_CheckinDates rcid
-            on r.id = rcid.parent_id
-            and ?start_date? between COALESCE(rcid.start, DATE(?start_date?, '-1 day')) and COALESCE(rcid.end, DATE(?start_date?, '+1 day'))
+            on r.id = rcid.parent_id            
             left join RateModifications_CheckoutDates rcod
-            on r.id = rcod.parent_id
-            and ?end_date? between COALESCE(rcod.start, DATE(?end_date?, '-1 day')) and COALESCE(rcod.end, DATE(?end_date?, '+1 day'))
+            on r.id = rcod.parent_id            
             left join RateModifications_LengthOfStay rlos
             on r.id = rlos.parent_id
             WHERE r.external_id = ?external_id?
             and (?nights? between COALESCE(rlos.min, ?nights?) and COALESCE(rlos.max, ?nights?))
             and ((JULIANDAY(?start_date?) - JULIANDAY(?book_date?)) between COALESCE(rbw.min, 0) and  COALESCE(rbw.max, 1000))
+            and ?book_date? between COALESCE(rbd.start, DATE(?book_date?, '-1 day')) and COALESCE(rbd.end, DATE(?book_date?, '+1 day'))
+            and ?start_date? between COALESCE(rcid.start, DATE(?start_date?, '-1 day')) and COALESCE(rcid.end, DATE(?start_date?, '+1 day'))
+            and ?end_date? between COALESCE(rcod.start, DATE(?end_date?, '-1 day')) and COALESCE(rcod.end, DATE(?end_date?, '+1 day'))            
             and EXISTS
             (
                 select day_id

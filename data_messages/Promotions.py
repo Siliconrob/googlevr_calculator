@@ -62,7 +62,7 @@ def create_tables(dsn: str):
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
-            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
+            UNIQUE(external_id, file_id, parent_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckinDates (
@@ -75,7 +75,7 @@ def create_tables(dsn: str):
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,            
-            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
+            UNIQUE(external_id, file_id, parent_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckoutDates (
@@ -88,7 +88,7 @@ def create_tables(dsn: str):
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,
-            UNIQUE(external_id, promotion_id, file_id, start, end, days_of_week))
+            UNIQUE(external_id, file_id, parent_id, start, end, days_of_week))
             """)
         commands.execute(f"""
             create table if not exists Promotion_LengthOfStay (
@@ -100,7 +100,7 @@ def create_tables(dsn: str):
             parent_id int,
             FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
             FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,                                     
-            UNIQUE(external_id, promotion_id, file_id))
+            UNIQUE(external_id, file_id, parent_id, min, max))
             """)
         commands.execute(f"""
             create table if not exists Promotion_BookingWindow
@@ -112,7 +112,7 @@ def create_tables(dsn: str):
                 max int,
                 FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,                 
-                PRIMARY KEY(external_id, file_id, min, max)
+                PRIMARY KEY(external_id, file_id, parent_id, min, max)
             )""")
 
 
@@ -198,7 +198,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?end?,
                     ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
+                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
@@ -231,7 +231,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?end?,
                     ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
+                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
@@ -264,7 +264,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?end?,
                     ?days_of_week?
                     )
-                ON CONFLICT (external_id, promotion_id, file_id, start, end, days_of_week)
+                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                               param=[{
@@ -294,7 +294,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     ?parent_id?,
                     ?min?,
                     ?max?
-                ) ON CONFLICT (external_id, promotion_id, file_id)
+                ) ON CONFLICT (external_id, promotion_id, file_id, parent_id, min, max)
                 DO NOTHING
                 """,
                                                               param={
