@@ -181,7 +181,8 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                     file_id,
                     parent_id,
                     start,
-                    end
+                    end,
+                    days_of_week
                 )
                 values
                 (
