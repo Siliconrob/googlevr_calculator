@@ -54,7 +54,6 @@ def create_tables(dsn: str):
         commands.execute(f"""
             create table if not exists Promotion_BookingDates (
             external_id varchar(20),
-            promotion_id varchar(100),
             start TEXT,
             end TEXT,
             days_of_week TEXT,
@@ -67,7 +66,6 @@ def create_tables(dsn: str):
         commands.execute(f"""
             create table if not exists Promotion_CheckinDates (
             external_id varchar(20),
-            promotion_id varchar(100),
             start TEXT,
             end TEXT,
             days_of_week TEXT,
@@ -80,7 +78,6 @@ def create_tables(dsn: str):
         commands.execute(f"""
             create table if not exists Promotion_CheckoutDates (
             external_id varchar(20),
-            promotion_id varchar(100),
             start TEXT,
             end TEXT,
             days_of_week TEXT,
@@ -93,7 +90,6 @@ def create_tables(dsn: str):
         commands.execute(f"""
             create table if not exists Promotion_LengthOfStay (
             external_id varchar(20),
-            promotion_id varchar(100),
             min int,
             max int,
             file_id int,
@@ -182,7 +178,6 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 INSERT INTO Promotion_BookingDates
                 (
                     external_id,
-                    promotion_id,
                     file_id,
                     parent_id,
                     start,
@@ -191,19 +186,17 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 values
                 (
                     ?external_id?,
-                    ?promotion_id?,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
                     ?end?,
                     ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
+                ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
                                                                  "external_id": promotion.external_id,
-                                                                 "promotion_id": promotion.id,
                                                                  "file_id": new_id,
                                                                  "parent_id": last_id.seq,
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
@@ -215,7 +208,6 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 INSERT INTO Promotion_CheckinDates
                 (
                     external_id,
-                    promotion_id,
                     file_id,
                     parent_id,
                     start,
@@ -224,19 +216,17 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 )
                 values (
                     ?external_id?,
-                    ?promotion_id?,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
                     ?end?,
                     ?days_of_week?
                 )
-                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
+                ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                              param=[{
                                                                  "external_id": promotion.external_id,
-                                                                 "promotion_id": promotion.id,
                                                                  "file_id": new_id,
                                                                  "parent_id": last_id.seq,
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
@@ -248,7 +238,6 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 INSERT INTO Promotion_CheckoutDates
                 (
                     external_id,
-                    promotion_id,
                     file_id,
                     parent_id,
                     start,
@@ -257,19 +246,17 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 )
                 values (
                     ?external_id?,
-                    ?promotion_id?,
                     ?file_id?,
                     ?parent_id?,
                     ?start?,
                     ?end?,
                     ?days_of_week?
                     )
-                ON CONFLICT (external_id, promotion_id, file_id, parent_id, start, end, days_of_week)
+                ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
                 DO NOTHING
                 """,
                                                               param=[{
                                                                   "external_id": promotion.external_id,
-                                                                  "promotion_id": promotion.id,
                                                                   "file_id": new_id,
                                                                   "parent_id": last_id.seq,
                                                                   "start": None if date_range.start is None else date_range.start.isoformat(),
@@ -281,7 +268,6 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 INSERT INTO Promotion_LengthOfStay
                 (
                     external_id,
-                    promotion_id,
                     file_id,
                     parent_id,
                     min,
@@ -289,17 +275,15 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                 )
                 values (
                     ?external_id?,
-                    ?promotion_id?,
                     ?file_id?,
                     ?parent_id?,
                     ?min?,
                     ?max?
-                ) ON CONFLICT (external_id, promotion_id, file_id, parent_id, min, max)
+                ) ON CONFLICT (external_id, file_id, parent_id, min, max)
                 DO NOTHING
                 """,
                                                               param={
                                                                   "external_id": promotion.external_id,
-                                                                  "promotion_id": promotion.id,
                                                                   "file_id": new_id,
                                                                   "parent_id": last_id.seq,
                                                                   "min": None if promotion.length_of_stay.min is None else promotion.length_of_stay.min,
