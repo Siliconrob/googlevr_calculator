@@ -71,3 +71,22 @@ def get_rate_modifiers(external_id: str,
                                   "book_date": book_date.isoformat(),
                                   "nights": nights
                               }, model=RateModifier)
+
+# WITH the_dates as (
+#     WITH RECURSIVE cnt(x) AS
+#     (
+#         SELECT 0
+#         UNION ALL
+#         SELECT x + 1
+#         FROM cnt
+#         LIMIT (SELECT (JULIANDAY(?end_date?) - JULIANDAY(?start_date?)))
+#     )
+#     SELECT date(JULIANDAY(?start_date?), '+' || x || ' days') as gen_date
+#     FROM cnt
+# )
+# select rm.id, td.gen_date, rm.multiplier, rm.rate_id, rm.xml_contents
+# FROM RateModifications rm
+# left join RateModifications_StayDates rsd
+# on rm.id = rsd.parent_id
+# left join the_dates td
+# where td.gen_date between DATE(rsd.start) and DATE(rsd.end);
