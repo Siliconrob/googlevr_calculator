@@ -2,6 +2,8 @@ import io
 import os
 import re
 import zipfile
+from dataclasses import dataclass
+import stamina
 from datetime import date
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +11,7 @@ import pendulum
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from starlette.responses import FileResponse, Response, StreamingResponse, RedirectResponse
 from DataStore import load_db, get_dsn, DB_NAME, clear_db, load_db_files, save_cache_item, get_cache_item, read_details
-from price_calculator.ComputeFeed import compute_feed_price
+from price_calculator.ComputeFeed import compute_feed_price, FeedPrice
 from icecream import ic
 from middlewares.exceptionhandler import ExceptionHandlerMiddleware
 
@@ -23,7 +25,7 @@ tags_metadata = [
 
 app = FastAPI(title="Google Vacation Rentals Calculator",
               description="Calculates a rental price based on ARI XML messages",
-              version="0.0.2",
+              version="0.0.3",
               terms_of_service="Strength is irrelevant. Resistance is futile. We wish to improve ourselves. We will add your biological and technological distinctiveness to our own.",
               contact={
                   "url": "https://siliconheaven.info",
@@ -56,6 +58,28 @@ def iter_file():  #
             yield from db_file
 
 
+@dataclass
+class FeedFromZipArgs:
+    upload_file: UploadFile
+    external_id: str
+    start_date: str
+    end_date: str
+    booked_date: str
+
+
+@stamina.retry(on=Exception, attempts=3)
+def get_zip_feed_price(feed_args: FeedFromZipArgs) -> FeedPrice:
+    with zipfile.ZipFile(io.BytesIO(feed_args.upload_file.file.read()), "r") as messages_zip_file:
+        dsn = get_dsn(DB_NAME)
+        db_load_results = load_db(messages_zip_file, dsn)
+    calculated_feed_price = compute_feed_price(feed_args.external_id,
+                                               feed_args.start_date,
+                                               feed_args.end_date,
+                                               feed_args.booked_date,
+                                               dsn)
+    return calculated_feed_price
+
+
 @app.post("/extract_details", tags=["Calculator"], include_in_schema=False)
 async def extract_inventory(upload_file: UploadFile = File(...)):
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
@@ -73,12 +97,8 @@ async def feed_price_zip(upload_file: UploadFile = File(...),
                          booked_date: Annotated[date, "Booked"] = pendulum.now().to_date_string()):
     if upload_file.content_type not in ["application/zip", "application/octet-stream", "application/x-zip-compressed"]:
         raise HTTPException(400, detail="File must be a zip file")
-
-    with zipfile.ZipFile(io.BytesIO(upload_file.file.read()), "r") as messages_zip_file:
-        dsn = get_dsn(DB_NAME)
-        db_load_results = load_db(messages_zip_file, dsn)
-    calculated_feed_price = compute_feed_price(external_id, start_date, end_date, booked_date, dsn)
-    return calculated_feed_price
+    file_inputs = FeedFromZipArgs(upload_file, external_id, start_date, end_date, booked_date)
+    return get_zip_feed_price(file_inputs)
 
 
 @app.post("/feed_from_xml", tags=["Calculator"], include_in_schema=False)
