@@ -19,6 +19,7 @@ class Promotion:
     booking_dates: list[DateRange]
     checkin_dates: list[DateRange]
     checkout_dates: list[DateRange]
+    stay_dates: list[DateRange]
     length_of_stay: LengthOfStay
     booking_window: BookingWindowTimeSpan
     percentage: decimal
@@ -77,6 +78,18 @@ def create_tables(dsn: str):
             """)
         commands.execute(f"""
             create table if not exists Promotion_CheckoutDates (
+            external_id varchar(20),
+            start TEXT,
+            end TEXT,
+            days_of_week TEXT,
+            file_id int,
+            parent_id int,
+            FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES Promotion(id) ON DELETE CASCADE,
+            UNIQUE(external_id, file_id, parent_id, start, end, days_of_week))
+            """)
+        commands.execute(f"""
+            create table if not exists Promotion_StayDates (
             external_id varchar(20),
             start TEXT,
             end TEXT,
@@ -233,7 +246,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
                                                                  "end": None if date_range.end is None else date_range.end.isoformat(),
                                                                  "days_of_week": date_range.days_of_week
-                                                             } for date_range in promotion.checkin_dates]),
+                                                             } for date_range in promotion.checkin_dates])
             if len(promotion.checkout_dates) > 0:
                 rowcount['checkout_dates'] = commands.execute(f"""
                 INSERT INTO Promotion_CheckoutDates
@@ -263,7 +276,37 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                                                                   "start": None if date_range.start is None else date_range.start.isoformat(),
                                                                   "end": None if date_range.end is None else date_range.end.isoformat(),
                                                                   "days_of_week": date_range.days_of_week
-                                                              } for date_range in promotion.checkout_dates]),
+                                                              } for date_range in promotion.checkout_dates])
+            if len(promotion.stay_dates) > 0:
+                rowcount['stay_dates'] = commands.execute(f"""
+                INSERT INTO Promotion_StayDates
+                (
+                    external_id,
+                    file_id,
+                    parent_id,
+                    start,
+                    end,
+                    days_of_week
+                )
+                values (
+                    ?external_id?,
+                    ?file_id?,
+                    ?parent_id?,
+                    ?start?,
+                    ?end?,
+                    ?days_of_week?
+                    )
+                ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
+                DO NOTHING
+                """,
+                                                              param=[{
+                                                                  "external_id": promotion.external_id,
+                                                                  "file_id": new_id,
+                                                                  "parent_id": last_id.seq,
+                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                  "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                  "days_of_week": date_range.days_of_week
+                                                              } for date_range in promotion.stay_dates])
             if promotion.length_of_stay is not None:
                 rowcount['length_of_stay'] = commands.execute(f"""
                 INSERT INTO Promotion_LengthOfStay
@@ -346,6 +389,7 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
                                     DateRange.parse_ranges(glom(promotion, 'BookingDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckinDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckoutDates.DateRange', default=[])),
+                                    DateRange.parse_ranges(glom(promotion, 'StayDates.DateRange', default=[])),
                                     LengthOfStay.parse_range(glom(promotion, 'LengthOfStay', default=None)),
                                     BookingWindow.parse_range_timespans(glom(promotion, 'BookingWindow', default=None)),
                                     discount.get("@percentage"),

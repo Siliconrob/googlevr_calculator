@@ -21,6 +21,7 @@ class RateModifications:
     booking_dates: list[DateRange]
     checkin_dates: list[DateRange]
     checkout_dates: list[DateRange]
+    stay_dates: list[DateRange]
     price_adjustment: decimal
     length_of_stay: LengthOfStay
     booking_window: BookingWindowInt
@@ -75,6 +76,19 @@ def create_tables(dsn: str):
             )""")
         commands.execute(f"""
             create table if not exists RateModifications_CheckoutDates
+            (
+                external_id varchar(20),
+                file_id int,
+                parent_id int,
+                start TEXT,
+                end TEXT,
+                days_of_week TEXT,
+                FOREIGN KEY (file_id) REFERENCES FileInfo(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES RateModifications(id) ON DELETE CASCADE,                 
+                PRIMARY KEY(external_id, file_id, parent_id, start, end, days_of_week)
+            )""")
+        commands.execute(f"""
+            create table if not exists RateModifications_StayDates
             (
                 external_id varchar(20),
                 file_id int,
@@ -248,7 +262,36 @@ def load_rate_modifications(rate_modifiers: list[RateModifications],
                                                                  "start": None if date_range.start is None else date_range.start.isoformat(),
                                                                  "end": None if date_range.end is None else date_range.end.isoformat(),
                                                                  "days_of_week": date_range.days_of_week
-                                                             } for date_range in rate_modifier.checkout_dates]),
+                                                             } for date_range in rate_modifier.checkout_dates])
+            if len(rate_modifier.stay_dates) > 0:
+                rowcount['stayDates'] = commands.execute(f"""
+                    INSERT INTO RateModifications_StayDates
+                    (
+                        external_id,
+                        file_id,
+                        parent_id,
+                        start,
+                        end,
+                        days_of_week
+                    )
+                    values
+                    (
+                        ?external_id?,
+                        ?file_id?,
+                        ?parent_id?,
+                        ?start?,
+                        ?end?,
+                        ?days_of_week?
+                    ) ON CONFLICT (external_id, file_id, parent_id, start, end, days_of_week)
+                    DO NOTHING""",
+                                                             param=[{
+                                                                 "external_id": rate_modifier.external_id,
+                                                                 "file_id": new_id,
+                                                                 "parent_id": last_id.seq,
+                                                                 "start": None if date_range.start is None else date_range.start.isoformat(),
+                                                                 "end": None if date_range.end is None else date_range.end.isoformat(),
+                                                                 "days_of_week": date_range.days_of_week
+                                                             } for date_range in rate_modifier.stay_dates])
             if rate_modifier.length_of_stay is not None:
                 rowcount['lengthOfStay'] = commands.execute(f"""
                     INSERT INTO RateModifications_LengthOfStay
@@ -327,6 +370,7 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
         booking_dates = DateRange.parse_ranges(glom(itinerary, 'BookingDates.DateRange', default=[]))
         checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
         checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
+        stay_dates = DateRange.parse_ranges(glom(itinerary, 'StayDates.DateRange', default=[]))
         stay_requires = LengthOfStay.parse_range(glom(itinerary, 'LengthOfStay', default=None))
         booking_window = BookingWindow.parse_range_int(glom(itinerary, 'BookingWindow', default=None))
         new_modifiers.append(RateModifications(results.external_id,
@@ -334,6 +378,7 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
                                                booking_dates,
                                                checkin_dates,
                                                checkout_dates,
+                                               stay_dates,
                                                Decimal(multiplier["@multiplier"]),
                                                stay_requires,
                                                booking_window,

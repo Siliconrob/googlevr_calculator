@@ -4,7 +4,12 @@
     <ItineraryRateModification id="Discount_for_28_nights">
       <BookingDates>
         <DateRange start="2024-01-01" end="2026-01-01" days_of_week="MTW"/>
-      </BookingDates>	
+      </BookingDates>
+      <StayDates application="overlap">
+        <DateRange start="2024-02-01" end="2024-05-01" />
+		<DateRange start="2025-02-01" end="2025-05-01" />
+		<DateRange start="2026-02-01" end="2026-05-01" />
+      </StayDates>
       <LengthOfStay min="28" />
       <ModificationActions>
         <PriceAdjustment multiplier="0.9000" />
