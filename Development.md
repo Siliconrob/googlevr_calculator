@@ -17,6 +17,7 @@
 - [X] Read Hotel Inventory from XML file
 - [X] Load Hotel Inventory into database
 - [X] Handle Day of the Week specifications
+- [X] Read and load Stay Dates ranges for Rate Modifications and Promotions
 
 ### Command line options to calculate rates
 
@@ -41,6 +42,7 @@
     - [X] Send proper response
     - [X] Allow feed files to send as zip file
     - [X] Allow raw files to send as group of text files
+    - [X] Retries on zip file with `stamina`
 
 ### Webpage Development
 
