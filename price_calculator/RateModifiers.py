@@ -72,21 +72,83 @@ def get_rate_modifiers(external_id: str,
                                   "nights": nights
                               }, model=RateModifier)
 
-# WITH the_dates as (
+# WITH reservation_dates as (
 #     WITH RECURSIVE cnt(x) AS
 #     (
 #         SELECT 0
 #         UNION ALL
 #         SELECT x + 1
-#         FROM cnt
-#         LIMIT (SELECT (JULIANDAY(?end_date?) - JULIANDAY(?start_date?)))
+#         FROM cnt LIMIT (SELECT (JULIANDAY('2024-03-16') - JULIANDAY('2024-03-01')))
 #     )
-#     SELECT date(JULIANDAY(?start_date?), '+' || x || ' days') as gen_date
+#     SELECT date(JULIANDAY('2024-03-01'), '+' || x || ' days') as gen_date, upper(dw.google_code) google_day_id
 #     FROM cnt
+#     INNER JOIN DayOfTheWeek dw
+#     on dw.day_id = strftime('%w', date(JULIANDAY('2024-03-01'), '+' || x || ' days'))
+# ),
+# check_in_dates as (
+#     select rm.id check_in_id
+#     FROM RateModifications rm
+#     LEFT JOIN RateModifications_CheckinDates rcid
+#     ON rm.id = rcid.parent_id
+#     WHERE '2024-03-01' between DATE(COALESCE(rcid.start, '2024-03-01')) and DATE(COALESCE(rcid.end, '2024-03-01'))
+#     AND EXISTS
+#     (
+#         select day_id from DayOfTheWeek dw where instr((select upper(rcid.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', '2024-03-01')
+#         UNION
+#         select day_id from DayOfTheWeek dw WHERE rcid.days_of_week IS NULL
+#     )
+# ),
+# check_out_dates as (
+#     select rm.id check_out_id
+#     FROM RateModifications rm
+#     LEFT JOIN RateModifications_CheckoutDates rcod
+#     ON rm.id = rcod.parent_id
+#     WHERE '2024-03-16' between DATE(COALESCE(rcod.start, '2024-03-16')) and DATE(COALESCE(rcod.end, '2024-03-16'))
+#     AND EXISTS
+#     (
+#         select day_id from DayOfTheWeek dw where instr((select upper(rcod.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', '2024-03-16')
+#         UNION
+#         select day_id from DayOfTheWeek dw WHERE rcod.days_of_week IS NULL
+#     )
+# ),
+# book_dates as (
+#     select rm.id book_id
+#     FROM RateModifications rm
+#     LEFT JOIN RateModifications_BookingDates rbd
+#     ON rm.id = rbd.parent_id
+#     WHERE '2024-02-11' between DATE(COALESCE(rbd.start, '2024-02-11')) and DATE(COALESCE(rbd.end, '2024-02-11'))
+#     AND EXISTS
+#     (
+#         select day_id from DayOfTheWeek dw where instr((select upper(rbd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', '2024-2-11')
+#         UNION
+#         select day_id from DayOfTheWeek dw WHERE rbd.days_of_week IS NULL
+#     )
 # )
-# select rm.id, td.gen_date, rm.multiplier, rm.rate_id, rm.xml_contents
-# FROM RateModifications rm
-# left join RateModifications_StayDates rsd
-# on rm.id = rsd.parent_id
-# left join the_dates td
-# where td.gen_date between DATE(rsd.start) and DATE(rsd.end);
+# SELECT rd.gen_date,
+#        rd.google_day_id,
+#        cid.check_in_id,
+#        cod.check_out_id,
+#        bd.book_id,
+#         (
+#             SELECT rd.gen_date between COALESCE(rsd.start, rd.gen_date) and COALESCE(rsd.end, rd.gen_date)
+#             AND EXISTS
+#             (
+#                 select day_id from DayOfTheWeek dw where instr((select upper(rsd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', rd.gen_date)
+#                 UNION
+#                 select day_id from DayOfTheWeek dw WHERE rsd.days_of_week IS NULL
+#             )
+#         ) stay_id
+# FROM reservation_dates rd
+# LEFT JOIN RateModifications rm
+# LEFT JOIN RateModifications_BookingWindow rbw
+#     on rm.id = rbw.parent_id
+# LEFT JOIN RateModifications_LengthOfStay rlos
+#     on rm.id = rlos.parent_id
+# LEFT JOIN check_in_dates cid
+#     ON rm.id = cid.check_in_id
+# LEFT JOIN check_out_dates cod
+#     ON rm.id = cod.check_out_id
+# LEFT JOIN book_dates bd
+#     on rm.id = bd.book_id
+# LEFT JOIN RateModifications_StayDates rsd
+#     ON rm.id = rsd.parent_id
