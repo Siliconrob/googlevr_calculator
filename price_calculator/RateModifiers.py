@@ -124,20 +124,19 @@ def get_rate_modifiers(external_id: str,
 #         select day_id from DayOfTheWeek dw WHERE rbd.days_of_week IS NULL
 #     )
 # )
-# SELECT rd.gen_date,
-#        rd.google_day_id,
-#        cid.check_in_id,
-#        cod.check_out_id,
-#        bd.book_id,
-#         (
-#             SELECT rd.gen_date between COALESCE(rsd.start, rd.gen_date) and COALESCE(rsd.end, rd.gen_date)
-#             AND EXISTS
-#             (
-#                 select day_id from DayOfTheWeek dw where instr((select upper(rsd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', rd.gen_date)
-#                 UNION
-#                 select day_id from DayOfTheWeek dw WHERE rsd.days_of_week IS NULL
-#             )
-#         ) stay_id
+# SELECT rd.gen_date, rm.id, rm.multiplier, rm.external_id, rm.xml_contents
+# --        cid.check_in_id,
+# --        cod.check_out_id,
+# --        bd.book_id,
+# --         (
+# --             SELECT rd.gen_date between COALESCE(rsd.start, rd.gen_date) and COALESCE(rsd.end, rd.gen_date)
+# --             AND EXISTS
+# --             (
+# --                 select day_id from DayOfTheWeek dw where instr((select upper(rsd.days_of_week)), upper(dw.google_code)) > 0 and dw.day_id = strftime('%w', rd.gen_date)
+# --                 UNION
+# --                 select day_id from DayOfTheWeek dw WHERE rsd.days_of_week IS NULL
+# --             )
+# --         ) stay_id
 # FROM reservation_dates rd
 # LEFT JOIN RateModifications rm
 # LEFT JOIN RateModifications_BookingWindow rbw
@@ -152,3 +151,24 @@ def get_rate_modifiers(external_id: str,
 #     on rm.id = bd.book_id
 # LEFT JOIN RateModifications_StayDates rsd
 #     ON rm.id = rsd.parent_id
+# WHERE EXISTS
+# (
+#     SELECT rd.gen_date between COALESCE(rsd.start, rd.gen_date) and COALESCE(rsd.end, rd.gen_date)
+#     AND EXISTS
+#     (
+#         select day_id
+#         from DayOfTheWeek dw
+#         where instr((select upper(rsd.days_of_week)), upper(dw.google_code)) > 0
+#          and dw.day_id = strftime('%w', rd.gen_date)
+#         UNION
+#         select day_id
+#         from DayOfTheWeek dw
+#         WHERE rsd.days_of_week IS NULL
+#     )
+# )
+# AND
+# (
+#     cid.check_in_id > 0
+#     AND cod.check_out_id > 0
+#     AND bd.book_id > 0
+# );
