@@ -350,7 +350,7 @@ def load_promotions(promotions: list[Promotion], file_info: FileInfo.FileInfo,
                         ?parent_id?,
                         ?min?,
                         ?max?
-                    ) ON CONFLICT (external_id, file_id, min, max) DO NOTHING""",
+                    ) ON CONFLICT (external_id, file_id, parent_id, min, max) DO NOTHING""",
                                                              param={
                                                                  "external_id": promotion.external_id,
                                                                  "file_id": new_id,
