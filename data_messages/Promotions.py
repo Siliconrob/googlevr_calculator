@@ -1,4 +1,6 @@
 import decimal
+import uuid
+from collections import Counter
 from dataclasses import dataclass
 
 import xmltodict
@@ -377,6 +379,7 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
     if len(file_promotions) == 0:
         return [], None
 
+    promotion_ids = []
     for promotion in get_safe_list(file_promotions):
         discount = glom(promotion, 'Discount', default=None)
         if discount is None:
@@ -384,8 +387,12 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
         stacks = glom(promotion, 'Stacking')
         stacking_type = stacks.get("@type") if stacks is not None else None
 
+        promotion_id = promotion.get("@id")
+        id_counts = Counter(promotion_ids)
+        if id_counts[promotion_id] > 0:
+            promotion_id = f'{promotion_id}_{uuid.uuid4()}'
         promotions.append(Promotion(results.external_id,
-                                    promotion.get("@id"),
+                                    promotion_id,
                                     DateRange.parse_ranges(glom(promotion, 'BookingDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckinDates.DateRange', default=[])),
                                     DateRange.parse_ranges(glom(promotion, 'CheckoutDates.DateRange', default=[])),
@@ -398,4 +405,5 @@ def read_promotions(file_args: DataHandlers.DataFileArgs) -> (list[Promotion], F
                                     discount.get("@fixed_price"),
                                     stacking_type,
                                     xmltodict.unparse({"Promotion": promotion})))
+        promotion_ids.append(promotion_id)
     return promotions, results

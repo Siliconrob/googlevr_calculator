@@ -1,4 +1,6 @@
 import decimal
+import uuid
+from collections import Counter
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -360,13 +362,16 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
     if len(itinerary) == 0:
         return [], None
 
+    rate_ids = []
     new_modifiers = []
-
     for itinerary in get_safe_list(itinerary):
         multiplier = glom(itinerary, 'ModificationActions.PriceAdjustment', default=None)
         if multiplier is None:
             continue
         rate_id = glom(itinerary, '@id')
+        id_counts = Counter(rate_ids)
+        if id_counts[rate_id] > 0:
+            rate_id = f'{rate_id}_{uuid.uuid4()}'
         booking_dates = DateRange.parse_ranges(glom(itinerary, 'BookingDates.DateRange', default=[]))
         checkin_dates = DateRange.parse_ranges(glom(itinerary, 'CheckinDates.DateRange', default=[]))
         checkout_dates = DateRange.parse_ranges(glom(itinerary, 'CheckoutDates.DateRange', default=[]))
@@ -383,4 +388,5 @@ def read_rate_modifications(file_args: DataHandlers.DataFileArgs) -> (list[RateM
                                                stay_requires,
                                                booking_window,
                                                xmltodict.unparse({"ItineraryRateModification": itinerary})))
+        rate_ids.append(rate_id)
     return new_modifiers, results
