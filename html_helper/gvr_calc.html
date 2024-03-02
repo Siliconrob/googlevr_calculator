@@ -243,48 +243,38 @@
         }
 
         .rightSummaryPane {
-            background-color: unset;
-            width: 30%;
-            position: relative;
-            border-radius: 0.5rem;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
             display: flex;
-            font-size: 1.5em;
+            justify-content: center;
+            width: 30%;
+            margin: .25rem;
+            align-items: center;
+            background: white;
+            color: #48abe0;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 10px 5px #48abe0;
+            animation: shadows 5s infinite;
         }
 
-        .rightSummaryPane:hover {
-            color: rgb(88 199 250 / 100%);
-            transition: color 1s;
-        }
-        .rightSummaryPane:hover:before,
-        .rightSummaryPane:hover:after {
+        .rightSummaryPane:hover{
             animation: none;
             opacity: 0;
-        }        
+        }
 
         .rightSummaryPane::before,
         .rightSummaryPane::after {
             position: absolute;
-            content: "";
-            z-index: -1;            
-            inset: -.1rem;
-            background: conic-gradient(
-                from var(--gradient-angle),
-                var(--clr-3),
-                var(--clr-4),
-                var(--clr-5),
-                var(--clr-4),
-                var(--clr-3)
-            );
-            animation: rotation 2s linear infinite;
+            color: black;
+            content: "Wait for Direct Price Results here...";
         }
 
-        @keyframes rotation {
-            0% { --gradient-angle: 0deg; }
-            100% { --gradient-angle: 360deg; }
+        @keyframes shadows {            
+            0% { box-shadow: hsl(24, 93%, 47%) 0 0 1rem; }
+            50% { box-shadow: hsl(298, 96%, 28%) 0 0 1rem; }
+            75% { box-shadow: hsl(28, 80%, 52%) 0 0 1rem;}
+            100% { box-shadow: hsl(330, 92%, 46%) 0 0 1rem; }
         }
+
 
         .headerDivBlock {
             width: 15%;
