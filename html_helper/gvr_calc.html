@@ -4,6 +4,21 @@
     <title>Google Vacation Rental Calculator</title>
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='1em' font-size='80'>%26%239763%3B</text></svg>"/>
     <style>
+
+        @property --gradient-angle {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+		:root {
+			--clr-1: #052b2f;
+			--clr-2: #073438;
+			--clr-3: #0e4b50;
+			--clr-4: #2d8f85;
+			--clr-5: #637c54;
+		}	
+	
         .example-results {
             border: 2px solid #0a64b8;
             color: black;
@@ -228,7 +243,47 @@
         }
 
         .rightSummaryPane {
+            background-color: unset;
             width: 30%;
+            position: relative;
+            border-radius: 0.5rem;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            display: flex;
+            font-size: 1.5em;
+        }
+
+        .rightSummaryPane:hover {
+            color: rgb(88 199 250 / 100%);
+            transition: color 1s;
+        }
+        .rightSummaryPane:hover:before,
+        .rightSummaryPane:hover:after {
+            animation: none;
+            opacity: 0;
+        }        
+
+        .rightSummaryPane::before,
+        .rightSummaryPane::after {
+            position: absolute;
+            content: "";
+            z-index: -1;            
+            inset: -.1rem;
+            background: conic-gradient(
+                from var(--gradient-angle),
+                var(--clr-3),
+                var(--clr-4),
+                var(--clr-5),
+                var(--clr-4),
+                var(--clr-3)
+            );
+            animation: rotation 2s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { --gradient-angle: 0deg; }
+            100% { --gradient-angle: 360deg; }
         }
 
         .headerDivBlock {
