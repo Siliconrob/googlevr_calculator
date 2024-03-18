@@ -1038,6 +1038,14 @@
         let targetUrl = new URL(directPriceUrl);
         const checkIn = document.getElementById('checkinDate').value;
         const checkOut = document.getElementById('checkoutDate').value;
+
+        if (directPriceUrl.href.startsWith("https://booking.ownerrez.com/request")) {
+            targetUrl.searchParams.set("arrival", checkIn);
+            targetUrl.searchParams.set("departure", checkOut);
+            targetUrl.searchParams.delete("or_children");
+            return targetUrl.toString();
+        }
+
         targetUrl.searchParams.set("or_arrival", checkIn);
         targetUrl.searchParams.set("or_departure", checkOut);
         targetUrl.searchParams.delete("or_children");
