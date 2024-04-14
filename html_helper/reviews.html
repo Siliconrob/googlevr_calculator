@@ -203,11 +203,11 @@
         #cover-spin::after {
             content: '';
             display: block;
-            position: absolute;
-            left: 43%;
-            top: 30%;
-            width: 200px;
-            height: 200px;
+            position: relative;
+            left: 40dvw;
+            top: 20dvh;
+            width: 20dvw;
+            height: 20dvw;
             border-style: dashed;
             border-color: #a25bfc75;
             border-top-color: transparent;
@@ -251,10 +251,13 @@
 				const data = await response.json();
 				reviewsData = data.result;
 				showReview(randomReviewIndex());			
-			} catch (e) {
-				console.log("Retrying");
+			} catch (e) {			
 				console.log(e);
-				location.reload();
+				console.log("Retrying");
+				setTimeout(() => {
+					location.reload();
+				}, 1000);			
+				
 			}
         }
 		
