@@ -224,8 +224,6 @@
     <script>
         let reviewsData = [];
         let currentReview = 0;
-        //const reviewsUrl = "https://www.woodhavenrentals.com/reviews";
-        const reviewsUrl = "https://www.noworryvacations.com/reviews";
 
         window.addEventListener("DOMContentLoaded", function () {
             showReview(currentReview);
@@ -259,8 +257,24 @@
 				location.reload();
 			}
         }
+		
+		function getReviewUrl() {
+			const queryString = window.location.search;
+			console.log(queryString);
+			const urlParams = new URLSearchParams(queryString);
+			let reviewsUrl = "https://www.noworryvacations.com/reviews";
+			
+			if (urlParams.has("reviews")) {
+				const reviewLink = urlParams.get('reviews') || null;
+				if (!(reviewLink == null)) {
+					reviewsUrl = reviewLink;
+				}
+			}
+			return reviewsUrl;
+		}
 
-        window.addEventListener("load", async (e) => {
+        window.addEventListener("load", async (e) => {		
+			const reviewsUrl = getReviewUrl();		
             await getReviews(reviewsUrl);
 
             document.querySelector(".next-review-btn").addEventListener("click", function () {
@@ -313,10 +327,11 @@
                 const currentReviewData = reviewsData[reviewIndex];
                 authorElement.textContent = currentReviewData.reviewer_name;
                 dateLineElement.textContent = currentReviewData.date_line;
-                const propertyName = currentReviewData.property_name || "";
+                let propertyName = currentReviewData.property_name || "";
                 if (propertyName !== "") {
-                    propertyElement.textContent = `Stayed at ${propertyName}`;
-                }                
+					propertyName = `Stayed at ${propertyName}`;                    
+                }
+				propertyElement.textContent = propertyName ?? "";                
                 infoElement.textContent = currentReviewData.content;
             }
         }
