@@ -19,9 +19,9 @@
         }
 
         body {
-            font-family: "Open Sans", sans-serif;
-            background: #f1eed4;
-            color: hsl(209, 61%, 16%);
+            font-family: monospace;
+            background: black;
+            color: white;
             line-height: 1.5;
             font-size: 0.875rem;
         }
@@ -41,6 +41,7 @@
 
         h4 {
             font-size: 0.875rem;
+			color: black;
         }
 
         p {
@@ -117,7 +118,7 @@
             place-items: center;
             border-radius: 50%;
             transform: translateY(25%);
-            background: #ccfc5b;
+            background: black;
             color: white;
         }
 
@@ -125,7 +126,7 @@
             content: "";
             width: 100%;
             height: 100%;
-            background: #ccfc5b;
+            background: #a25bfc75;
             position: absolute;
             top: -0.25rem;
             right: -0.5rem;
@@ -208,7 +209,7 @@
             width: 200px;
             height: 200px;
             border-style: dashed;
-            border-color: orangered;
+            border-color: #a25bfc75;
             border-top-color: transparent;
             border-width: 8px;
             border-radius: 50%;
@@ -239,20 +240,24 @@
                 target_url: targetUrl,
                 watermark: "a21d27a5-52e4-44c7-b5f6-dd4698193a99"
             };
-            const response = await fetch(`https://headless-horseman.district9.info/retrieve_reviews`, {
-                headers: {
-                    "accept": "application/json",
-                    "Content-Type": "application/json"
-                },
-                method: "POST",
-                body: JSON.stringify(targetRequest)
-            });
-
-            cover.style.display = "none";
-            const data = await response.json();
-            reviewsData = data.result;
-            showReview(randomReviewIndex());
-            
+			try {
+				const response = await fetch(`https://headless-horseman.district9.info/retrieve_reviews`, {
+					headers: {
+						"accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					method: "POST",
+					body: JSON.stringify(targetRequest)
+				});
+				cover.style.display = "none";
+				const data = await response.json();
+				reviewsData = data.result;
+				showReview(randomReviewIndex());			
+			} catch (e) {
+				console.log("Retrying");
+				console.log(e);
+				location.reload();
+			}
         }
 
         window.addEventListener("load", async (e) => {
@@ -307,8 +312,11 @@
             if (reviewsData.length > 0) {
                 const currentReviewData = reviewsData[reviewIndex];
                 authorElement.textContent = currentReviewData.reviewer_name;
-                propertyElement.textContent = currentReviewData.property_name || "";
                 dateLineElement.textContent = currentReviewData.date_line;
+                const propertyName = currentReviewData.property_name || "";
+                if (propertyName !== "") {
+                    propertyElement.textContent = `Stayed at ${propertyName}`;
+                }                
                 infoElement.textContent = currentReviewData.content;
             }
         }
@@ -329,7 +337,7 @@
                 <h4 id="review-author">Jane Doe</h4>
                 <p id="review-property">Property</p>
                 <p id="review-date">Aug 2023</p>
-                <p id="review-info">Fill text</p>
+                <p id="review-info">Loading...</p>
                 <div class="button-container">
                     <button class="prev-review-btn">
                         <i class="fas fa-chevron-left"></i>
