@@ -199,18 +199,20 @@
         }
 
         #cover-spin::after {
-            content:'';
-            display:block;
-            position:absolute;
-            left:48%;top:40%;
-            width:40px;height:40px;
-            border-style:solid;
-            border-color:black;
-            border-top-color:transparent;
-            border-width: 4px;
-            border-radius:50%;
+            content: '';
+            display: block;
+            position: absolute;
+            left: 43%;
+            top: 30%;
+            width: 200px;
+            height: 200px;
+            border-style: dashed;
+            border-color: orangered;
+            border-top-color: transparent;
+            border-width: 8px;
+            border-radius: 50%;
             -webkit-animation: spin .8s linear infinite;
-            animation: spin .8s linear infinite;
+            animation: spin 1.25s linear infinite;
         }
 
     </style>
@@ -220,8 +222,8 @@
     <script>
         let reviewsData = [];
         let currentReview = 0;
-        const reviewsUrl = "https://www.woodhavenrentals.com/reviews";
-        //const reviewsUrl = "https://www.noworryvacations.com/reviews";
+        //const reviewsUrl = "https://www.woodhavenrentals.com/reviews";
+        const reviewsUrl = "https://www.noworryvacations.com/reviews";
 
         window.addEventListener("DOMContentLoaded", function () {
             showReview(currentReview);
