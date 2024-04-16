@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='1em' font-size='80'>%26%23129512%3B</text></svg>"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" />
+    <style>
+    /* Importing Google font - Poppins */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap');
+      
+        *,
+        ::after,
+        ::before {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: monospace;
+            background: black;
+            color: white;
+            line-height: 1.5;
+            font-size: 0.875rem;
+        }
+
+        h2,
+        h4 {
+            letter-spacing: 0.2rem;
+            text-transform: capitalize;
+            line-height: 1.25;
+            margin-bottom: 0.75rem;
+            font-family: "Roboto", sans-serif;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        h4 {
+            font-size: 0.875rem;
+			color: black;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: gray;
+        }
+
+        main {
+            min-height: 90vh;
+            display: grid;
+            place-items: center;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-top: 0.1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .underline {
+            height: 0.25rem;
+            width: 8rem;
+            background: #ccfc5b;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .property-container {
+            width: 80vw;
+            max-width: 600px;
+        }
+
+        .custom-review {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.3s linear;
+            text-align: center;
+        }
+
+        .custom-review:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .property-img-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto;
+            margin-bottom: 1.5rem;
+        }
+
+        #property-img {
+            width: 100%;
+            display: block;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .property-img-container::after {
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            transform: translateY(25%);
+            background: black;
+            color: white;
+        }
+
+        .property-img-container::before {
+            content: "";
+            width: 100%;
+            height: 100%;
+            background: #a25bfc75;
+            position: absolute;
+            top: -0.25rem;
+            right: -0.5rem;
+            border-radius: 50%;
+        }
+
+        #property-author {
+            margin-bottom: 0.25rem;
+        }
+
+        #property-job {
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            color: gray;
+            font-size: 0.85rem;
+        }
+
+        #property-info {
+            margin-bottom: 0.75rem;
+        }
+
+        .prev-property-btn,
+        .next-property-btn {
+            color: #a7e419;
+            font-size: 1.25rem;
+            background: transparent;
+            border-color: transparent;
+            margin: 0 0.5rem;
+            transition: color 0.3s linear;
+            cursor: pointer;
+        }
+
+        .prev-property-btn:hover,
+        .next-property-btn:hover {
+            color: black;
+        }
+
+        .random-property-btn {
+            margin-top: 0.5rem;
+            background: #ccfc5b;
+            color: black;
+            padding: 0.25rem 0.5rem;
+            text-transform: capitalize;
+            border-radius: 5px;
+            transition: background 0.3s linear, color 0.3s linear;
+            border: 2px solid black;
+            cursor: pointer;
+        }
+
+        .random-property-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        #cover-spin {
+            position:fixed;
+            width:100%;
+            left:0;right:0;top:0;bottom:0;
+            background-color: rgba(255,255,255,0.7);
+            z-index:9999;
+            display:none;
+        }
+
+        @-webkit-keyframes spin {
+            from {-webkit-transform:rotate(0deg);}
+            to {-webkit-transform:rotate(360deg);}
+        }
+
+        @keyframes spin {
+            from {transform:rotate(0deg);}
+            to {transform:rotate(360deg);}
+        }
+
+        #cover-spin::after {
+            content: '';
+            display: block;
+            position: relative;
+            left: 40dvw;
+            top: 20dvh;
+            width: 20dvw;
+            height: 20dvw;
+            border-style: dashed;
+            border-color: #a25bfc75;
+            border-top-color: transparent;
+            border-width: 8px;
+            border-radius: 50%;
+            -webkit-animation: spin .8s linear infinite;
+            animation: spin 1.25s linear infinite;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="cover-spin"></div>
+    <script>
+        let propertiesData = [];
+        let currentProperty = 0;
+
+        window.addEventListener("DOMContentLoaded", function () {
+            showProperty(currentProperty);
+        });
+
+        async function getProperties(targetUrl) {
+
+            const cover = document.getElementById("cover-spin");
+            cover.style.display = "unset";
+
+            const targetRequest = {
+                target_url: targetUrl,
+                watermark: "a21d27a5-52e4-44c7-b5f6-dd4698193a99"
+            };
+			try {
+				const response = await fetch(`https://headless-horseman.district9.info/retrieve_properties`, {
+					headers: {
+						"accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					method: "POST",
+					body: JSON.stringify(targetRequest)
+				});
+				cover.style.display = "none";
+				const data = await response.json();
+				propertiesData = data.result;
+				showProperty(randomPropertyIndex());			
+			} catch (e) {			
+				console.log(e);
+				console.log("Retrying");
+				setTimeout(() => {
+					location.reload();
+				}, 1000);			
+				
+			}
+        }
+		
+		function getPropertyUrl() {
+			const queryString = window.location.search;
+			console.log(queryString);
+			const urlParams = new URLSearchParams(queryString);
+			let propertyUrl = "https://www.premiumrentals.com/properties";
+			
+			if (urlParams.has("properties")) {
+				const propertyLink = urlParams.get('properties') || null;
+				if (!(propertyLink == null)) {
+					propertyUrl = propertyLink;
+				}
+			}
+			return propertyUrl;
+		}
+
+        window.addEventListener("load", async (e) => {		
+			const propertiesUrl = getPropertyUrl();		
+            await getProperties(propertiesUrl);
+
+            document.querySelector(".next-property-btn").addEventListener("click", function () {
+                currentProperty++;
+                if (currentProperty > propertiesData.length - 1) {
+                    currentProperty = 0;
+                }
+                showProperty(currentProperty);
+            });
+            document.querySelector(".prev-property-btn").addEventListener("click", function () {
+                currentProperty--;
+                if (currentProperty < 0) {
+                    currentProperty = propertiesData.length - 1;
+                }
+                showProperty(currentProperty);
+            });
+
+            document.querySelector(".random-property-btn").addEventListener("click", function () {
+                showProperty(randomPropertyIndex());
+            });             
+        });
+
+        function randomPropertyIndex() {
+            if (propertiesData.length === 0) {
+                return 0;
+            }
+            return Math.floor(Math.random() * propertiesData.length);
+        }
+
+        async function showProperty(propertyIndex) {
+            if (propertyIndex === 0) {
+                return;
+            }
+
+
+            if (propertiesData.length > 0) {
+                const currentPropertyData = propertiesData[propertyIndex];
+                const imgElement = document.getElementById("property-img");
+                imgElement.src = currentPropertyData.photo_url;
+
+                const titleElement = document.getElementById("property-title");
+                titleElement.textContent = currentPropertyData.title;
+
+                const sleepsElement = document.getElementById("property-sleeps");
+                sleepsElement.textContent = `Sleeps ${currentPropertyData.sleeps || ""}`;
+
+                const bedroomsElement = document.getElementById("property-bedrooms");
+                bedroomsElement.textContent = `Bedrooms ${currentPropertyData.bedrooms || ""}`;
+
+                const bathroomsElement = document.getElementById("property-bathrooms");
+                bathroomsElement.textContent = `Bathrooms ${currentPropertyData.bathrooms || ""}`;
+
+                const fullBathroomsElement = document.getElementById("property-fullbaths");
+                fullBathroomsElement.textContent = `Full Bathrooms ${currentPropertyData.full_bathrooms || ""}`;
+
+                const halfBathroomsElement = document.getElementById("property-halfbaths");
+                halfBathroomsElement.textContent = `Half Bathrooms ${currentPropertyData.half_bathrooms || ""}`;
+
+                const amenitiesElement = document.getElementById("property-amenities");
+                amenitiesElement.textContent = `Amenities ${currentPropertyData.amenities || ""}`;
+            }
+        }
+
+    </script>
+
+    <main>
+        <section class="property-container">
+            <div class="title-section">
+                <h2>Properties</h2>
+                <div class="underline"></div>
+            </div>
+            <article class="custom-review">
+                <h4 id="property-title">Property</h4>
+                <div class="property-img-container">
+                    <img src="" id="property-img" alt="" />
+                </div>
+                <p id="property-sleeps">Sleeps...</p>
+                <p id="property-bedrooms">Bedrooms...</p>
+                <p id="property-bathrooms">Bathrooms...</p>
+                <p id="property-fullbaths">Full Bathrooms...</p>
+                <p id="property-halfbaths">Half Bathrooms...</p>
+                <p id="property-amenities">Amenities...</p>
+                <div class="button-container">
+                    <button class="prev-property-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="next-property-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <button class="random-property-btn">surprise me</button>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
