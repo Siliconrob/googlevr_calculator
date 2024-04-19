@@ -50,7 +50,6 @@
         }
 
         main {
-            min-height: 90vh;
             display: grid;
             place-items: center;
         }
@@ -71,10 +70,10 @@
 
         .property-container {
             width: 80vw;
-            max-width: 600px;
+            max-width: 2400px;
         }
 
-        .custom-review {
+        .custom-property {
             background: white;
             padding: 1.5rem 2rem;
             border-radius: 1rem;
@@ -83,25 +82,25 @@
             text-align: center;
         }
 
-        .custom-review:hover {
+        .custom-property:hover {
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .property-img-container {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 300px;
+            height: 300px;
             border-radius: 50%;
             margin: 0 auto;
             margin-bottom: 1.5rem;
         }
 
-        #property-img {
+        .property-img {
             width: 100%;
             display: block;
             height: 100%;
             object-fit: cover;
-            border-radius: 50%;
+            border-radius: 15%;
             position: relative;
         }
 
@@ -125,11 +124,11 @@
             content: "";
             width: 100%;
             height: 100%;
-            background: #a25bfc75;
+            background:silver;
             position: absolute;
             top: -0.25rem;
             right: -0.5rem;
-            border-radius: 50%;
+            border-radius: 15%;
         }
 
         #property-author {
@@ -163,7 +162,7 @@
             color: black;
         }
 
-        .random-property-btn {
+        .more-property-btn {
             margin-top: 0.5rem;
             background: #ccfc5b;
             color: black;
@@ -175,7 +174,7 @@
             cursor: pointer;
         }
 
-        .random-property-btn:hover {
+        .more-property-btn:hover {
             background: white;
             color: black;
         }
@@ -216,17 +215,35 @@
             animation: spin 1.25s linear infinite;
         }
 
+        .row {
+            display: flex;
+            height: fit-content;
+        }
+
+        .column {
+            flex: 50%;
+            padding: 16px;
+        }
+
+        .property-details-container {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto;
+            margin-bottom: 1.5rem;
+            color: black;
+            text-align: left;            
+        }        
+
     </style>
 </head>
 <body>
     <div id="cover-spin"></div>
     <script>
         let propertiesData = [];
+        let chunkedProperties = [];
         let currentProperty = 0;
-
-        window.addEventListener("DOMContentLoaded", function () {
-            showProperty(currentProperty);
-        });
 
         async function getProperties(targetUrl) {
 
@@ -249,7 +266,8 @@
 				cover.style.display = "none";
 				const data = await response.json();
 				propertiesData = data.result;
-				showProperty(randomPropertyIndex());			
+                const chunkSize = 2;
+                chunkedProperties = Array.from({length: Math.ceil(propertiesData.length / chunkSize)}, (_, i) => propertiesData.slice(i * chunkSize, i * chunkSize + chunkSize));
 			} catch (e) {			
 				console.log(e);
 				console.log("Retrying");
@@ -278,97 +296,99 @@
         window.addEventListener("load", async (e) => {		
 			const propertiesUrl = getPropertyUrl();		
             await getProperties(propertiesUrl);
-
-            document.querySelector(".next-property-btn").addEventListener("click", function () {
-                currentProperty++;
-                if (currentProperty > propertiesData.length - 1) {
-                    currentProperty = 0;
-                }
-                showProperty(currentProperty);
+            document.querySelector(".more-property-btn").addEventListener("click", (z) => {                
+                addNewRow();
             });
-            document.querySelector(".prev-property-btn").addEventListener("click", function () {
-                currentProperty--;
-                if (currentProperty < 0) {
-                    currentProperty = propertiesData.length - 1;
-                }
-                showProperty(currentProperty);
-            });
-
-            document.querySelector(".random-property-btn").addEventListener("click", function () {
-                showProperty(randomPropertyIndex());
-            });             
+            addNewRow();
         });
 
-        function randomPropertyIndex() {
-            if (propertiesData.length === 0) {
-                return 0;
-            }
-            return Math.floor(Math.random() * propertiesData.length);
-        }
-
-        async function showProperty(propertyIndex) {
-            if (propertyIndex === 0) {
+        function addNewRow() {
+            if (chunkedProperties.length === 0) {
+                document.getElementById("moreRow").style.display = "none";
                 return;
             }
-
-
-            if (propertiesData.length > 0) {
-                const currentPropertyData = propertiesData[propertyIndex];
-                const imgElement = document.getElementById("property-img");
-                imgElement.src = currentPropertyData.photo_url;
-
-                const titleElement = document.getElementById("property-title");
-                titleElement.textContent = currentPropertyData.title;
-
-                const sleepsElement = document.getElementById("property-sleeps");
-                sleepsElement.textContent = `Sleeps ${currentPropertyData.sleeps || ""}`;
-
-                const bedroomsElement = document.getElementById("property-bedrooms");
-                bedroomsElement.textContent = `Bedrooms ${currentPropertyData.bedrooms || ""}`;
-
-                const bathroomsElement = document.getElementById("property-bathrooms");
-                bathroomsElement.textContent = `Bathrooms ${currentPropertyData.bathrooms || ""}`;
-
-                const fullBathroomsElement = document.getElementById("property-fullbaths");
-                fullBathroomsElement.textContent = `Full Bathrooms ${currentPropertyData.full_bathrooms || ""}`;
-
-                const halfBathroomsElement = document.getElementById("property-halfbaths");
-                halfBathroomsElement.textContent = `Half Bathrooms ${currentPropertyData.half_bathrooms || ""}`;
-
-                const amenitiesElement = document.getElementById("property-amenities");
-                amenitiesElement.textContent = `Amenities ${currentPropertyData.amenities || ""}`;
+            let toShow = chunkedProperties.shift();
+            if (toShow.length === 1) {
+                toShow = [toShow];
             }
+            createPropertyRows(toShow);
+        }
+
+        function createDetailItem(textHeader, textToDisplay) {
+            const textContainer = document.createElement("div");
+            if (textToDisplay === "") {
+                return textContainer;
+            }
+            const textSpan = document.createElement("span");
+            textSpan.innerHTML = textToDisplay;
+            textContainer.textContent = textHeader;
+            textContainer.appendChild(textSpan);
+            return textContainer;
+        }
+
+        function createPropertyRows(newPropertiesToShow) {
+            if (newPropertiesToShow.length === 0) {
+                return null;
+            }
+
+            while (newPropertiesToShow.length > 0) {
+                const newSet = newPropertiesToShow.splice(0, 2).map(z => createPropertyCard(z));
+                const newRow = document.createElement("div");
+                newRow.classList.add("row");
+                newSet.forEach(z => {
+                    newRow.appendChild(z);
+                });
+
+                const loadingMoreRow = document.getElementById("moreRow");
+                loadingMoreRow.parentNode.insertBefore(newRow, loadingMoreRow);
+            }
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function createPropertyCard(propertyToDisplay) {
+            const article = document.createElement("article");
+            article.classList.add("custom-property");
+            const title = document.createElement("h4");
+            title.innerHTML = propertyToDisplay.title;
+            article.appendChild(title);
+
+            const img = document.createElement("img");
+            img.src = propertyToDisplay.photo_url;
+            img.classList.add("property-img");
+            img.alt="Property image";
+
+            const imageContainer = document.createElement("div");
+            imageContainer.classList.add("property-img-container");
+            imageContainer.appendChild(img);
+            article.appendChild(imageContainer);
+
+            const detailsContainer = document.createElement("div");
+            detailsContainer.classList.add("property-details-container");
+            detailsContainer.appendChild(createDetailItem("Sleeps: ", propertyToDisplay.sleeps || ""));
+            detailsContainer.appendChild(createDetailItem("Bedrooms: ", propertyToDisplay.bedrooms || ""));
+            detailsContainer.appendChild(createDetailItem("Bathrooms: ", propertyToDisplay.bathrooms || ""));
+            detailsContainer.appendChild(createDetailItem("Full Bathrooms: ", propertyToDisplay.full_bathrooms || ""));
+            detailsContainer.appendChild(createDetailItem("Half Bathrooms: ", propertyToDisplay.half_bathrooms || ""));
+            detailsContainer.appendChild(createDetailItem("Amenities: ", propertyToDisplay.amenities || ""));            
+            article.appendChild(detailsContainer);
+
+            const propertyCard = document.createElement('div');
+            propertyCard.classList.add("column");
+            propertyCard.appendChild(article);
+            return propertyCard;
         }
 
     </script>
 
     <main>
-        <section class="property-container">
+        <section id="article-container" class="property-container">
             <div class="title-section">
                 <h2>Properties</h2>
                 <div class="underline"></div>
             </div>
-            <article class="custom-review">
-                <h4 id="property-title">Property</h4>
-                <div class="property-img-container">
-                    <img src="" id="property-img" alt="" />
-                </div>
-                <p id="property-sleeps">Sleeps...</p>
-                <p id="property-bedrooms">Bedrooms...</p>
-                <p id="property-bathrooms">Bathrooms...</p>
-                <p id="property-fullbaths">Full Bathrooms...</p>
-                <p id="property-halfbaths">Half Bathrooms...</p>
-                <p id="property-amenities">Amenities...</p>
-                <div class="button-container">
-                    <button class="prev-property-btn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="next-property-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <button class="random-property-btn">surprise me</button>
-            </article>
+            <div id="moreRow" class="title-section">
+                <button class="more-property-btn">Load more</button>
+            </div>
         </section>
     </main>
 </body>
