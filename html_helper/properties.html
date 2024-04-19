@@ -363,9 +363,13 @@
             img.classList.add("property-img");
             img.alt="Property image";
 
+            const imgLink = document.createElement("a");
+            imgLink.href = propertyToDisplay.property_url;
+            imgLink.appendChild(img);
+
             const imageContainer = document.createElement("div");
             imageContainer.classList.add("property-img-container");
-            imageContainer.appendChild(img);
+            imageContainer.appendChild(imgLink);
             article.appendChild(imageContainer);
 
             const detailsContainer = document.createElement("div");
