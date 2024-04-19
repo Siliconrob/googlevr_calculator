@@ -80,6 +80,7 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             transition: box-shadow 0.3s linear;
             text-align: center;
+            height: 100%;
         }
 
         .custom-property:hover {
@@ -124,7 +125,7 @@
             content: "";
             width: 100%;
             height: 100%;
-            background:silver;
+            background:hsl(50, 100%, 50%);
             position: absolute;
             top: -0.25rem;
             right: -0.5rem;
@@ -235,6 +236,11 @@
             color: black;
             text-align: left;            
         }        
+
+        .list-indent {
+            padding-left: 20px;
+        }
+
 
     </style>
 </head>
@@ -369,7 +375,18 @@
             detailsContainer.appendChild(createDetailItem("Bathrooms: ", propertyToDisplay.bathrooms || ""));
             detailsContainer.appendChild(createDetailItem("Full Bathrooms: ", propertyToDisplay.full_bathrooms || ""));
             detailsContainer.appendChild(createDetailItem("Half Bathrooms: ", propertyToDisplay.half_bathrooms || ""));
-            detailsContainer.appendChild(createDetailItem("Amenities: ", propertyToDisplay.amenities || ""));            
+
+            const amenities = propertyToDisplay.amenities || [];
+            if (amenities.length > 0) {
+                const ul = document.createElement("ul");
+                ul.classList.add("list-indent");
+                amenities.slice(0, 4).forEach(z => {
+                    const newItem = document.createElement("li");
+                    newItem.textContent = z.trim();
+                    ul.appendChild(newItem);
+                });
+                detailsContainer.appendChild(ul);
+            }
             article.appendChild(detailsContainer);
 
             const propertyCard = document.createElement('div');
