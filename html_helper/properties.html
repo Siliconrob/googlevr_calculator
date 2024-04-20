@@ -324,11 +324,7 @@
                 document.getElementById("moreRow").style.display = "none";
                 return;
             }
-            let toShow = chunkedProperties.shift();
-            if (toShow.length === 1) {
-                toShow = [toShow];
-            }
-            createPropertyRows(toShow);
+            createPropertyRows(chunkedProperties.shift());
         }
 
         function createDetailItem(textHeader, textToDisplay) {
