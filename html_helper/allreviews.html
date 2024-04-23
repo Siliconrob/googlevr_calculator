@@ -82,6 +82,8 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             transition: box-shadow 0.3s linear;
             text-align: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
         }
 
         .custom-review:hover {
@@ -97,7 +99,7 @@
             margin-bottom: 1.5rem;
         }
 
-        #person-img {
+        .person-img {
             width: 100%;
             display: block;
             height: 100%;
@@ -134,38 +136,7 @@
             border-radius: 50%;
         }
 
-        #review-author {
-            margin-bottom: 0.25rem;
-        }
-
-        #review-job {
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            color: gray;
-            font-size: 0.85rem;
-        }
-
-        #review-info {
-            margin-bottom: 0.75rem;
-        }
-
-        .prev-review-btn,
-        .next-review-btn {
-            color: #a7e419;
-            font-size: 1.25rem;
-            background: transparent;
-            border-color: transparent;
-            margin: 0 0.5rem;
-            transition: color 0.3s linear;
-            cursor: pointer;
-        }
-
-        .prev-review-btn:hover,
-        .next-review-btn:hover {
-            color: black;
-        }
-
-        .random-review-btn {
+        .more-review-btn {
             margin-top: 0.5rem;
             background: #ccfc5b;
             color: black;
@@ -177,7 +148,7 @@
             cursor: pointer;
         }
 
-        .random-review-btn:hover {
+        .more-review-btn:hover {
             background: white;
             color: black;
         }
@@ -218,17 +189,17 @@
             animation: spin 1.25s linear infinite;
         }
 
+        .row {
+            display: flex;
+            height: fit-content;
+        }        
+
     </style>
 </head>
 <body>
     <div id="cover-spin"></div>
     <script>
         let reviewsData = [];
-        let currentReview = 0;
-
-        window.addEventListener("DOMContentLoaded", function () {
-            showReview(currentReview);
-        });
 
         async function getReviews(targetUrl) {
 
@@ -251,11 +222,21 @@
 				cover.style.display = "none";
 				const data = await response.json();
 				reviewsData = data.result;
-				showReview(randomReviewIndex());			
 			} catch (e) {			
 				console.log(e);
 			}
         }
+
+        let loadingMore = false;
+        window.onwheel = (e) => {
+            if(e.deltaY >= 0 && loadingMore === false) {
+                loadingMore = true;
+                setTimeout(() => {
+                    addNewRow();
+                    loadingMore = false;
+                }, 250);
+            }
+        };        
 		
 		function getReviewUrl() {
 			const queryString = window.location.search;
@@ -275,45 +256,43 @@
         window.addEventListener("load", async (e) => {		
 			const reviewsUrl = getReviewUrl();		
             await getReviews(reviewsUrl);
-
-            document.querySelector(".next-review-btn").addEventListener("click", function () {
-                currentReview++;
-                if (currentReview > reviewsData.length - 1) {
-                    currentReview = 0;
-                }
-                showReview(currentReview);
+            document.querySelector(".more-review-btn").addEventListener("click", async (e) => {
+                await addNewRow();
             });
-            document.querySelector(".prev-review-btn").addEventListener("click", function () {
-                currentReview--;
-                if (currentReview < 0) {
-                    currentReview = reviewsData.length - 1;
-                }
-                showReview(currentReview);
-            });
-
-            document.querySelector(".random-review-btn").addEventListener("click", function () {
-                showReview(randomReviewIndex());
-            });             
+            await addNewRow();          
         });
 
-        function randomReviewIndex() {
+        async function addNewRow() {
             if (reviewsData.length === 0) {
-                return 0;
-            }
-            return Math.floor(Math.random() * reviewsData.length);
-        }
-
-        async function showReview(reviewIndex) {
-            if (reviewIndex === 0) {
+                document.getElementById("moreRow").style.display = "none";
                 return;
             }
+            await createReviewRow(reviewsData.shift());
+        }
 
-            const imgElement = document.getElementById("person-img");
-            const authorElement = document.getElementById("review-author");
-            const propertyElement = document.getElementById("review-property");
-			const ratingElement = document.getElementById("review-rating");
-            const dateLineElement = document.getElementById("review-date");
-            const infoElement = document.getElementById("review-info");
+        async function createReviewRow(newReviewToShow) {
+            if (newReviewToShow.length === 0) {
+                return null;
+            }
+
+            const newRow = document.createElement("div");
+            newRow.classList.add("row");
+            const newCard = await createReviewCard(newReviewToShow);
+            newRow.appendChild(newCard);
+            const loadingMoreRow = document.getElementById("moreRow");
+            loadingMoreRow.parentNode.insertBefore(newRow, loadingMoreRow);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }        
+
+
+
+        function createLineItem(textToDisplay) {
+            const newLineItem = document.createElement("p");
+            newLineItem.innerText = textToDisplay;
+            return newLineItem;
+        }
+
+        async function getRandomUserImage() {
             const randomUserResponse = await fetch(`https://randomuser.me/api`, {
                 headers: {
                     "accept": "application/json",
@@ -321,21 +300,38 @@
                 }
             });
             randomUser = await randomUserResponse.json();
-            imgElement.src = randomUser.results.shift().picture.large;
-
-            if (reviewsData.length > 0) {
-                const currentReviewData = reviewsData[reviewIndex];
-                authorElement.textContent = currentReviewData.reviewer_name;
-                dateLineElement.textContent = currentReviewData.date_line;
-				ratingElement.innerHTML = `<span style="font-size: 2rem; color: hsl(51, 90%, 50%)">&#x2605;</span>`.repeat(currentReviewData.stars);				
-                let propertyName = currentReviewData.property_name || "";
-                if (propertyName !== "") {
-					propertyName = `Stayed at ${propertyName}`;                    
-                }
-				propertyElement.textContent = propertyName ?? "";                
-                infoElement.textContent = currentReviewData.content;
-            }
+            return randomUser.results.shift().picture.large;
         }
+
+        async function createReviewCard(reviewToDisplay) {
+            const reviewCard = document.createElement("article");
+            reviewCard.classList.add("custom-review");
+            const title = document.createElement("h4");
+            title.innerHTML = reviewToDisplay.title;
+            reviewCard.appendChild(title);
+
+            const imgContainer = document.createElement("div");
+            imgContainer.classList.add("review-img-container");
+            const img = document.createElement("img");
+            img.src = await getRandomUserImage();
+            img.alt="Reviewer image";
+            img.classList.add("person-img");
+            imgContainer.appendChild(img);
+            reviewCard.appendChild(imgContainer);
+
+            reviewCard.appendChild(createLineItem(reviewToDisplay.reviewer_name));
+            reviewCard.appendChild(createLineItem(reviewToDisplay.date_line));
+            const ratingLine = document.createElement("p");
+            ratingLine.innerHTML = `<span style="font-size: 2rem; color: hsl(51, 90%, 50%)">&#x2605;</span>`.repeat(reviewToDisplay.stars);
+            reviewCard.appendChild(ratingLine);
+            let propertyName = reviewToDisplay.property_name || "";
+            if (propertyName !== "") {
+                reviewCard.appendChild(createLineItem(`Stayed at ${propertyName}`));
+            }
+            reviewCard.appendChild(createLineItem(reviewToDisplay.content));
+            return reviewCard;            
+        }
+
 
     </script>
 
@@ -345,26 +341,9 @@
                 <h2>Guest Reviews</h2>
                 <div class="underline"></div>
             </div>
-            <article class="custom-review">
-                <div class="review-img-container">
-                    <img src="https://randomuser.me/api/portraits/women/1.jpg"
-                        id="person-img" alt="" />
-                </div>
-                <h4 id="review-author">Jane Doe</h4>
-				<p id="review-rating">Rating...</p>
-                <p id="review-property">Property</p>
-                <p id="review-date">Aug 2023</p>
-                <p id="review-info">Loading...</p>				
-                <div class="button-container">
-                    <button class="prev-review-btn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="next-review-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <button class="random-review-btn">surprise me</button>
-            </article>
+            <div id="moreRow" class="title-section">
+                <button class="more-review-btn">Load more</button>
+            </div>
         </section>
     </main>
 </body>
